@@ -11,6 +11,7 @@
         .form-group { margin-bottom: 12px; }
         label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 14px; }
         input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        input.auto-calc { background-color: #e9ecef; font-weight: bold; color: #495057; }
         table { width: 100%; border-collapse: collapse; margin-top: 8px; margin-bottom: 15px; font-size: 14px; }
         th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
         th { background-color: #0056b3; color: white; }
@@ -79,11 +80,41 @@
     <h3>Revenue / Net Sales</h3>
     <div class="form-group">
         <label>Target MTD (Rp) [Permanen per Toko]</label>
-        <input type="number" id="targetMTD" class="target-field" placeholder="Masukkan Target MTD...">
+        <input type="number" id="targetMTD" class="target-field" placeholder="Masukkan Target MTD..." oninput="calculateRevenue()">
     </div>
     <div class="form-group">
         <label>Actual Sales (Rp) [Diisi Harian]</label>
-        <input type="number" id="actualSales" class="actual-field" placeholder="Masukkan Penjualan Aktual...">
+        <input type="number" id="actualSales" class="actual-field" placeholder="Masukkan Penjualan Aktual..." oninput="calculateRevenue()">
+    </div>
+    <div class="row-grid">
+        <div class="form-group">
+            <label>Time Factor (%) [Otomatis]</label>
+            <input type="text" id="timeFactor" class="auto-calc" readonly>
+        </div>
+        <div class="form-group">
+            <label>Target Time Factor (Rp) [Otomatis]</label>
+            <input type="text" id="targetTimeFactor" class="auto-calc" readonly>
+        </div>
+    </div>
+    <div class="row-grid">
+        <div class="form-group">
+            <label>Achieve MTD (%) [Otomatis]</label>
+            <input type="text" id="achieveMTD" class="auto-calc" readonly>
+        </div>
+        <div class="form-group">
+            <label>Achieve Time Factor (%) [Otomatis]</label>
+            <input type="text" id="achieveTF" class="auto-calc" readonly>
+        </div>
+    </div>
+    <div class="row-grid">
+        <div class="form-group">
+            <label>Gap to Target (Rp) [Otomatis]</label>
+            <input type="text" id="gapTarget" class="auto-calc" readonly>
+        </div>
+        <div class="form-group">
+            <label>Gap to Time Factor (Rp) [Otomatis]</label>
+            <input type="text" id="gapTF" class="auto-calc" readonly>
+        </div>
     </div>
 
     <!-- FOKUS CABANG -->
@@ -158,7 +189,6 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Script generator untuk 10 PSM -->
             <script>
                 for(let i=1; i<=10; i++) {
                     document.write(`
@@ -196,6 +226,42 @@
 <script>
     document.getElementById('datePicker').valueAsDate = new Date();
 
+    // Fungsi Kalkulasi Otomatis Revenue & Time Factor
+    function calculateRevenue() {
+        const targetMTD = parseFloat(document.getElementById('targetMTD').value) || 0;
+        const actualSales = parseFloat(document.getElementById('actualSales').value) || 0;
+        const selectedDate = new Date(document.getElementById('datePicker').value);
+
+        if (!isNaN(selectedDate.getTime())) {
+            const day = selectedDate.getDate();
+            const totalDaysInMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
+            
+            // Time Factor Berjalan (%)
+            const tfPercent = (day / totalDaysInMonth) * 100;
+            document.getElementById('timeFactor').value = tfPercent.toFixed(2) + '%';
+
+            // Target Time Factor (Rp)
+            const targetTF = targetMTD * (day / totalDaysInMonth);
+            document.getElementById('targetTimeFactor').value = targetTF.toLocaleString('id-ID', {maximumFractionDigits: 0});
+
+            // Achieve MTD (%)
+            const achieveMTD = targetMTD > 0 ? (actualSales / targetMTD) * 100 : 0;
+            document.getElementById('achieveMTD').value = achieveMTD.toFixed(2) + '%';
+
+            // Achieve Time Factor (%)
+            const achieveTF = targetTF > 0 ? (actualSales / targetTF) * 100 : 0;
+            document.getElementById('achieveTF').value = achieveTF.toFixed(2) + '%';
+
+            // Gap to Target (Rp)
+            const gapTarget = actualSales - targetMTD;
+            document.getElementById('gapTarget').value = gapTarget.toLocaleString('id-ID', {maximumFractionDigits: 0});
+
+            // Gap to Time Factor (Rp)
+            const gapTF = actualSales - targetTF;
+            document.getElementById('gapTF').value = gapTF.toLocaleString('id-ID', {maximumFractionDigits: 0});
+        }
+    }
+
     function getDailyKey() {
         const store = document.getElementById('storeSelect').value;
         const date = document.getElementById('datePicker').value;
@@ -225,7 +291,6 @@
             targ_fokus4: document.getElementById('targ_fokus4').value
         };
 
-        // Simpan data 10 PSM Target
         for(let i=1; i<=10; i++) {
             targetData[`name_psm${i}`] = document.getElementById(`name_psm${i}`).value;
             targetData[`targ_psm${i}`] = document.getElementById(`targ_psm${i}`).value;
@@ -264,6 +329,7 @@
                 document.getElementById(`targ_psm${i}`).value = '';
             }
         }
+        calculateRevenue();
     }
 
     // 3. MUAT DATA ACTUAL HARIAN
@@ -321,6 +387,7 @@
             document.getElementById('catTelur').value = '';
             document.getElementById('feeBase').value = '';
         }
+        calculateRevenue();
     }
 
     // 4. AUTO-SAVE ACTUAL HARIAN SAAT DIKETIK
@@ -353,14 +420,21 @@
         }
 
         localStorage.setItem(key, JSON.stringify(data));
+        calculateRevenue();
     }
 
     document.getElementById('storeSelect').addEventListener('change', loadDailyData);
-    document.getElementById('datePicker').addEventListener('change', loadDailyData);
+    document.getElementById('datePicker').addEventListener('change', function() {
+        loadDailyData();
+        calculateRevenue();
+    });
 
     document.querySelectorAll('.actual-field').forEach(input => {
         input.addEventListener('input', autoSaveDaily);
     });
+
+    // Jalankan kalkulasi pertama kali halaman dimuat
+    calculateRevenue();
 </script>
 
 </body>
