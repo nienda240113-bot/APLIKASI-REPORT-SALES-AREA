@@ -19,9 +19,16 @@
         .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; width: 100%; font-size: 16px; margin-top: 10px; }
         .btn-target { background-color: #28a745; }
         .btn-save { background-color: #007bff; }
+        .btn-preview { background-color: #17a2b8; }
+        .btn-wa { background-color: #25D366; }
         .btn:hover { opacity: 0.9; }
         .row-grid { display: flex; gap: 10px; }
         .row-grid > div { flex: 1; }
+        
+        /* Modal Pratinjau WA */
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 13px; max-height: 70vh; overflow-y: auto; }
+        .close-btn { background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; float: right; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -41,26 +48,26 @@
         <label>Kode & Nama Toko</label>
         <select id="storeSelect">
             <option value="">-- Pilih Toko --</option>
-            <option value="C624">C624 / RWBT</option>
-            <option value="C560">C560 / RAJ</option>
-            <option value="CH81">CH81 / CDKS</option>
-            <option value="CG76">CG76 / SPMM</option>
-            <option value="C573">C573 / GMM</option>
-            <option value="CE47">CE47 / MKRI</option>
-            <option value="CI30">CI30 / STTD</option>
-            <option value="CH41">CH41 / KPMRK</option>
-            <option value="CG54">CG54 / MM21</option>
-            <option value="C935">C935 / TLJ2</option>
-            <option value="CA71">CA71 / WSGN</option>
-            <option value="C965">C965 / CBNU</option>
-            <option value="CG86">CG86 / JKST</option>
-            <option value="CA94">CA94 / KPTI</option>
-            <option value="C574">C574 / SKU</option>
-            <option value="CI15">CI15 / RPSU</option>
-            <option value="CI54">CI54 / RJLB</option>
-            <option value="CF50">CF50 / DNIA</option>
-            <option value="CC21">CC21 / KUTN</option>
-            <option value="CI84">CI84 / TLKW</option>
+            <option value="C624 / RWBT">C624 / RWBT</option>
+            <option value="C560 / RAJ">C560 / RAJ</option>
+            <option value="CH81 / CDKS">CH81 / CDKS</option>
+            <option value="CG76 / SPMM">CG76 / SPMM</option>
+            <option value="C573 / GMM">C573 / GMM</option>
+            <option value="CE47 / MKRI">CE47 / MKRI</option>
+            <option value="CI30 / STTD">CI30 / STTD</option>
+            <option value="CH41 / KPMRK">CH41 / KPMRK</option>
+            <option value="CG54 / MM21">CG54 / MM21</option>
+            <option value="C935 / TLJ2">C935 / TLJ2</option>
+            <option value="CA71 / WSGN">CA71 / WSGN</option>
+            <option value="C965 / CBNU">C965 / CBNU</option>
+            <option value="CG86 / JKST">CG86 / JKST</option>
+            <option value="CA94 / KPTI">CA94 / KPTI</option>
+            <option value="C574 / SKU">C574 / SKU</option>
+            <option value="CI15 / RPSU">CI15 / RPSU</option>
+            <option value="CI54 / RJLB">CI54 / RJLB</option>
+            <option value="CF50 / DNIA">CF50 / DNIA</option>
+            <option value="CC21 / KUTN">CC21 / KUTN</option>
+            <option value="CI84 / TLKW">CI84 / TLKW</option>
         </select>
     </div>
 
@@ -216,11 +223,23 @@
         <input type="number" id="feeBase" class="actual-field" placeholder="Nilai Fee Base...">
     </div>
 
-    <!-- TOMBOL SIMPAN TARGET PERMANEN TOKO (DIPINDAH KE SINI) -->
+    <!-- TOMBOL AKSI UTAMA -->
     <button type="button" class="btn btn-target" onclick="saveStoreTarget()">💾 Simpan Target Permanen Toko Ini</button>
-
-    <!-- TOMBOL KIRIM LAPORAN -->
     <button type="button" class="btn btn-save" onclick="alert('Laporan berhasil diproses & dikirim!')">Simpan & Kirim Laporan</button>
+    
+    <!-- TOMBOL PREVIEW DAN WHATSAPP DIBAWAH KELOLA LAPORAN -->
+    <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview WhatsApp</button>
+    <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim Teks ke WhatsApp</button>
+</div>
+
+<!-- MODAL POPUP PREVIEW WA -->
+<div id="waModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeWaPreview()">Tutup</button>
+        <h4 style="margin-top:0;">Pratinjau Format WhatsApp</h4>
+        <hr>
+        <div id="previewText"></div>
+    </div>
 </div>
 
 <script>
@@ -253,6 +272,69 @@
             const gapTF = actualSales - targetTF;
             document.getElementById('gapTF').value = gapTF.toLocaleString('id-ID', {maximumFractionDigits: 0});
         }
+    }
+
+    function generateWaText() {
+        const store = document.getElementById('storeSelect').value || '-';
+        const date = document.getElementById('datePicker').value || '-';
+        const shift = document.getElementById('shiftSelect').value || '-';
+
+        let text = `*DAILY SALES REPORT*\n`;
+        text += `Toko: *${store}*\n`;
+        text += `Tanggal: ${date}\n`;
+        text += `Shift: ${shift}\n\n`;
+
+        text += `*--- REVENUE ---*\n`;
+        text += `Target MTD: Rp ${parseFloat(document.getElementById('targetMTD').value || 0).toLocaleString('id-ID')}\n`;
+        text += `Actual Sales: Rp ${parseFloat(document.getElementById('actualSales').value || 0).toLocaleString('id-ID')}\n`;
+        text += `Time Factor: ${document.getElementById('timeFactor').value}\n`;
+        text += `Target TF: Rp ${document.getElementById('targetTimeFactor').value}\n`;
+        text += `Achieve MTD: ${document.getElementById('achieveMTD').value}\n`;
+        text += `Achieve TF: ${document.getElementById('achieveTF').value}\n`;
+        text += `Gap Target: Rp ${document.getElementById('gapTarget').value}\n`;
+        text += `Gap TF: Rp ${document.getElementById('gapTF').value}\n\n`;
+
+        text += `*--- FOKUS CABANG ---*\n`;
+        text += `1. Tebus Murah: T=${document.getElementById('targ_fokus1').value||0} | A=${document.getElementById('act_fokus1').value||0} | OH=${document.getElementById('oh_fokus1').value||0}\n`;
+        text += `2. Serba Gratis: T=${document.getElementById('targ_fokus2').value||0} | A=${document.getElementById('act_fokus2').value||0} | OH=${document.getElementById('oh_fokus2').value||0}\n`;
+        text += `3. Suuegeer: T=${document.getElementById('targ_fokus3').value||0} | A=${document.getElementById('act_fokus3').value||0} | OH=${document.getElementById('oh_fokus3').value||0}\n`;
+        text += `4. Promo Ceban: T=${document.getElementById('targ_fokus4').value||0} | A=${document.getElementById('act_fokus4').value||0} | OH=${document.getElementById('oh_fokus4').value||0}\n\n`;
+
+        text += `*--- MEMBER ---*\n`;
+        text += `New Member: ${document.getElementById('actualNewMember').value||0}\n`;
+        text += `Total Struk: ${document.getElementById('totalStruk').value||0}\n`;
+        text += `Struk Member: ${document.getElementById('strukMember').value||0}\n`;
+        text += `Kontribusi: ${document.getElementById('persenMember').value||0}%\n\n`;
+
+        text += `*--- PSM (10 ITEM) ---*\n`;
+        for(let i=1; i<=10; i++) {
+            const name = document.getElementById(`name_psm${i}`).value || `PSM ${i}`;
+            const targ = document.getElementById(`targ_psm${i}`).value || 0;
+            const act = document.getElementById(`act_psm${i}`).value || 0;
+            text += `${i}. ${name}: T=${targ} | A=${act}\n`;
+        }
+
+        text += `\n*--- CATEGORY & E-COMMERCE ---*\n`;
+        text += `Toys: Rp ${parseFloat(document.getElementById('catToys').value || 0).toLocaleString('id-ID')}\n`;
+        text += `Telur: Rp ${parseFloat(document.getElementById('catTelur').value || 0).toLocaleString('id-ID')}\n`;
+        text += `Fee Base: Rp ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n`;
+
+        return text;
+    }
+
+    function showWaPreview() {
+        document.getElementById('previewText').innerText = generateWaText();
+        document.getElementById('waModal').style.display = 'block';
+    }
+
+    function closeWaPreview() {
+        document.getElementById('waModal').style.display = 'none';
+    }
+
+    function sendToWhatsApp() {
+        const text = generateWaText();
+        const encodedText = encodeURIComponent(text);
+        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
     }
 
     function getDailyKey() {
