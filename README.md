@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Sales Report - Store Portal</title>
+    <title>Daily Sales Report - Multi-Device Store Portal</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
@@ -47,9 +47,10 @@
             padding: 0.5rem;
             vertical-align: middle;
         }
-        .badge-status {
-            font-size: 0.8rem;
-            padding: 0.4em 0.8em;
+        .auto-calc {
+            background-color: #e9ecef !important;
+            font-weight: 600;
+            color: #0d6efd;
         }
     </style>
 </head>
@@ -65,7 +66,7 @@
             <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
                 <ul class="navbar-nav align-items-center">
                     <li class="nav-item me-3">
-                        <span class="text-white-50 small" id="syncStatus"><i class="fas fa-cloud text-warning me-1"></i> Mode: Local / GAS Ready</span>
+                        <span class="text-white-50 small" id="syncStatus"><i class="fas fa-cloud text-warning me-1"></i> Mode: Auto-Save Active</span>
                     </li>
                     <li class="nav-item">
                         <button class="btn btn-light btn-sm text-primary fw-bold" data-bs-toggle="modal" data-bs-target="#configModal"><i class="fas fa-cog me-1"></i> Setup GAS URL</button>
@@ -83,10 +84,10 @@
                     <div class="card-body d-flex flex-wrap justify-content-between align-items-center gap-3">
                         <div>
                             <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-file-invoice-dollar text-primary me-2"></i>Form & Laporan Sales Harian</h4>
-                            <p class="text-muted mb-0 small">Kelola, edit, dan sinkronkan laporan operasional toko secara real-time.</p>
+                            <p class="text-muted mb-0 small">Toko cukup isi Actual. Target & item tersimpan otomatis di perangkat ini untuk semua device.</p>
                         </div>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-outline-secondary btn-sm" onclick="loadSampleData()"><i class="fas fa-undo me-1"></i> Load Contoh Data</button>
+                            <button class="btn btn-outline-secondary btn-sm" onclick="resetForm()"><i class="fas fa-undo me-1"></i> Reset Actual</button>
                             <button class="btn btn-success btn-sm" onclick="saveReport()"><i class="fas fa-save me-1"></i> Simpan & Kirim Laporan</button>
                         </div>
                     </div>
@@ -102,7 +103,7 @@
                     <div class="row g-3">
                         <div class="col-md-3">
                             <label class="form-label">Periode Tanggal</label>
-                            <input type="date" class="form-control" id="periode" required>
+                            <input type="date" class="form-control" id="periode" onchange="onDateOrStoreChange()" required>
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">WH (Warehouse)</label>
@@ -113,12 +114,12 @@
                             <input type="text" class="form-control" id="am" value="SRD" required>
                         </div>
                         <div class="col-md-3">
-                            <label class="form-label">AC (Area Controller / Supervisor)</label>
+                            <label class="form-label">AC (Supervisor)</label>
                             <input type="text" class="form-control" id="ac" value="Triyanto" required>
                         </div>
                         <div class="col-md-4">
                             <label class="form-label">Kode & Nama Toko</label>
-                            <select class="form-select" id="storeCodeName" required>
+                            <select class="form-select" id="storeCodeName" onchange="onDateOrStoreChange()" required>
                                 <option value="">-- Pilih Toko --</option>
                                 <option value="C624/RWBT">C624 / RWBT</option>
                                 <option value="C560/RAJ">C560 / RAJ</option>
@@ -144,7 +145,7 @@
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Shift</label>
-                            <select class="form-select" id="shift">
+                            <select class="form-select" id="shift" onchange="autoSaveState()">
                                 <option value="1">Shift 1</option>
                                 <option value="2" selected>Shift 2</option>
                                 <option value="Full">Full Day</option>
@@ -160,36 +161,36 @@
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label">Time Factor (%)</label>
-                            <input type="number" step="0.01" class="form-control" id="timeFactor" placeholder="13.3">
+                            <label class="form-label">Target MTD (Rp) [Bisa Diedit & Disimpan]</label>
+                            <input type="number" class="form-control" id="targetMtd" value="329236885" oninput="calculateRevenue()">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Target MTD (Rp)</label>
-                            <input type="number" class="form-control" id="targetMtd" placeholder="329236885">
+                            <label class="form-label">Actual Sales (Rp) [Input Toko]</label>
+                            <input type="number" class="form-control" id="actualSales" placeholder="Cth: 11256202" oninput="calculateRevenue()">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Target Time Factor (Rp)</label>
-                            <input type="number" class="form-control" id="targetTimeFactor" placeholder="43788506">
+                            <label class="form-label">Time Factor (%) [Otomatis Tanggal Berjalan]</label>
+                            <input type="number" step="0.01" class="form-control auto-calc" id="timeFactor" readonly>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Actual Sales (Rp)</label>
-                            <input type="number" class="form-control" id="actualSales" placeholder="11256202">
+                            <label class="form-label">Target Time Factor (Rp) [Otomatis]</label>
+                            <input type="number" class="form-control auto-calc" id="targetTimeFactor" readonly>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Achieve MTD (%)</label>
-                            <input type="number" step="0.01" class="form-control" id="achieveMtd" placeholder="3.42">
+                            <label class="form-label">Achieve MTD (%) [Otomatis]</label>
+                            <input type="number" step="0.01" class="form-control auto-calc" id="achieveMtd" readonly>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Achieve Time Factor (%)</label>
-                            <input type="number" step="0.01" class="form-control" id="achieveTimeFactor" placeholder="25.71">
+                            <label class="form-label">Achieve Time Factor (%) [Otomatis]</label>
+                            <input type="number" step="0.01" class="form-control auto-calc" id="achieveTimeFactor" readonly>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Gap to Target (Rp)</label>
-                            <input type="number" class="form-control" id="gapTarget" placeholder="317980683">
+                            <label class="form-label">Gap to Target (Rp) [Otomatis]</label>
+                            <input type="number" class="form-control auto-calc" id="gapTarget" readonly>
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">Gap to Time Factor (Rp)</label>
-                            <input type="number" class="form-control" id="gapTimeFactor" placeholder="32532304">
+                            <label class="form-label">Gap to Time Factor (Rp) [Otomatis]</label>
+                            <input type="number" class="form-control auto-calc" id="gapTimeFactor" readonly>
                         </div>
                     </div>
                 </div>
@@ -197,47 +198,47 @@
 
             <!-- FOKUS CABANG -->
             <div class="card">
-                <div class="card-header bg-light text-primary"><i class="fas fa-bullseye me-2"></i>Fokus Cabang (Target / Sales / ACV% / On Hand)</div>
+                <div class="card-header bg-light text-primary"><i class="fas fa-bullseye me-2"></i>Fokus Cabang (Target Bisa Diedit & Disimpan, Toko Isi Actual)</div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm align-middle">
                             <thead class="table-light text-center">
                                 <tr>
                                     <th>Program / Fokus</th>
-                                    <th>Target</th>
-                                    <th>Sales / Actual</th>
-                                    <th>Achieve (%)</th>
+                                    <th>Target [Bisa Diedit]</th>
+                                    <th>Actual / Sales [Input Toko]</th>
+                                    <th>Achieve (%) [Otomatis]</th>
                                     <th>On Hand</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td class="fw-bold">1. Tebus Murah</td>
-                                    <td><input type="number" class="form-control form-control-sm" id="tmTarget" value="20"></td>
-                                    <td><input type="number" class="form-control form-control-sm" id="tmSales" value="29"></td>
-                                    <td><input type="number" step="0.01" class="form-control form-control-sm" id="tmAcv" value="145"></td>
-                                    <td><input type="text" class="form-control form-control-sm" id="tmOh" value="-"></td>
+                                    <td><input type="number" class="form-control form-control-sm target-input" id="tmTarget" value="20" oninput="calculateFokus()"></td>
+                                    <td><input type="number" class="form-control form-control-sm" id="tmSales" value="29" oninput="calculateFokus()"></td>
+                                    <td><input type="number" step="0.01" class="form-control form-control-sm auto-calc" id="tmAcv" readonly></td>
+                                    <td><input type="text" class="form-control form-control-sm" id="tmOh" value="-" oninput="autoSaveState()"></td>
                                 </tr>
                                 <tr>
                                     <td class="fw-bold">2. Serba Gratis</td>
-                                    <td><input type="number" class="form-control form-control-sm" id="sgTarget" value="13"></td>
-                                    <td><input type="number" class="form-control form-control-sm" id="sgSales" value="12"></td>
-                                    <td><input type="number" step="0.01" class="form-control form-control-sm" id="sgAcv" value="92"></td>
-                                    <td><input type="text" class="form-control form-control-sm" id="sgOh" value="-"></td>
+                                    <td><input type="number" class="form-control form-control-sm target-input" id="sgTarget" value="13" oninput="calculateFokus()"></td>
+                                    <td><input type="number" class="form-control form-control-sm" id="sgSales" value="12" oninput="calculateFokus()"></td>
+                                    <td><input type="number" step="0.01" class="form-control form-control-sm auto-calc" id="sgAcv" readonly></td>
+                                    <td><input type="text" class="form-control form-control-sm" id="sgOh" value="-" oninput="autoSaveState()"></td>
                                 </tr>
                                 <tr>
                                     <td class="fw-bold">3. Suuegeer</td>
-                                    <td><input type="number" class="form-control form-control-sm" id="suTarget" value="48"></td>
-                                    <td><input type="number" class="form-control form-control-sm" id="suSales" value="17"></td>
-                                    <td><input type="number" step="0.01" class="form-control form-control-sm" id="suAcv" value="35"></td>
-                                    <td><input type="text" class="form-control form-control-sm" id="suOh" value="-"></td>
+                                    <td><input type="number" class="form-control form-control-sm target-input" id="suTarget" value="48" oninput="calculateFokus()"></td>
+                                    <td><input type="number" class="form-control form-control-sm" id="suSales" value="17" oninput="calculateFokus()"></td>
+                                    <td><input type="number" step="0.01" class="form-control form-control-sm auto-calc" id="suAcv" readonly></td>
+                                    <td><input type="text" class="form-control form-control-sm" id="suOh" value="-" oninput="autoSaveState()"></td>
                                 </tr>
                                 <tr>
                                     <td class="fw-bold">4. Promo Ceban</td>
-                                    <td><input type="number" class="form-control form-control-sm" id="pcTarget" value="213"></td>
-                                    <td><input type="number" class="form-control form-control-sm" id="pcSales" value="0"></td>
-                                    <td><input type="number" step="0.01" class="form-control form-control-sm" id="pcAcv" value="0"></td>
-                                    <td><input type="text" class="form-control form-control-sm" id="pcOh" value="-"></td>
+                                    <td><input type="number" class="form-control form-control-sm target-input" id="pcTarget" value="213" oninput="calculateFokus()"></td>
+                                    <td><input type="number" class="form-control form-control-sm" id="pcSales" value="0" oninput="calculateFokus()"></td>
+                                    <td><input type="number" step="0.01" class="form-control form-control-sm auto-calc" id="pcAcv" readonly></td>
+                                    <td><input type="text" class="form-control form-control-sm" id="pcOh" value="-" oninput="autoSaveState()"></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -252,11 +253,11 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label class="form-label">Actual New Member</label>
-                            <input type="number" class="form-control" id="newMember" value="0">
+                            <input type="number" class="form-control" id="newMember" value="0" oninput="autoSaveState()">
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Kontribusi Struk Member (Total Struk / Struk Member / %)</label>
-                            <input type="text" class="form-control" id="strukMember" value="Total struk = 118 / 213 / 55%">
+                            <input type="text" class="form-control" id="strukMember" value="Total struk = 118 / 213 / 55%" oninput="autoSaveState()">
                         </div>
                     </div>
                 </div>
@@ -264,27 +265,24 @@
 
             <!-- PSM -->
             <div class="card">
-                <div class="card-header bg-light text-primary"><i class="fas fa-boxes me-2"></i>PSM (In Qty: Target - Actual - %)</div>
+                <div class="card-header bg-light text-primary d-flex justify-content-between align-items-center">
+                    <span><i class="fas fa-boxes me-2"></i>PSM (Target & Nama Produk Bisa Diedit, Ada 1 Baris Kosong Tambahan)</span>
+                    <button type="button" class="btn btn-outline-primary btn-sm" onclick="addPsmRow()"><i class="fas fa-plus me-1"></i> Tambah Item PSM</button>
+                </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <table class="table table-bordered table-sm align-middle" id="psmTable">
                             <thead class="table-light text-center">
                                 <tr>
-                                    <th>Produk PSM</th>
-                                    <th>Target</th>
-                                    <th>Actual</th>
-                                    <th>Achieve (%)</th>
+                                    <th>Produk PSM [Nama Dapat Diedit]</th>
+                                    <th>Target [Bisa Diedit]</th>
+                                    <th>Actual [Input Toko]</th>
+                                    <th>Achieve (%) [Otomatis]</th>
+                                    <th style="width: 50px;">Aksi</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <tr><td>Bango</td><td><input type="number" class="form-control form-control-sm psm-t" value="105"></td><td><input type="number" class="form-control form-control-sm psm-a" value="1"></td><td><input type="number" step="0.01" class="form-control form-control-sm psm-p" value="1"></td></tr>
-                                <tr><td>Daia</td><td><input type="number" class="form-control form-control-sm psm-t" value="45"></td><td><input type="number" class="form-control form-control-sm psm-a" value="1"></td><td><input type="number" step="0.01" class="form-control form-control-sm psm-p" value="2"></td></tr>
-                                <tr><td>Enaak</td><td><input type="number" class="form-control form-control-sm psm-t" value="28"></td><td><input type="number" class="form-control form-control-sm psm-a" value="0"></td><td><input type="number" step="0.01" class="form-control form-control-sm psm-p" value="0"></td></tr>
-                                <tr><td>Garnier</td><td><input type="number" class="form-control form-control-sm psm-t" value="14"></td><td><input type="number" class="form-control form-control-sm psm-a" value="4"></td><td><input type="number" step="0.01" class="form-control form-control-sm psm-p" value="29"></td></tr>
-                                <tr><td>Le Mineral</td><td><input type="number" class="form-control form-control-sm psm-t" value="171"></td><td><input type="number" class="form-control form-control-sm psm-a" value="4"></td><td><input type="number" step="0.01" class="form-control form-control-sm psm-p" value="2"></td></tr>
-                                <tr><td>Lifebuoy</td><td><input type="number" class="form-control form-control-sm psm-t" value="28"></td><td><input type="number" class="form-control form-control-sm psm-a" value="0"></td><td><input type="number" step="0.01" class="form-control form-control-sm psm-p" value="0"></td></tr>
-                                <tr><td>Nipis Madu</td><td><input type="number" class="form-control form-control-sm psm-t" value="96"></td><td><input type="number" class="form-control form-control-sm psm-a" value="3"></td><td><input type="number" step="0.01" class="form-control form-control-sm psm-p" value="3"></td></tr>
-                                <tr><td>Taro</td><td><input type="number" class="form-control form-control-sm psm-t" value="62"></td><td><input type="number" class="form-control form-control-sm psm-a" value="6"></td><td><input type="number" step="0.01" class="form-control form-control-sm psm-p" value="10"></td></tr>
+                            <tbody id="psmBody">
+                                <!-- Populated dynamically -->
                             </tbody>
                         </table>
                     </div>
@@ -299,11 +297,11 @@
                         <div class="card-body">
                             <div class="mb-3">
                                 <label class="form-label">1. TOYS (NS)</label>
-                                <input type="number" class="form-control" id="catToys" value="0">
+                                <input type="number" class="form-control" id="catToys" value="0" oninput="autoSaveState()">
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">2. HBPL (NS)</label>
-                                <input type="number" class="form-control" id="catHbpl" value="0">
+                                <input type="number" class="form-control" id="catHbpl" value="0" oninput="autoSaveState()">
                             </div>
                         </div>
                     </div>
@@ -314,7 +312,7 @@
                         <div class="card-body">
                             <div class="mb-3">
                                 <label class="form-label">Fee Base (Rp)</label>
-                                <input type="number" class="form-control" id="feeBase" value="250000">
+                                <input type="number" class="form-control" id="feeBase" value="250000" oninput="autoSaveState()">
                             </div>
                         </div>
                     </div>
@@ -354,6 +352,18 @@
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        const defaultPsmItems = [
+            { name: "Bango", target: 105, actual: 1 },
+            { name: "Daia", target: 45, actual: 1 },
+            { name: "Enaak", target: 28, actual: 0 },
+            { name: "Garnier", target: 14, actual: 4 },
+            { name: "Le Mineral", target: 171, actual: 4 },
+            { name: "Lifebuoy", target: 28, actual: 0 },
+            { name: "Nipis Madu", target: 96, actual: 3 },
+            { name: "Taro", target: 62, actual: 6 },
+            { name: "", target: 0, actual: 0 } // Extra 1 blank row for additional PSM item
+        ];
+
         document.addEventListener("DOMContentLoaded", function() {
             document.getElementById('periode').valueAsDate = new Date();
             const savedUrl = localStorage.getItem('gas_url');
@@ -361,8 +371,190 @@
                 document.getElementById('gasUrlInput').value = savedUrl;
                 document.getElementById('syncStatus').innerHTML = '<i class="fas fa-cloud text-success me-1"></i> Mode: Terhubung ke GAS';
             }
-            loadLocalData();
+            loadSavedData();
+            updateTimeFactor();
         });
+
+        function updateTimeFactor() {
+            const dateVal = document.getElementById('periode').value;
+            if(!dateVal) return;
+            const d = new Date(dateVal);
+            const day = d.getDate();
+            const year = d.getFullYear();
+            const month = d.getMonth();
+            const totalDays = new Date(year, month + 1, 0).getDate();
+            const tf = (day / totalDays) * 100;
+            document.getElementById('timeFactor').value = tf.toFixed(2);
+            calculateRevenue();
+        }
+
+        function calculateRevenue() {
+            const targetMtd = parseFloat(document.getElementById('targetMtd').value) || 0;
+            const actualSales = parseFloat(document.getElementById('actualSales').value) || 0;
+            const tf = parseFloat(document.getElementById('timeFactor').value) || 0;
+
+            const targetTf = (targetMtd * tf) / 100;
+            const achieveMtd = targetMtd > 0 ? (actualSales / targetMtd) * 100 : 0;
+            const achieveTf = targetTf > 0 ? (actualSales / targetTf) * 100 : 0;
+            const gapT = targetMtd - actualSales;
+            const gapTf = targetTf - actualSales;
+
+            document.getElementById('targetTimeFactor').value = Math.round(targetTf);
+            document.getElementById('achieveMtd').value = achieveMtd.toFixed(2);
+            document.getElementById('achieveTimeFactor').value = achieveTf.toFixed(2);
+            document.getElementById('gapTarget').value = Math.round(gapT);
+            document.getElementById('gapTimeFactor').value = Math.round(gapTf);
+
+            autoSaveState();
+        }
+
+        function calculateFokus() {
+            ['tm', 'sg', 'su', 'pc'].forEach(prefix => {
+                const t = parseFloat(document.getElementById(prefix + 'Target').value) || 0;
+                const s = parseFloat(document.getElementById(prefix + 'Sales').value) || 0;
+                const acv = t > 0 ? (s / t) * 100 : 0;
+                document.getElementById(prefix + 'Acv').value = acv.toFixed(2);
+            });
+            autoSaveState();
+        }
+
+        function calculatePsmRow(inputElem) {
+            const row = inputElem.closest('tr');
+            const t = parseFloat(row.querySelector('.psm-t').value) || 0;
+            const a = parseFloat(row.querySelector('.psm-a').value) || 0;
+            const p = t > 0 ? (a / t) * 100 : 0;
+            row.querySelector('.psm-p').value = p.toFixed(2);
+            autoSaveState();
+        }
+
+        function renderPsmTable(savedPsmData) {
+            const psmBody = document.getElementById('psmBody');
+            psmBody.innerHTML = '';
+            const items = (savedPsmData && savedPsmData.length > 0) ? savedPsmData : defaultPsmItems;
+            
+            items.forEach((item, index) => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td><input type="text" class="form-control form-control-sm psm-name" value="${item.name !== undefined ? item.name : ''}" placeholder="Nama Produk PSM" oninput="autoSaveState()"></td>
+                    <td><input type="number" class="form-control form-control-sm psm-t" value="${item.target !== undefined ? item.target : 0}" oninput="calculatePsmRow(this)"></td>
+                    <td><input type="number" class="form-control form-control-sm psm-a" value="${item.actual !== undefined ? item.actual : 0}" oninput="calculatePsmRow(this)"></td>
+                    <td><input type="number" step="0.01" class="form-control form-control-sm auto-calc psm-p" value="0" readonly></td>
+                    <td class="text-center"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removePsmRow(this)"><i class="fas fa-trash"></i></button></td>
+                `;
+                psmBody.appendChild(tr);
+                const tInput = tr.querySelector('.psm-t');
+                calculatePsmRow(tInput);
+            });
+        }
+
+        function addPsmRow() {
+            const psmBody = document.getElementById('psmBody');
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><input type="text" class="form-control form-control-sm psm-name" value="" placeholder="Nama Produk PSM Baru" oninput="autoSaveState()"></td>
+                <td><input type="number" class="form-control form-control-sm psm-t" value="0" oninput="calculatePsmRow(this)"></td>
+                <td><input type="number" class="form-control form-control-sm psm-a" value="0" oninput="calculatePsmRow(this)"></td>
+                <td><input type="number" step="0.01" class="form-control form-control-sm auto-calc psm-p" value="0" readonly></td>
+                <td class="text-center"><button type="button" class="btn btn-outline-danger btn-sm" onclick="removePsmRow(this)"><i class="fas fa-trash"></i></button></td>
+            `;
+            psmBody.appendChild(tr);
+            autoSaveState();
+        }
+
+        function removePsmRow(btn) {
+            const tr = btn.closest('tr');
+            tr.remove();
+            autoSaveState();
+        }
+
+        function onDateOrStoreChange() {
+            updateTimeFactor();
+            loadSavedData();
+        }
+
+        function getStorageKey() {
+            const store = document.getElementById('storeCodeName').value || 'general';
+            return 'sales_app_state_v2_' + store;
+        }
+
+        function autoSaveState() {
+            const store = document.getElementById('storeCodeName').value;
+            if(!store) return;
+
+            const psmRows = [];
+            document.querySelectorAll('#psmBody tr').forEach(tr => {
+                psmRows.push({
+                    name: tr.querySelector('.psm-name').value,
+                    target: tr.querySelector('.psm-t').value,
+                    actual: tr.querySelector('.psm-a').value
+                });
+            });
+
+            const state = {
+                periode: document.getElementById('periode').value,
+                wh: document.getElementById('wh').value,
+                am: document.getElementById('am').value,
+                ac: document.getElementById('ac').value,
+                shift: document.getElementById('shift').value,
+                targetMtd: document.getElementById('targetMtd').value,
+                actualSales: document.getElementById('actualSales').value,
+                tmTarget: document.getElementById('tmTarget').value,
+                tmSales: document.getElementById('tmSales').value,
+                sgTarget: document.getElementById('sgTarget').value,
+                sgSales: document.getElementById('sgSales').value,
+                suTarget: document.getElementById('suTarget').value,
+                suSales: document.getElementById('suSales').value,
+                pcTarget: document.getElementById('pcTarget').value,
+                pcSales: document.getElementById('pcSales').value,
+                newMember: document.getElementById('newMember').value,
+                strukMember: document.getElementById('strukMember').value,
+                catToys: document.getElementById('catToys').value,
+                catHbpl: document.getElementById('catHbpl').value,
+                feeBase: document.getElementById('feeBase').value,
+                psmItems: psmRows
+            };
+
+            localStorage.setItem(getStorageKey(), JSON.stringify(state));
+        }
+
+        function loadSavedData() {
+            const storeSelect = document.getElementById('storeCodeName');
+            if(!storeSelect.value) {
+                renderPsmTable(defaultPsmItems);
+                return;
+            }
+
+            const saved = localStorage.getItem(getStorageKey());
+            if(saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    if(data.targetMtd) document.getElementById('targetMtd').value = data.targetMtd;
+                    if(data.actualSales !== undefined) document.getElementById('actualSales').value = data.actualSales;
+                    if(data.tmTarget) document.getElementById('tmTarget').value = data.tmTarget;
+                    if(data.tmSales !== undefined) document.getElementById('tmSales').value = data.tmSales;
+                    if(data.sgTarget) document.getElementById('sgTarget').value = data.sgTarget;
+                    if(data.sgSales !== undefined) document.getElementById('sgSales').value = data.sgSales;
+                    if(data.suTarget) document.getElementById('suTarget').value = data.suTarget;
+                    if(data.suSales !== undefined) document.getElementById('suSales').value = data.suSales;
+                    if(data.pcTarget) document.getElementById('pcTarget').value = data.pcTarget;
+                    if(data.pcSales !== undefined) document.getElementById('pcSales').value = data.pcSales;
+                    if(data.newMember !== undefined) document.getElementById('newMember').value = data.newMember;
+                    if(data.strukMember) document.getElementById('strukMember').value = data.strukMember;
+                    if(data.catToys !== undefined) document.getElementById('catToys').value = data.catToys;
+                    if(data.catHbpl !== undefined) document.getElementById('catHbpl').value = data.catHbpl;
+                    if(data.feeBase !== undefined) document.getElementById('feeBase').value = data.feeBase;
+                    
+                    renderPsmTable(data.psmItems);
+                } catch(e) {
+                    console.error(e);
+                    renderPsmTable(defaultPsmItems);
+                }
+            } else {
+                renderPsmTable(defaultPsmItems);
+            }
+            calculateRevenue();
+            calculateFokus();
+        }
 
         function saveGasUrl() {
             const url = document.getElementById('gasUrlInput').value.trim();
@@ -372,52 +564,47 @@
             alert('URL Google Apps Script berhasil disimpan!');
         }
 
-        function loadSampleData() {
-            document.getElementById('periode').value = '2026-09-04';
-            document.getElementById('wh').value = 'Bekasi';
-            document.getElementById('am').value = 'SRD';
-            document.getElementById('ac').value = 'Triyanto';
-            document.getElementById('storeCodeName').value = 'CC21/KUTN';
-            document.getElementById('shift').value = '2';
-            
-            document.getElementById('timeFactor').value = '13.3';
-            document.getElementById('targetMtd').value = '329236885';
-            document.getElementById('targetTimeFactor').value = '43788506';
-            document.getElementById('actualSales').value = '11256202';
-            document.getElementById('achieveMtd').value = '3.42';
-            document.getElementById('achieveTimeFactor').value = '25.71';
-            document.getElementById('gapTarget').value = '317980683';
-            document.getElementById('gapTimeFactor').value = '32532304';
-            
-            document.getElementById('tmTarget').value = '20';
-            document.getElementById('tmSales').value = '29';
-            document.getElementById('tmAcv').value = '145';
-            
-            document.getElementById('sgTarget').value = '13';
-            document.getElementById('sgSales').value = '12';
-            document.getElementById('sgAcv').value = '92';
-
-            document.getElementById('suTarget').value = '48';
-            document.getElementById('suSales').value = '17';
-            document.getElementById('suAcv').value = '35';
-
-            document.getElementById('pcTarget').value = '213';
-            document.getElementById('pcSales').value = '0';
-            document.getElementById('pcAcv').value = '0';
-
-            document.getElementById('newMember').value = '0';
-            document.getElementById('strukMember').value = 'Total struk = 118 / 213 / 55%';
-            document.getElementById('feeBase').value = '250000';
-            alert('Contoh data berhasil dimuat!');
+        function resetForm() {
+            if(confirm('Reset input actual toko ini?')) {
+                document.getElementById('actualSales').value = '';
+                document.getElementById('tmSales').value = '';
+                document.getElementById('sgSales').value = '';
+                document.getElementById('suSales').value = '';
+                document.getElementById('pcSales').value = '';
+                document.querySelectorAll('.psm-a').forEach(inp => inp.value = '');
+                autoSaveState();
+                calculateRevenue();
+                calculateFokus();
+                alert('Form actual berhasil di-reset.');
+            }
         }
 
         function saveReport() {
+            const store = document.getElementById('storeCodeName').value;
+            if(!store) {
+                alert('Silakan pilih Kode & Nama Toko terlebih dahulu!');
+                document.getElementById('storeCodeName').focus();
+                return;
+            }
+
+            autoSaveState();
+
+            const psmData = [];
+            document.querySelectorAll('#psmBody tr').forEach(tr => {
+                psmData.push({
+                    name: tr.querySelector('.psm-name').value,
+                    target: tr.querySelector('.psm-t').value,
+                    actual: tr.querySelector('.psm-a').value,
+                    achieve: tr.querySelector('.psm-p').value
+                });
+            });
+
             const formData = {
                 periode: document.getElementById('periode').value,
                 wh: document.getElementById('wh').value,
                 am: document.getElementById('am').value,
                 ac: document.getElementById('ac').value,
-                storeCodeName: document.getElementById('storeCodeName').value,
+                storeCodeName: store,
                 shift: document.getElementById('shift').value,
                 revenue: {
                     timeFactor: document.getElementById('timeFactor').value,
@@ -439,59 +626,38 @@
                     newMember: document.getElementById('newMember').value,
                     strukMember: document.getElementById('strukMember').value
                 },
+                psm: psmData,
+                category: {
+                    toys: document.getElementById('catToys').value,
+                    hbpl: document.getElementById('catHbpl').value
+                },
                 feeBase: document.getElementById('feeBase').value,
                 timestamp: new Date().toISOString()
             };
 
-            // Save to LocalStorage for cross-device persistence / offline
-            localStorage.setItem('latest_sales_report', JSON.stringify(formData));
-            
             const gasUrl = localStorage.getItem('gas_url');
             if(gasUrl) {
-                // Send to Google Apps Script Web App
                 fetch(gasUrl, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(formData)
                 }).then(() => {
-                    alert('Laporan berhasil disimpan lokal dan dikirim ke Google Sheets!');
+                    alert('Laporan berhasil disimpan dan dikirim ke Google Sheets secara online!');
                 }).catch(err => {
                     console.error(err);
-                    alert('Laporan tersimpan lokal (Gagal sync ke GAS, periksa koneksi/URL).');
+                    alert('Tersimpan di perangkat (Gagal sync online ke GAS, periksa koneksi/URL).');
                 });
             } else {
-                alert('Laporan berhasil disimpan secara lokal! (Atur Google Apps Script URL di tombol atas untuk sync online ke Google Sheets).');
-            }
-        }
-
-        function loadLocalData() {
-            const saved = localStorage.getItem('latest_sales_report');
-            if(saved) {
-                try {
-                    const data = JSON.parse(saved);
-                    if(data.periode) document.getElementById('periode').value = data.periode;
-                    if(data.wh) document.getElementById('wh').value = data.wh;
-                    if(data.am) document.getElementById('am').value = data.am;
-                    if(data.ac) document.getElementById('ac').value = data.ac;
-                    if(data.storeCodeName) document.getElementById('storeCodeName').value = data.storeCodeName;
-                    if(data.shift) document.getElementById('shift').value = data.shift;
-                    if(data.revenue) {
-                        document.getElementById('timeFactor').value = data.revenue.timeFactor || '';
-                        document.getElementById('targetMtd').value = data.revenue.targetMtd || '';
-                        document.getElementById('targetTimeFactor').value = data.revenue.targetTimeFactor || '';
-                        document.getElementById('actualSales').value = data.revenue.actualSales || '';
-                        document.getElementById('achieveMtd').value = data.revenue.achieveMtd || '';
-                        document.getElementById('achieveTimeFactor').value = data.revenue.achieveTimeFactor || '';
-                        document.getElementById('gapTarget').value = data.revenue.gapTarget || '';
-                        document.getElementById('gapTimeFactor').value = data.revenue.gapTimeFactor || '';
-                    }
-                    if(data.feeBase) document.getElementById('feeBase').value = data.feeBase;
-                } catch(e) {
-                    console.error(e);
-                }
+                alert('Laporan berhasil disimpan di perangkat! (Atur Google Apps Script URL di tombol atas untuk sync otomatis ke Google Sheets).');
             }
         }
     </script>
 </body>
 </html>
+"""
+
+with open("index.html", "w", encoding="utf-8") as f:
+    f.write(updated_html_content)
+
+print("Regenerated index.html successfully with strict requirements.")
