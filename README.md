@@ -16,9 +16,9 @@
         th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
         th { background-color: #0056b3; color: white; }
         input.table-input { width: 100%; padding: 4px; box-sizing: border-box; text-align: center; border: 1px solid #bbb; }
-        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; }
-        .btn-target { background-color: #28a745; width: 100%; margin-bottom: 15px; font-size: 15px; }
-        .btn-save { background-color: #007bff; width: 100%; font-size: 16px; margin-top: 15px; }
+        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; width: 100%; font-size: 16px; margin-top: 10px; }
+        .btn-target { background-color: #28a745; }
+        .btn-save { background-color: #007bff; }
         .btn:hover { opacity: 0.9; }
         .row-grid { display: flex; gap: 10px; }
         .row-grid > div { flex: 1; }
@@ -72,9 +72,6 @@
             <option value="Full Day">Full Day</option>
         </select>
     </div>
-
-    <!-- TOMBOL SIMPAN TARGET PERMANEN TOKO -->
-    <button type="button" class="btn btn-target" onclick="saveStoreTarget()">💾 Simpan Target Permanen Toko Ini</button>
 
     <!-- REVENUE / NET SALES -->
     <h3>Revenue / Net Sales</h3>
@@ -219,6 +216,9 @@
         <input type="number" id="feeBase" class="actual-field" placeholder="Nilai Fee Base...">
     </div>
 
+    <!-- TOMBOL SIMPAN TARGET PERMANEN TOKO (DIPINDAH KE SINI) -->
+    <button type="button" class="btn btn-target" onclick="saveStoreTarget()">💾 Simpan Target Permanen Toko Ini</button>
+
     <!-- TOMBOL KIRIM LAPORAN -->
     <button type="button" class="btn btn-save" onclick="alert('Laporan berhasil diproses & dikirim!')">Simpan & Kirim Laporan</button>
 </div>
@@ -226,7 +226,6 @@
 <script>
     document.getElementById('datePicker').valueAsDate = new Date();
 
-    // Fungsi Kalkulasi Otomatis Revenue & Time Factor
     function calculateRevenue() {
         const targetMTD = parseFloat(document.getElementById('targetMTD').value) || 0;
         const actualSales = parseFloat(document.getElementById('actualSales').value) || 0;
@@ -236,27 +235,21 @@
             const day = selectedDate.getDate();
             const totalDaysInMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
             
-            // Time Factor Berjalan (%)
             const tfPercent = (day / totalDaysInMonth) * 100;
             document.getElementById('timeFactor').value = tfPercent.toFixed(2) + '%';
 
-            // Target Time Factor (Rp)
             const targetTF = targetMTD * (day / totalDaysInMonth);
             document.getElementById('targetTimeFactor').value = targetTF.toLocaleString('id-ID', {maximumFractionDigits: 0});
 
-            // Achieve MTD (%)
             const achieveMTD = targetMTD > 0 ? (actualSales / targetMTD) * 100 : 0;
             document.getElementById('achieveMTD').value = achieveMTD.toFixed(2) + '%';
 
-            // Achieve Time Factor (%)
             const achieveTF = targetTF > 0 ? (actualSales / targetTF) * 100 : 0;
             document.getElementById('achieveTF').value = achieveTF.toFixed(2) + '%';
 
-            // Gap to Target (Rp)
             const gapTarget = actualSales - targetMTD;
             document.getElementById('gapTarget').value = gapTarget.toLocaleString('id-ID', {maximumFractionDigits: 0});
 
-            // Gap to Time Factor (Rp)
             const gapTF = actualSales - targetTF;
             document.getElementById('gapTF').value = gapTF.toLocaleString('id-ID', {maximumFractionDigits: 0});
         }
@@ -275,7 +268,6 @@
         return `permanent_target_${store}`;
     }
 
-    // 1. SIMPAN TARGET PERMANEN
     function saveStoreTarget() {
         const store = document.getElementById('storeSelect').value;
         if (!store) {
@@ -300,7 +292,6 @@
         alert(`Sukses! Target permanen untuk toko ${store} berhasil disimpan.`);
     }
 
-    // 2. MUAT TARGET PERMANEN
     function loadStoreTarget() {
         const key = getTargetKey();
         if (!key) return;
@@ -332,7 +323,6 @@
         calculateRevenue();
     }
 
-    // 3. MUAT DATA ACTUAL HARIAN
     function loadDailyData() {
         loadStoreTarget(); 
 
@@ -390,7 +380,6 @@
         calculateRevenue();
     }
 
-    // 4. AUTO-SAVE ACTUAL HARIAN SAAT DIKETIK
     function autoSaveDaily() {
         const key = getDailyKey();
         if (!key) return;
@@ -433,7 +422,6 @@
         input.addEventListener('input', autoSaveDaily);
     });
 
-    // Jalankan kalkulasi pertama kali halaman dimuat
     calculateRevenue();
 </script>
 
