@@ -21,6 +21,7 @@
         .btn-save { background-color: #007bff; }
         .btn-preview { background-color: #17a2b8; }
         .btn-wa { background-color: #25D366; }
+        .btn-rekap { background-color: #6f42c1; }
         .btn:hover { opacity: 0.9; }
         .row-grid { display: flex; gap: 10px; }
         .row-grid > div { flex: 1; }
@@ -228,15 +229,19 @@
     <button type="button" class="btn btn-save" onclick="alert('Laporan berhasil diproses & dikirim!')">Simpan & Kirim Laporan</button>
     
     <!-- TOMBOL PREVIEW DAN WHATSAPP -->
-    <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview WhatsApp</button>
-    <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim Teks ke WhatsApp</button>
+    <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview WhatsApp (Per Toko)</button>
+    <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim Teks ke WhatsApp (Per Toko)</button>
+    
+    <!-- TOMBOL REKAP TOTAL 20 TOKO -->
+    <button type="button" class="btn btn-rekap" onclick="showRekapPreview()">📊 Preview & Rekap Total Keseluruhan (20 Toko)</button>
+    <button type="button" class="btn btn-wa" onclick="sendRekapWhatsApp()">📲 Kirim Rekap Total ke WhatsApp</button>
 </div>
 
 <!-- MODAL POPUP PREVIEW WA -->
 <div id="waModal" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeWaPreview()">Tutup</button>
-        <h4 style="margin-top:0;">Pratinjau Format WhatsApp</h4>
+        <h4 id="modalTitle" style="margin-top:0;">Pratinjau Format WhatsApp</h4>
         <hr>
         <div id="previewText"></div>
     </div>
@@ -248,7 +253,15 @@
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
-    document.getElementById('datePicker').value = `${year}-${month}-${day}`;
+    const currentDateFormatted = `${year}-${month}-${day}`;
+    document.getElementById('datePicker').value = currentDateFormatted;
+
+    const storeListCodes = [
+        "C624 / RWBT", "C560 / RAJ", "CH81 / CDKS", "CG76 / SPMM", "C573 / GMM", 
+        "CE47 / MKRI", "CI30 / STTD", "CH41 / KPMRK", "CG54 / MM21", "C935 / TLJ2", 
+        "CA71 / WSGN", "C965 / CBNU", "CG86 / JKST", "CA94 / KPTI", "C574 / SKU", 
+        "CI15 / RPSU", "CI54 / RJLB", "CF50 / DNIA", "CC21 / KUTN", "CI84 / TLKW"
+    ];
 
     function calculateRevenue() {
         const targetMTD = parseFloat(document.getElementById('targetMTD').value) || 0;
@@ -327,8 +340,147 @@
         return text;
     }
 
+    // FUNGSI REKAP TOTAL KESELURUHAN DARI 20 TOKO
+    function generateRekapText() {
+        const selectedDate = document.getElementById('datePicker').value || currentDateFormatted;
+        
+        let sumTargetMTD = 0;
+        let sumActualSales = 0;
+        let sumTargetTF = 0;
+        
+        let sumTargF1 = 0, sumActF1 = 0;
+        let sumTargF2 = 0, sumActF2 = 0;
+        let sumTargF3 = 0, sumActF3 = 0;
+        let sumTargF4 = 0, sumActF4 = 0;
+        
+        let sumNewMember = 0;
+        let sumTotalStruk = 0;
+        let sumStrukMember = 0;
+        
+        let sumToys = 0;
+        let sumTelur = 0;
+        let sumFeeBase = 0;
+
+        let psmTotals = {};
+        for(let i=1; i<=10; i++) {
+            psmTotals[i] = { targ: 0, act: 0, name: `PSM Item ${i}` };
+        }
+
+        const dateObj = new Date(selectedDate);
+        const dayNum = isNaN(dateObj.getDate()) ? 1 : dateObj.getDate();
+        const totalDaysInMonth = isNaN(dateObj.getFullYear()) ? 30 : new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).getDate();
+        const tfPercent = (dayNum / totalDaysInMonth) * 100;
+
+        // Iterasi 20 toko untuk mengambil data localStorage masing-masing
+        storeListCodes.forEach(storeCode => {
+            const targetKey = `permanent_target_${storeCode}`;
+            const dailyKey = `actual_${storeCode}_${selectedDate}`;
+
+            let tData = JSON.parse(localStorage.getItem(targetKey) || '{}');
+            let dData = JSON.parse(localStorage.getItem(dailyKey) || '{}');
+
+            const tMTD = parseFloat(tData.targetMTD || 0);
+            const aSales = parseFloat(dData.actualSales || 0);
+            const tTF = tMTD * (dayNum / totalDaysInMonth);
+
+            sumTargetMTD += tMTD;
+            sumActualSales += aSales;
+            sumTargetTF += tTF;
+
+            sumTargF1 += parseFloat(tData.targ_fokus1 || 0);
+            sumActF1 += parseFloat(dData.act_fokus1 || 0);
+
+            sumTargF2 += parseFloat(tData.targ_fokus2 || 0);
+            sumActF2 += parseFloat(dData.act_fokus2 || 0);
+
+            sumTargF3 += parseFloat(tData.targ_fokus3 || 0);
+            sumActF3 += parseFloat(dData.act_fokus3 || 0);
+
+            sumTargF4 += parseFloat(tData.targ_fokus4 || 0);
+            sumActF4 += parseFloat(dData.act_fokus4 || 0);
+
+            sumNewMember += parseFloat(dData.actualNewMember || 0);
+            sumTotalStruk += parseFloat(dData.totalStruk || 0);
+            sumStrukMember += parseFloat(dData.strukMember || 0);
+
+            sumToys += parseFloat(dData.catToys || 0);
+            sumTelur += parseFloat(dData.catTelur || 0);
+            sumFeeBase += parseFloat(dData.feeBase || 0);
+
+            for(let i=1; i<=10; i++) {
+                if(tData[`name_psm${i}`]) psmTotals[i].name = tData[`name_psm${i}`];
+                psmTotals[i].targ += parseFloat(tData[`targ_psm${i}`] || 0);
+                psmTotals[i].act += parseFloat(dData[`act_psm${i}`] || 0);
+            }
+        });
+
+        const achieveMTD = sumTargetMTD >  0 ? (sumActualSales / sumTargetMTD) * 100 : 0;
+        const achieveTF = sumTargetTF > 0 ? (sumActualSales / sumTargetTF) * 100 : 0;
+        const gapTarget = sumActualSales - sumTargetMTD;
+        const gapTF = sumActualSales - sumTargetTF;
+
+        const acvF1 = sumTargF1 > 0 ? Math.round((sumActF1 / sumTargF1) * 100) : 0;
+        const acvF2 = sumTargF2 > 0 ? Math.round((sumActF2 / sumTargF2) * 100) : 0;
+        const acvF3 = sumTargF3 > 0 ? Math.round((sumActF3 / sumTargF3) * 100) : 0;
+        const acvF4 = sumTargF4 > 0 ? Math.round((sumActF4 / sumTargF4) * 100) : 0;
+
+        const kontribusiMember = sumTotalStruk > 0 ? Math.round((sumStrukMember / sumTotalStruk) * 100) : 0;
+
+        // Format Teks Sesuai Permintaan
+        let text = `*REPORT SALES*\n`;
+        text += `PERIODE : ${selectedDate.split('-').reverse().join(' ')}\n`;
+        text += `WH : Bekasi\n`;
+        text += `AM : SRD\n`;
+        text += `AC : TRIYANTO\n`;
+        text += `======================\n`;
+        text += `*REVENUE*\n`;
+        text += `1. NET SALES\n`;
+        text += `- TIME FAKTOR : ${tfPercent.toFixed(2).replace('.', ',')}%\n`;
+        text += `- TARGET MTD : ${sumTargetMTD.toLocaleString('id-ID')}\n`;
+        text += `- TARGET TIME FACTOR : ${Math.round(sumTargetTF).toLocaleString('id-ID')}\n`;
+        text += `- ACTUAL : ${sumActualSales.toLocaleString('id-ID')}\n`;
+        text += `- ACHIVE MTD : ${achieveMTD.toFixed(2).replace('.', ',')}%\n`;
+        text += `- ACHIEVER TIME FACTOR: ${achieveTF.toFixed(2).replace('.', ',')}%\n`;
+        text += `- GAP TO TARGET : ${gapTarget.toLocaleString('id-ID')}\n`;
+        text += `- GAP TO TIME FACTOR : ${Math.round(gapTF).toLocaleString('id-ID')}\n`;
+        text += `======================\n`;
+        text += `*FOKUS CABANG*\n`;
+        text += `TARGET/SALES/ ACV%\n`;
+        text += `1. TEBUS MURAH (QTY REDEEM) : ${sumTargF1}/${sumActF1}/${acvF1}%\n`;
+        text += `2. SERBA GRATIS (PAKET) : ${sumTargF2}/${sumActF2}/${acvF2}%\n`;
+        text += `3. SUEUGEER : ${sumTargF3}/${sumActF3}/${acvF3}%\n`;
+        text += `4. PROMO CEBAN : ${sumTargF4}/${sumActF4}/${acvF4}%\n`;
+        text += `5. PSM :\n`;
+        
+        for(let i=1; i<=10; i++) {
+            let psmAcv = psmTotals[i].targ > 0 ? Math.round((psmTotals[i].act / psmTotals[i].targ) * 100) : 0;
+            text += `   - ${i}. ${psmTotals[i].name} (${psmTotals[i].targ}/${psmTotals[i].act}/${psmAcv}%)\n`;
+        }
+
+        text += `\n*MEMBER*\n`;
+        text += `1. ACTUAL NEW MEMBER : ${sumNewMember}\n`;
+        text += `2. KONTRIBUSI STRUK MEMBER : ${sumTotalStruk}/${sumStrukMember}/${kontribusiMember}%\n`;
+        text += `\n*CATEGORY* (Rupiah)\n`;
+        text += `( Sales )\n`;
+        text += `1. TOYS (NS) : ${sumToys.toLocaleString('id-ID')}\n`;
+        text += `2. TELUR : ${sumTelur.toLocaleString('id-ID')}\n`;
+        text += `======================\n`;
+        text += `*E-COMMERCE*\n`;
+        text += `1. FEE BASE (RP) : ${sumFeeBase.toLocaleString('id-ID')}\n`;
+        text += `Terimakasih`;
+
+        return text;
+    }
+
     function showWaPreview() {
+        document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp (Per Toko)";
         document.getElementById('previewText').innerText = generateWaText();
+        document.getElementById('waModal').style.display = 'block';
+    }
+
+    function showRekapPreview() {
+        document.getElementById('modalTitle').innerText = "Pratinjau Rekap Total Keseluruhan (20 Toko)";
+        document.getElementById('previewText').innerText = generateRekapText();
         document.getElementById('waModal').style.display = 'block';
     }
 
@@ -338,8 +490,12 @@
 
     function sendToWhatsApp() {
         const text = generateWaText();
-        const encodedText = encodeURIComponent(text);
-        window.open(`https://api.whatsapp.com/send?text=${encodedText}`, '_blank');
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
+    }
+
+    function sendRekapWhatsApp() {
+        const text = generateRekapText();
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
     }
 
     function getDailyKey() {
