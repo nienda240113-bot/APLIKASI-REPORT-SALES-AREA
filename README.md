@@ -19,6 +19,8 @@
         .btn-target { background-color: #28a745; width: 100%; margin-bottom: 15px; font-size: 15px; }
         .btn-save { background-color: #007bff; width: 100%; font-size: 16px; margin-top: 15px; }
         .btn:hover { opacity: 0.9; }
+        .row-grid { display: flex; gap: 10px; }
+        .row-grid > div { flex: 1; }
     </style>
 </head>
 <body>
@@ -129,32 +131,46 @@
         <label>Actual New Member [Diisi Harian]</label>
         <input type="number" id="actualNewMember" class="actual-field" placeholder="Jumlah member baru...">
     </div>
-    <div class="form-group">
-        <label>Total Struk / Struk Member [Diisi Harian]</label>
-        <input type="text" id="strukMember" class="actual-field" placeholder="Contoh: 150 / 30">
+    <div class="row-grid">
+        <div class="form-group">
+            <label>Total Struk [Diisi Harian]</label>
+            <input type="number" id="totalStruk" class="actual-field" placeholder="Total struk...">
+        </div>
+        <div class="form-group">
+            <label>Struk Member [Diisi Harian]</label>
+            <input type="number" id="strukMember" class="actual-field" placeholder="Struk member...">
+        </div>
+        <div class="form-group">
+            <label>Kontribusi (%) [Otomatis/Input]</label>
+            <input type="number" id="persenMember" class="actual-field" placeholder="% kontribusi...">
+        </div>
     </div>
 
-    <!-- PSM -->
-    <h3>PSM (Product Special Mingguan)</h3>
+    <!-- PSM (10 ITEM) -->
+    <h3>PSM (Product Special Mingguan - 10 Item)</h3>
     <table>
         <thead>
             <tr>
+                <th>No</th>
                 <th>Produk PSM</th>
                 <th>Target (Permanen)</th>
                 <th>Actual (Harian)</th>
             </tr>
         </thead>
         <tbody>
-            <tr>
-                <td><input type="text" id="name_psm1" class="target-field table-input" value="PSM Item 1"></td>
-                <td><input type="number" id="targ_psm1" class="target-field table-input"></td>
-                <td><input type="number" id="act_psm1" class="actual-field table-input"></td>
-            </tr>
-            <tr>
-                <td><input type="text" id="name_psm2" class="target-field table-input" value="PSM Item 2"></td>
-                <td><input type="number" id="targ_psm2" class="target-field table-input"></td>
-                <td><input type="number" id="act_psm2" class="actual-field table-input"></td>
-            </tr>
+            <!-- Script generator untuk 10 PSM -->
+            <script>
+                for(let i=1; i<=10; i++) {
+                    document.write(`
+                        <tr>
+                            <td>${i}</td>
+                            <td><input type="text" id="name_psm${i}" class="target-field table-input" value="PSM Item ${i}"></td>
+                            <td><input type="number" id="targ_psm${i}" class="target-field table-input"></td>
+                            <td><input type="number" id="act_psm${i}" class="actual-field table-input"></td>
+                        </tr>
+                    `);
+                }
+            </script>
         </tbody>
     </table>
 
@@ -165,8 +181,8 @@
         <input type="number" id="catToys" class="actual-field" placeholder="Nilai Toys...">
     </div>
     <div class="form-group">
-        <label>2. HBPL (NS) [Diisi Harian]</label>
-        <input type="number" id="catHbpl" class="actual-field" placeholder="Nilai HBPL...">
+        <label>2. TELUR [Diisi Harian]</label>
+        <input type="number" id="catTelur" class="actual-field" placeholder="Nilai Telur...">
     </div>
     <div class="form-group">
         <label>Fee Base (Rp) [Diisi Harian]</label>
@@ -206,12 +222,14 @@
             targ_fokus1: document.getElementById('targ_fokus1').value,
             targ_fokus2: document.getElementById('targ_fokus2').value,
             targ_fokus3: document.getElementById('targ_fokus3').value,
-            targ_fokus4: document.getElementById('targ_fokus4').value,
-            name_psm1: document.getElementById('name_psm1').value,
-            targ_psm1: document.getElementById('targ_psm1').value,
-            name_psm2: document.getElementById('name_psm2').value,
-            targ_psm2: document.getElementById('targ_psm2').value
+            targ_fokus4: document.getElementById('targ_fokus4').value
         };
+
+        // Simpan data 10 PSM Target
+        for(let i=1; i<=10; i++) {
+            targetData[`name_psm${i}`] = document.getElementById(`name_psm${i}`).value;
+            targetData[`targ_psm${i}`] = document.getElementById(`targ_psm${i}`).value;
+        }
 
         localStorage.setItem(getTargetKey(), JSON.stringify(targetData));
         alert(`Sukses! Target permanen untuk toko ${store} berhasil disimpan.`);
@@ -230,24 +248,27 @@
             document.getElementById('targ_fokus2').value = data.targ_fokus2 || '';
             document.getElementById('targ_fokus3').value = data.targ_fokus3 || '';
             document.getElementById('targ_fokus4').value = data.targ_fokus4 || '';
-            if(data.name_psm1) document.getElementById('name_psm1').value = data.name_psm1;
-            document.getElementById('targ_psm1').value = data.targ_psm1 || '';
-            if(data.name_psm2) document.getElementById('name_psm2').value = data.name_psm2;
-            document.getElementById('targ_psm2').value = data.targ_psm2 || '';
+
+            for(let i=1; i<=10; i++) {
+                if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
+                document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
+            }
         } else {
             document.getElementById('targetMTD').value = '';
             document.getElementById('targ_fokus1').value = '';
             document.getElementById('targ_fokus2').value = '';
             document.getElementById('targ_fokus3').value = '';
             document.getElementById('targ_fokus4').value = '';
-            document.getElementById('targ_psm1').value = '';
-            document.getElementById('targ_psm2').value = '';
+
+            for(let i=1; i<=10; i++) {
+                document.getElementById(`targ_psm${i}`).value = '';
+            }
         }
     }
 
     // 3. MUAT DATA ACTUAL HARIAN
     function loadDailyData() {
-        loadStoreTarget(); // Muat target tokonya dulu
+        loadStoreTarget(); 
 
         const key = getDailyKey();
         if (!key) return;
@@ -266,14 +287,18 @@
             document.getElementById('act_fokus4').value = data.act_fokus4 || '';
             document.getElementById('oh_fokus4').value = data.oh_fokus4 || '';
             document.getElementById('actualNewMember').value = data.actualNewMember || '';
+            document.getElementById('totalStruk').value = data.totalStruk || '';
             document.getElementById('strukMember').value = data.strukMember || '';
-            document.getElementById('act_psm1').value = data.act_psm1 || '';
-            document.getElementById('act_psm2').value = data.act_psm2 || '';
+            document.getElementById('persenMember').value = data.persenMember || '';
+
+            for(let i=1; i<=10; i++) {
+                document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
+            }
+
             document.getElementById('catToys').value = data.catToys || '';
-            document.getElementById('catHbpl').value = data.catHbpl || '';
+            document.getElementById('catTelur').value = data.catTelur || '';
             document.getElementById('feeBase').value = data.feeBase || '';
         } else {
-            // Kosongkan kolom actual jika tanggal baru belum ada data
             document.getElementById('actualSales').value = '';
             document.getElementById('act_fokus1').value = '';
             document.getElementById('oh_fokus1').value = '';
@@ -284,11 +309,16 @@
             document.getElementById('act_fokus4').value = '';
             document.getElementById('oh_fokus4').value = '';
             document.getElementById('actualNewMember').value = '';
+            document.getElementById('totalStruk').value = '';
             document.getElementById('strukMember').value = '';
-            document.getElementById('act_psm1').value = '';
-            document.getElementById('act_psm2').value = '';
+            document.getElementById('persenMember').value = '';
+
+            for(let i=1; i<=10; i++) {
+                document.getElementById(`act_psm${i}`).value = '';
+            }
+
             document.getElementById('catToys').value = '';
-            document.getElementById('catHbpl').value = '';
+            document.getElementById('catTelur').value = '';
             document.getElementById('feeBase').value = '';
         }
     }
@@ -310,13 +340,17 @@
             act_fokus4: document.getElementById('act_fokus4').value,
             oh_fokus4: document.getElementById('oh_fokus4').value,
             actualNewMember: document.getElementById('actualNewMember').value,
+            totalStruk: document.getElementById('totalStruk').value,
             strukMember: document.getElementById('strukMember').value,
-            act_psm1: document.getElementById('act_psm1').value,
-            act_psm2: document.getElementById('act_psm2').value,
+            persenMember: document.getElementById('persenMember').value,
             catToys: document.getElementById('catToys').value,
-            catHbpl: document.getElementById('catHbpl').value,
+            catTelur: document.getElementById('catTelur').value,
             feeBase: document.getElementById('feeBase').value
         };
+
+        for(let i=1; i<=10; i++) {
+            data[`act_psm${i}`] = document.getElementById(`act_psm${i}`).value;
+        }
 
         localStorage.setItem(key, JSON.stringify(data));
     }
