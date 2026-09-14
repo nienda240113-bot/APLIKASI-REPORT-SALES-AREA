@@ -40,7 +40,7 @@
     <!-- INFORMASI UMUM TOKO -->
     <h3>Informasi Umum Toko</h3>
     <div class="form-group">
-        <label>Periode Tanggal</label>
+        <label>Periode Tanggal (Mengikuti Tanggal Perangkat)</label>
         <input type="date" id="datePicker">
     </div>
     
@@ -227,7 +227,7 @@
     <button type="button" class="btn btn-target" onclick="saveStoreTarget()">💾 Simpan Target Permanen Toko Ini</button>
     <button type="button" class="btn btn-save" onclick="alert('Laporan berhasil diproses & dikirim!')">Simpan & Kirim Laporan</button>
     
-    <!-- TOMBOL PREVIEW DAN WHATSAPP DIBAWAH KELOLA LAPORAN -->
+    <!-- TOMBOL PREVIEW DAN WHATSAPP -->
     <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview WhatsApp</button>
     <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim Teks ke WhatsApp</button>
 </div>
@@ -243,7 +243,12 @@
 </div>
 
 <script>
-    document.getElementById('datePicker').valueAsDate = new Date();
+    // Set tanggal otomatis mengikuti tanggal online/sistem perangkat saat ini
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    document.getElementById('datePicker').value = `${year}-${month}-${day}`;
 
     function calculateRevenue() {
         const targetMTD = parseFloat(document.getElementById('targetMTD').value) || 0;
@@ -251,13 +256,13 @@
         const selectedDate = new Date(document.getElementById('datePicker').value);
 
         if (!isNaN(selectedDate.getTime())) {
-            const day = selectedDate.getDate();
+            const dayNum = selectedDate.getDate();
             const totalDaysInMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
             
-            const tfPercent = (day / totalDaysInMonth) * 100;
+            const tfPercent = (dayNum / totalDaysInMonth) * 100;
             document.getElementById('timeFactor').value = tfPercent.toFixed(2) + '%';
 
-            const targetTF = targetMTD * (day / totalDaysInMonth);
+            const targetTF = targetMTD * (dayNum / totalDaysInMonth);
             document.getElementById('targetTimeFactor').value = targetTF.toLocaleString('id-ID', {maximumFractionDigits: 0});
 
             const achieveMTD = targetMTD > 0 ? (actualSales / targetMTD) * 100 : 0;
