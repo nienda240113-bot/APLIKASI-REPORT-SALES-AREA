@@ -26,7 +26,7 @@
         .row-grid > div { flex: 1; }
         
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
-        .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 13px; max-height: 70vh; overflow-y: auto; }
+        .modal-content { background-color: #fff; margin: 5% auto; padding: 20px; border-radius: 8px; width: 95%; max-width: 650px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 12px; max-height: 80vh; overflow-y: auto; }
         .close-btn { background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; float: right; font-weight: bold; }
         #loadingStatus { font-size: 13px; color: #d9534f; font-weight: bold; margin-top: 5px; background: #fff3f3; padding: 5px; border-radius: 4px; display: inline-block; }
     </style>
@@ -179,7 +179,7 @@
     <button type="button" class="btn btn-target" onclick="saveReportToCloud()">💾 Simpan Data Laporan ke Cloud Server</button>
     <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview Format WhatsApp</button>
     <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim ke WhatsApp</button>
-    <button type="button" class="btn btn-rekap" onclick="showTotalSummaryPreview()">📊 Rekap Total Toko</button>
+    <button type="button" class="btn btn-rekap" onclick="showTotalSummaryPreview()">📊 Rekap Total 20 Toko</button>
     <button type="button" class="btn btn-wa" onclick="sendTotalSummaryWhatsApp()">📲 Kirim Rekap ke WA</button>
 </div>
 
@@ -193,7 +193,6 @@
 </div>
 
 <script>
-    // URL Web App Google Apps Script Anda yang sudah aktif
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
 
     window.onload = function() {
@@ -412,41 +411,85 @@
     }
 
     function showTotalSummaryPreview() {
-        document.getElementById('modalTitle').innerText = "Rekap Total Toko Melapor";
-        document.getElementById('previewText').innerText = "Mengambil data rekap dari server...";
+        document.getElementById('modalTitle').innerText = "Rekap Total Keseluruhan 20 Toko";
+        document.getElementById('previewText').innerText = "Mengambil dan merekap data dari server...";
         document.getElementById('waModal').style.display = 'block';
 
         fetch(`${WEB_APP_URL}?action=getAll`)
             .then(res => res.json())
             .then(records => {
-                let totalTargetMTD = 0, totalActualSales = 0, totalNewMember = 0;
-                let totalToys = 0, totalTelur = 0, totalFeeBase = 0;
                 let storeCount = Array.isArray(records) ? records.length : 0;
+                let totTargetMTD = 0, totActualSales = 0, totNewMember = 0;
+                let totStruk = 0, totStrukMember = 0;
+                let totToys = 0, totTelur = 0, totFeeBase = 0;
+                
+                let fokusTot = { 
+                    1: {t:0, a:0}, 2: {t:0, a:0}, 3: {t:0, a:0}, 4: {t:0, a:0} 
+                };
+                let psmTot = {};
+                for(let i=1; i<=10; i++) psmTot[i] = {name: `PSM ${i}`, t:0, a:0};
 
                 if (Array.isArray(records)) {
                     records.forEach(rec => {
                         let d = rec.reportData || {};
-                        totalTargetMTD += parseFloat(d.targetMTD || 0);
-                        totalActualSales += parseFloat(d.actualSales || 0);
-                        totalNewMember += parseInt(d.actualNewMember || 0);
-                        totalToys += parseFloat(d.catToys || 0);
-                        totalTelur += parseFloat(d.catTelur || 0);
-                        totalFeeBase += parseFloat(d.feeBase || 0);
+                        totTargetMTD += parseFloat(d.targetMTD || 0);
+                        totActualSales += parseFloat(d.actualSales || 0);
+                        totNewMember += parseInt(d.actualNewMember || 0);
+                        totStruk += parseInt(d.totalStruk || 0);
+                        totStrukMember += parseInt(d.strukMember || 0);
+                        totToys += parseFloat(d.catToys || 0);
+                        totTelur += parseFloat(d.catTelur || 0);
+                        totFeeBase += parseFloat(d.feeBase || 0);
+
+                        for(let i=1; i<=4; i++) {
+                            fokusTot[i].t += parseFloat(d[`targ_fokus${i}`] || 0);
+                            fokusTot[i].a += parseFloat(d[`act_fokus${i}`] || 0);
+                        }
+                        for(let i=1; i<=10; i++) {
+                            if(d[`name_psm${i}`]) psmTot[i].name = d[`name_psm${i}`];
+                            psmTot[i].t += parseFloat(d[`targ_psm${i}`] || 0);
+                            psmTot[i].a += parseFloat(d[`act_psm${i}`] || 0);
+                        }
                     });
                 }
+
+                let achMtdTotal = totTargetMTD > 0 ? ((totActualSales / totTargetMTD) * 100).toFixed(2) : "0,00";
+                let kontriMemberTotal = totStruk > 0 ? Math.round((totStrukMember / totStruk) * 100) : 0;
 
                 let summary = `*REKAP TOTAL KESELURUHAN (${storeCount} TOKO MELAPOR)*\n`;
                 summary += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
                 summary += `WH : Bekasi | AM : SRD | AC : TRIYANTO\n`;
                 summary += `======================\n`;
-                summary += `• Total Target MTD: Rp ${totalTargetMTD.toLocaleString('id-ID')}\n`;
-                summary += `• Total Actual Sales: Rp ${totalActualSales.toLocaleString('id-ID')}\n`;
-                summary += `• Total New Member: ${totalNewMember}\n`;
-                summary += `• Total Toys (NS): Rp ${totalToys.toLocaleString('id-ID')}\n`;
-                summary += `• Total Telur: Rp ${totalTelur.toLocaleString('id-ID')}\n`;
-                summary += `• Total Fee Base: Rp ${totalFeeBase.toLocaleString('id-ID')}\n`;
+                summary += `*REVENUE TOTAL*\n`;
+                summary += `• Target MTD : Rp ${totTargetMTD.toLocaleString('id-ID')}\n`;
+                summary += `• Actual Sales : Rp ${totActualSales.toLocaleString('id-ID')}\n`;
+                summary += `• Achieve MTD : ${achMtdTotal.replace('.', ',')}%\n`;
+                summary += `• Gap to Target : Rp ${(totActualSales - totTargetMTD).toLocaleString('id-ID')}\n`;
                 summary += `======================\n`;
-                summary += `*Catatan: Direkap otomatis dari data toko yang sudah masuk.*`;
+                summary += `*FOKUS CABANG (TOTAL)*\n`;
+                
+                const fokusNames = ["TEBUS MURAH", "SERBA GRATIS", "SUEUGEER", "PROMO CEBAN"];
+                for(let i=1; i<=4; i++) {
+                    let p = fokusTot[i].t > 0 ? Math.round((fokusTot[i].a / fokusTot[i].t) * 100) : 0;
+                    summary += `${i}. ${fokusNames[i-1]} : ${fokusTot[i].t}/${fokusTot[i].a}/${p}%\n`;
+                }
+
+                summary += `\n*PSM TOTAL (10 ITEM)*\n`;
+                for(let i=1; i<=10; i++) {
+                    let p = psmTot[i].t > 0 ? Math.round((psmTot[i].a / psmTot[i].t) * 100) : 0;
+                    summary += `- ${i}. ${psmTot[i].name} (${psmTot[i].t}/${psmTot[i].a}/${p}%)\n`;
+                }
+
+                summary += `\n*MEMBER TOTAL*\n`;
+                summary += `• Actual New Member : ${totNewMember}\n`;
+                summary += `• Kontribusi Struk Member : ${totStrukMember}/${totStruk}/${kontriMemberTotal}%\n`;
+
+                summary += `\n*CATEGORY & E-COMMERCE TOTAL*\n`;
+                summary += `1. TOYS (NS) : Rp ${totToys.toLocaleString('id-ID')}\n`;
+                summary += `2. TELUR : Rp ${totTelur.toLocaleString('id-ID')}\n`;
+                summary += `3. FEE BASE : Rp ${totFeeBase.toLocaleString('id-ID')}\n`;
+                summary += `======================\n`;
+                summary += `*Direkap otomatis dari data server toko-toko.*`;
 
                 document.getElementById('previewText').innerText = summary;
             })
