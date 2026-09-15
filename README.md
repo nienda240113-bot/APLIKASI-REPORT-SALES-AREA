@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Sales Report Portal V2 (Online Sync)</title>
+    <title>Daily Sales Report Portal V2 (Cloud Sync Multi-Device)</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.5; margin: 0; padding: 15px; background-color: #f4f6f9; color: #333; }
         .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -37,7 +37,7 @@
 
 <div class="container">
     <h2>Daily Sales Report Portal V2</h2>
-    <p style="color: #666; font-size: 13px;">Mode: Cloud & Local Memory Sync Active</p>
+    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Multi-Device Sync Active</p>
     <div id="loadingStatus"></div>
 
     <!-- INFORMASI UMUM TOKO -->
@@ -86,8 +86,8 @@
     <!-- REVENUE / NET SALES -->
     <h3>Revenue / Net Sales</h3>
     <div class="form-group">
-        <label>Target MTD (Rp) [Sinkron Cloud/Lokal]</label>
-        <input type="number" id="targetMTD" class="target-field" placeholder="Masukkan Target MTD..." oninput="autoSaveCurrentStore(); calculateRevenue();">
+        <label>Target MTD (Rp) [Sinkron Cloud]</label>
+        <input type="number" id="targetMTD" class="target-field" placeholder="Masukkan Target MTD..." oninput="calculateRevenue()">
     </div>
     <div class="form-group">
         <label>Actual Sales (Rp) [Harian]</label>
@@ -138,25 +138,25 @@
         <tbody>
             <tr>
                 <td>1. Tebus Murah</td>
-                <td><input type="number" id="targ_fokus1" class="target-field table-input" oninput="autoSaveCurrentStore(); calculateAllCalculations();"></td>
+                <td><input type="number" id="targ_fokus1" class="target-field table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="number" id="act_fokus1" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus1" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
                 <td>2. Serba Gratis</td>
-                <td><input type="number" id="targ_fokus2" class="target-field table-input" oninput="autoSaveCurrentStore(); calculateAllCalculations();"></td>
+                <td><input type="number" id="targ_fokus2" class="target-field table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="number" id="act_fokus2" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus2" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
                 <td>3. Suuegeer</td>
-                <td><input type="number" id="targ_fokus3" class="target-field table-input" oninput="autoSaveCurrentStore(); calculateAllCalculations();"></td>
+                <td><input type="number" id="targ_fokus3" class="target-field table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="number" id="act_fokus3" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus3" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
                 <td>4. Promo Ceban</td>
-                <td><input type="number" id="targ_fokus4" class="target-field table-input" oninput="autoSaveCurrentStore(); calculateAllCalculations();"></td>
+                <td><input type="number" id="targ_fokus4" class="target-field table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="number" id="act_fokus4" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus4" class="auto-calc table-input" readonly></td>
             </tr>
@@ -203,8 +203,8 @@
                     document.write(`
                         <tr>
                             <td>${i}</td>
-                            <td><input type="text" id="name_psm${i}" class="target-field table-input" value="${defaultPsmNames[i-1]}" oninput="autoSaveCurrentStore()"></td>
-                            <td><input type="number" id="targ_psm${i}" class="target-field table-input" oninput="autoSaveCurrentStore(); calculateAllCalculations();"></td>
+                            <td><input type="text" id="name_psm${i}" class="target-field table-input" value="${defaultPsmNames[i-1]}"></td>
+                            <td><input type="number" id="targ_psm${i}" class="target-field table-input" oninput="calculateAllCalculations()"></td>
                             <td><input type="number" id="act_psm${i}" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
                             <td><input type="text" id="persen_psm${i}" class="auto-calc table-input" readonly></td>
                         </tr>
@@ -230,7 +230,7 @@
     </div>
 
     <!-- TOMBOL AKSI LENGKAP -->
-    <button type="button" class="btn btn-target" onclick="saveStoreTargetToCloud()">💾 Simpan Target Permanen ke Cloud</button>
+    <button type="button" class="btn btn-target" onclick="saveStoreTargetToCloud()">💾 Simpan Target Permanen ke Cloud (Server)</button>
     <button type="button" class="btn btn-save" onclick="alert('Laporan berhasil diproses & dikirim!')">Simpan & Kirim Laporan</button>
     <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview WhatsApp (Per Toko)</button>
     <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim Teks ke WhatsApp (Per Toko)</button>
@@ -258,34 +258,20 @@
     const day = String(today.getDate()).padStart(2, '0');
     document.getElementById('datePicker').value = `${year}-${month}-${day}`;
 
-    // Fungsi Ambil Data Target Toko dari LocalStorage HP
-    function getLocalStoreData(storeCode) {
-        const dataStr = localStorage.getItem("target_toko_" + storeCode);
-        return dataStr ? JSON.parse(dataStr) : null;
-    }
-
-    // Fungsi Simpan Otomatis Target Toko ke LocalStorage HP saat diketik
-    function autoSaveCurrentStore() {
-        const store = document.getElementById('storeSelect').value;
-        if (!store) return;
-
-        const targetData = {
-            targetMTD: document.getElementById('targetMTD').value,
-            targ_fokus1: document.getElementById('targ_fokus1').value,
-            targ_fokus2: document.getElementById('targ_fokus2').value,
-            targ_fokus3: document.getElementById('targ_fokus3').value,
-            targ_fokus4: document.getElementById('targ_fokus4').value
-        };
-
-        for(let i=1; i<=10; i++) {
-            targetData[`name_psm${i}`] = document.getElementById(`name_psm${i}`).value;
-            targetData[`targ_psm${i}`] = document.getElementById(`targ_psm${i}`).value;
+    // Kosongkan form target jika pindah toko dan belum ada data
+    function clearTargetForm() {
+        document.getElementById('targetMTD').value = '';
+        document.getElementById('targ_fokus1').value = '';
+        document.getElementById('targ_fokus2').value = '';
+        document.getElementById('targ_fokus3').value = '';
+        document.getElementById('targ_fokus4').value = '';
+        for(let i=1; i<=10; i++) { 
+            document.getElementById(`targ_psm${i}`).value = ''; 
         }
-
-        localStorage.setItem("target_toko_" + store, JSON.stringify(targetData));
+        calculateAllCalculations();
     }
 
-    // Terapkan data target ke form di layar
+    // Masukkan data target ke form di layar
     function populateForm(data) {
         document.getElementById('targetMTD').value = data.targetMTD || '';
         document.getElementById('targ_fokus1').value = data.targ_fokus1 || '';
@@ -300,53 +286,34 @@
         calculateAllCalculations();
     }
 
-    // Kosongkan form jika belum ada data target tersimpan
-    function clearTargetForm() {
-        document.getElementById('targetMTD').value = '';
-        document.getElementById('targ_fokus1').value = '';
-        document.getElementById('targ_fokus2').value = '';
-        document.getElementById('targ_fokus3').value = '';
-        document.getElementById('targ_fokus4').value = '';
-        for(let i=1; i<=10; i++) { 
-            document.getElementById(`targ_psm${i}`).value = ''; 
-        }
-        calculateAllCalculations();
-    }
-
-    // Saat Toko Dipilih/Diganti
+    // Saat Toko Dipilih/Diganti -> Langsung Ambil Data dari Cloud Server (Google Sheets)
     function onStoreChange() {
         const store = document.getElementById('storeSelect').value;
-        if (!store) return;
-
-        // 1. Cek dulu apakah sudah tersimpan di memori lokal HP (supaya cepat dan aman)
-        const localData = getLocalStoreData(store);
-        if (localData) {
-            populateForm(localData);
-            document.getElementById('loadingStatus').innerText = "Memuat data dari memori lokal HP...";
-            setTimeout(() => { document.getElementById('loadingStatus').innerText = ""; }, 1000);
+        if (!store) {
+            clearTargetForm();
             return;
         }
 
-        // 2. Jika di HP belum ada, coba tarik otomatis dari Cloud Google Sheets
-        document.getElementById('loadingStatus').innerText = "Mengambil target dari Cloud...";
+        document.getElementById('loadingStatus').innerText = "Mengambil target dari Cloud Server...";
+        
         fetch(`${WEB_APP_URL}?action=get&storeCode=${encodeURIComponent(store)}`)
             .then(response => response.json())
             .then(data => {
                 document.getElementById('loadingStatus').innerText = "";
                 if (data && Object.keys(data).length > 0) {
                     populateForm(data);
-                    autoSaveCurrentStore(); // Simpan otomatis ke lokal HP
                 } else {
                     clearTargetForm();
                 }
             })
             .catch(error => {
-                document.getElementById('loadingStatus').innerText = "";
+                document.getElementById('loadingStatus').innerText = "Gagal memuat dari Cloud.";
+                console.error(error);
                 clearTargetForm();
             });
     }
 
-    // FUNGSI SIMPAN TARGET PERMANEN KE CLOUD
+    // FUNGSI SIMPAN TARGET PERMANEN KE CLOUD SERVER (Agar bisa diakses semua perangkat/HP/PC lain)
     function saveStoreTargetToCloud() {
         const store = document.getElementById('storeSelect').value;
         if (!store) {
@@ -354,10 +321,20 @@
             return;
         }
 
-        autoSaveCurrentStore(); // Simpan juga ke lokal HP
-        const targetData = getLocalStoreData(store);
+        const targetData = {
+            targetMTD: document.getElementById('targetMTD').value,
+            targ_fokus1: document.getElementById('targ_fokus1').value,
+            targ_fokus2: document.getElementById('targ_fokus2').value,
+            targ_fokus3: document.getElementById('targ_fokus3').value,
+            targ_fokus4: document.getElementById('targ_fokus4').value
+        };
 
-        document.getElementById('loadingStatus').innerText = "Menyimpan target permanen ke Cloud...";
+        for(let i=1; i<=10; i++) {
+            targetData[`name_psm${i}`] = document.getElementById(`name_psm${i}`).value;
+            targetData[`targ_psm${i}`] = document.getElementById(`targ_psm${i}`).value;
+        }
+
+        document.getElementById('loadingStatus').innerText = "Menyimpan target ke Cloud Server...";
 
         fetch(WEB_APP_URL, {
             method: 'POST',
@@ -367,13 +344,13 @@
         .then(result => {
             document.getElementById('loadingStatus').innerText = "";
             if(result.status === "success") {
-                alert(`Sukses! Target toko ${store} berhasil disimpan permanen ke Cloud & memori HP.`);
+                alert(`Sukses! Target permanen toko ${store} berhasil disimpan ke Cloud Server dan sekarang bisa diakses dari HP, iPhone, atau PC mana pun.`);
             } else {
                 alert("Gagal menyimpan ke Cloud.");
             }
         })
         .catch(error => {
-            document.getElementById('loadingStatus').innerText = "Gagal koneksi ke Cloud.";
+            document.getElementById('loadingStatus').innerText = "Terjadi kesalahan koneksi.";
             console.error(error);
         });
     }
@@ -430,101 +407,4 @@
         const member = parseFloat(document.getElementById('strukMember').value) || 0;
         const pct = total > 0 ? Math.round((member / total) * 100) : 0;
         document.getElementById('persenMember').value = pct + '%';
-    }
-
-    function calculateAllCalculations() {
-        calculateRevenue();
-        calculateFokusPercent();
-        calculatePsmPercent();
-        calculateMemberPercent();
-    }
-
-    function formatPeriodeDate(dateStr) {
-        if(!dateStr) return "-";
-        const parts = dateStr.split('-');
-        if(parts.length !== 3) return dateStr;
-        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        return `${parseInt(parts[2], 10)} ${monthNames[parseInt(parts[1], 10) - 1]}`;
-    }
-
-    function generateWaText() {
-        const storeVal = document.getElementById('storeSelect').value || " / -";
-        const storeParts = storeVal.split(' / ');
-        
-        let text = `REPORT SALES HARIAN\n`;
-        text += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
-        text += `WH : Bekasi\nAM : SRD\nAC : Triyanto\n`;
-        text += `KD Toko : ${storeParts[0] || '-'}\n`;
-        text += `Nama Toko : ${storeParts[1] || '-'}\n`;
-        text += `Shift : ${document.getElementById('shiftSelect').value || '-'}\n`;
-        text += `======================\n\n`;
-
-        text += `*REVENUE*\n1. NET SALES\n`;
-        text += `- TIME FAKTOR : ${document.getElementById('timeFactor').value}\n`;
-        text += `- TARGET MTD : ${parseFloat(document.getElementById('targetMTD').value || 0).toLocaleString('id-ID')}\n`;
-        text += `- TARGET TIME FACTOR : ${document.getElementById('targetTimeFactor').value}\n`;
-        text += `- ACTUAL : ${parseFloat(document.getElementById('actualSales').value || 0).toLocaleString('id-ID')}\n`;
-        text += `- ACHIEVED MTD : ${document.getElementById('achieveMTD').value}\n`;
-        text += `- ACHIEVED TIME FACTOR : ${document.getElementById('achieveTF').value}\n`;
-        text += `- GAP TO TARGET : ${document.getElementById('gapTarget').value}\n`;
-        text += `- GAP TO TIME FACTOR : ${document.getElementById('gapTF').value}\n\n`;
-
-        text += `*FOKUS CABANG*\n======================\nTARGET/SALES/ACV%\n`;
-        for(let i=1; i<=4; i++) {
-            const names = ["TEBUS MURAH", "SERBA GRATIS", "SUUEGEER", "PROMO CEBAN"];
-            text += `${i}. ${names[i-1]} : ${document.getElementById(`targ_fokus${i}`).value||0}/${document.getElementById(`act_fokus${i}`).value||0}/${document.getElementById(`persen_fokus${i}`).value}\n`;
-        }
-        text += `======================\n\n`;
-
-        text += `*MEMBER*\n1. ACTUAL NEW MEMBER : ${document.getElementById('actualNewMember').value||0}\n`;
-        text += `2. KONTRIBUSI STRUK MEMBER = ${document.getElementById('strukMember').value||0}/${document.getElementById('totalStruk').value||0}/${document.getElementById('persenMember').value}\n`;
-        text += `======================\n\n`;
-
-        text += `*PSM* (In Qty).\n( TARGET/ACTUAL /% )\n`;
-        for(let i=1; i<=10; i++) {
-            const pName = document.getElementById(`name_psm${i}`).value || `PSM ${i}`;
-            text += `${i}. ${pName} : ${document.getElementById(`targ_psm${i}`).value||0}/${document.getElementById(`act_psm${i}`).value||0}/${document.getElementById(`persen_psm${i}`).value}\n`;
-        }
-        text += `======================\n\n`;
-
-        text += `*CATEGORY* (Rupiah)\n`;
-        text += `1. TOYS (NS) : Rp ${parseFloat(document.getElementById('catToys').value || 0).toLocaleString('id-ID')}\n`;
-        text += `2. TELUR (NS) : Rp ${parseFloat(document.getElementById('catTelur').value || 0).toLocaleString('id-ID')}\n`;
-        text += `======================\n\n`;
-
-        text += `*E-COMMERCE*\n1. FEE BASE (RP) : Rp ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n\n`;
-        text += `Terimakasih`;
-        return text;
-    }
-
-    function showWaPreview() {
-        document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp (Per Toko)";
-        document.getElementById('previewText').innerText = generateWaText();
-        document.getElementById('waModal').style.display = 'block';
-    }
-
-    function showTotalSummaryPreview() {
-        document.getElementById('modalTitle').innerText = "Pratinjau Rekap Total Keseluruhan";
-        let summary = `REKAP TOTAL KESELURUHAN (20 TOKO)\n`;
-        summary += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
-        summary += `======================\n`;
-        summary += `Total Actual Sales: Rp ${parseFloat(document.getElementById('actualSales').value || 0).toLocaleString('id-ID')}\n`;
-        summary += `Total New Member: ${document.getElementById('actualNewMember').value || 0}\n`;
-        summary += `Total Fee Base: Rp ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n`;
-        summary += `======================\nData merangkum inputan aktif saat ini.`;
-        document.getElementById('previewText').innerText = summary;
-        document.getElementById('waModal').style.display = 'block';
-    }
-
-    function closeWaPreview() { document.getElementById('waModal').style.display = 'none'; }
-    function sendToWhatsApp() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank'); }
-    function sendTotalSummaryWhatsApp() { 
-        let summary = `REKAP TOTAL KESELURUHAN (20 TOKO)\nPERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\nActual Sales: Rp ${parseFloat(document.getElementById('actualSales').value || 0).toLocaleString('id-ID')}`;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(summary)}`, '_blank'); 
-    }
-
-    calculateAllCalculations();
-</script>
-
-</body>
-</html>
+  
