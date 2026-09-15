@@ -26,7 +26,7 @@
         .row-grid { display: flex; gap: 10px; }
         .row-grid > div { flex: 1; }
         
-        /* Modal Pratinjau WA */
+        /* Modal Popup WA */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 13px; max-height: 70vh; overflow-y: auto; }
         .close-btn { background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; float: right; font-weight: bold; }
@@ -416,4 +416,99 @@
         if(!dateStr) return "-";
         const parts = dateStr.split('-');
         if(parts.length !== 3) return dateStr;
-        c
+        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        return `${parseInt(parts[2], 10)} ${monthNames[parseInt(parts[1], 10) - 1]}`;
+    }
+
+    function generateWaText() {
+        const storeVal = document.getElementById('storeSelect').value || " / -";
+        const storeParts = storeVal.split(' / ');
+        
+        let text = `REPORT SALES HARIAN\n`;
+        text += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
+        text += `WH : Bekasi\nAM : SRD\nAC : Triyanto\n`;
+        text += `KD Toko : ${storeParts[0] || '-'}\n`;
+        text += `Nama Toko : ${storeParts[1] || '-'}\n`;
+        text += `Shift : ${document.getElementById('shiftSelect').value || '-'}\n`;
+        text += `======================\n\n`;
+
+        text += `*REVENUE*\n1. NET SALES\n`;
+        text += `- TIME FAKTOR : ${document.getElementById('timeFactor').value}\n`;
+        text += `- TARGET MTD : ${parseFloat(document.getElementById('targetMTD').value || 0).toLocaleString('id-ID')}\n`;
+        text += `- TARGET TIME FACTOR : ${document.getElementById('targetTimeFactor').value}\n`;
+        text += `- ACTUAL : ${parseFloat(document.getElementById('actualSales').value || 0).toLocaleString('id-ID')}\n`;
+        text += `- ACHIEVED MTD : ${document.getElementById('achieveMTD').value}\n`;
+        text += `- ACHIEVED TIME FACTOR : ${document.getElementById('achieveTF').value}\n`;
+        text += `- GAP TO TARGET : ${document.getElementById('gapTarget').value}\n`;
+        text += `- GAP TO TIME FACTOR : ${document.getElementById('gapTF').value}\n\n`;
+
+        text += `*FOKUS CABANG*\n======================\nTARGET/SALES/ACV%\n`;
+        for(let i=1; i<=4; i++) {
+            const names = ["TEBUS MURAH", "SERBA GRATIS", "SUUEGEER", "PROMO CEBAN"];
+            text += `${i}. ${names[i-1]} : ${document.getElementById(`targ_fokus${i}`).value||0}/${document.getElementById(`act_fokus${i}`).value||0}/${document.getElementById(`persen_fokus${i}`).value}\n`;
+        }
+        text += `======================\n\n`;
+
+        text += `*MEMBER*\n1. ACTUAL NEW MEMBER : ${document.getElementById('actualNewMember').value||0}\n`;
+        text += `2. KONTRIBUSI STRUK MEMBER = ${document.getElementById('strukMember').value||0}/${document.getElementById('totalStruk').value||0}/${document.getElementById('persenMember').value}\n`;
+        text += `======================\n\n`;
+
+        text += `*PSM* (In Qty).\n( TARGET/ACTUAL /% )\n`;
+        for(let i=1; i<=10; i++) {
+            const pName = document.getElementById(`name_psm${i}`).value || `PSM ${i}`;
+            text += `${i}. ${pName} : ${document.getElementById(`targ_psm${i}`).value||0}/${document.getElementById(`act_psm${i}`).value||0}/${document.getElementById(`persen_psm${i}`).value}\n`;
+        }
+        text += `======================\n\n`;
+
+        text += `*CATEGORY* (Rupiah)\n`;
+        text += `1. TOYS (NS) : Rp ${parseFloat(document.getElementById('catToys').value || 0).toLocaleString('id-ID')}\n`;
+        text += `2. TELUR (NS) : Rp ${parseFloat(document.getElementById('catTelur').value || 0).toLocaleString('id-ID')}\n`;
+        text += `======================\n\n`;
+
+        text += `*E-COMMERCE*\n1. FEE BASE (RP) : Rp ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n\n`;
+        text += `Terimakasih`;
+        return text;
+    }
+
+    function showWaPreview() {
+        document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp (Per Toko)";
+        document.getElementById('previewText').innerText = generateWaText();
+        document.getElementById('waModal').style.display = 'block';
+    }
+
+    function showTotalSummaryPreview() {
+        document.getElementById('modalTitle').innerText = "Pratinjau Rekap Total Keseluruhan (20 Toko)";
+        document.getElementById('previewText').innerText = "Menghitung rekap total...";
+        document.getElementById('waModal').style.display = 'block';
+
+        let actualVal = parseFloat(document.getElementById('actualSales').value || 0);
+        let memberVal = parseInt(document.getElementById('actualNewMember').value || 0);
+        let feeVal = parseFloat(document.getElementById('feeBase').value || 0);
+
+        let summary = `REKAP TOTAL KESELURUHAN (20 TOKO)\n`;
+        summary += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
+        summary += `======================\n`;
+        summary += `• Total Actual Sales: Rp ${actualVal.toLocaleString('id-ID')}\n`;
+        summary += `• Total New Member: ${memberVal}\n`;
+        summary += `• Total Fee Base: Rp ${feeVal.toLocaleString('id-ID')}\n`;
+        summary += `======================\n`;
+        summary += `Data rekap harian aktif.`;
+        
+        document.getElementById('previewText').innerText = summary;
+    }
+
+    function closeWaPreview() { document.getElementById('waModal').style.display = 'none'; }
+    function sendToWhatsApp() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank'); }
+    
+    function sendTotalSummaryWhatsApp() { 
+        let summary = document.getElementById('previewText').innerText;
+        if(!summary || summary.includes("Menghitung")) {
+            alert("Silakan klik 'Preview & Rekap Total Keseluruhan' terlebih dahulu!");
+            return;
+        }
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(summary)}`, '_blank'); 
+    }
+</script>
+
+</body>
+</html>
