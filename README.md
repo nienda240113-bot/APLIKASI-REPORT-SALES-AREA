@@ -129,34 +129,34 @@
             <tr>
                 <th>Program / Fokus</th>
                 <th>Target (Permanen)</th>
-                <th>Actual / Sales (Harian)</th>
-                <th>On Hand</th>
+                <th>Actual (Harian)</th>
+                <th>Persen (%) [Otomatis]</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>1. Tebus Murah</td>
-                <td><input type="number" id="targ_fokus1" class="target-field table-input"></td>
-                <td><input type="number" id="act_fokus1" class="actual-field table-input"></td>
-                <td><input type="number" id="oh_fokus1" class="actual-field table-input"></td>
+                <td><input type="number" id="targ_fokus1" class="target-field table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus1" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="text" id="persen_fokus1" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
                 <td>2. Serba Gratis</td>
-                <td><input type="number" id="targ_fokus2" class="target-field table-input"></td>
-                <td><input type="number" id="act_fokus2" class="actual-field table-input"></td>
-                <td><input type="number" id="oh_fokus2" class="actual-field table-input"></td>
+                <td><input type="number" id="targ_fokus2" class="target-field table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus2" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="text" id="persen_fokus2" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
                 <td>3. Suuegeer</td>
-                <td><input type="number" id="targ_fokus3" class="target-field table-input"></td>
-                <td><input type="number" id="act_fokus3" class="actual-field table-input"></td>
-                <td><input type="number" id="oh_fokus3" class="actual-field table-input"></td>
+                <td><input type="number" id="targ_fokus3" class="target-field table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus3" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="text" id="persen_fokus3" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
                 <td>4. Promo Ceban</td>
-                <td><input type="number" id="targ_fokus4" class="target-field table-input"></td>
-                <td><input type="number" id="act_fokus4" class="actual-field table-input"></td>
-                <td><input type="number" id="oh_fokus4" class="actual-field table-input"></td>
+                <td><input type="number" id="targ_fokus4" class="target-field table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus4" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="text" id="persen_fokus4" class="auto-calc table-input" readonly></td>
             </tr>
         </tbody>
     </table>
@@ -170,15 +170,15 @@
     <div class="row-grid">
         <div class="form-group">
             <label>Total Struk [Diisi Harian]</label>
-            <input type="number" id="totalStruk" class="actual-field" placeholder="Total struk...">
+            <input type="number" id="totalStruk" class="actual-field" placeholder="Total struk..." oninput="calculateMemberPercent()">
         </div>
         <div class="form-group">
             <label>Struk Member [Diisi Harian]</label>
-            <input type="number" id="strukMember" class="actual-field" placeholder="Struk member...">
+            <input type="number" id="strukMember" class="actual-field" placeholder="Struk member..." oninput="calculateMemberPercent()">
         </div>
         <div class="form-group">
-            <label>Kontribusi (%) [Otomatis/Input]</label>
-            <input type="number" id="persenMember" class="actual-field" placeholder="% kontribusi...">
+            <label>Kontribusi (%) [Otomatis]</label>
+            <input type="text" id="persenMember" class="auto-calc" readonly>
         </div>
     </div>
 
@@ -191,6 +191,7 @@
                 <th>Produk PSM</th>
                 <th>Target (Permanen)</th>
                 <th>Actual (Harian)</th>
+                <th>Persen (%) [Otomatis]</th>
             </tr>
         </thead>
         <tbody>
@@ -200,8 +201,9 @@
                         <tr>
                             <td>${i}</td>
                             <td><input type="text" id="name_psm${i}" class="target-field table-input" value="PSM Item ${i}"></td>
-                            <td><input type="number" id="targ_psm${i}" class="target-field table-input"></td>
-                            <td><input type="number" id="act_psm${i}" class="actual-field table-input"></td>
+                            <td><input type="number" id="targ_psm${i}" class="target-field table-input" oninput="calculateAllCalculations()"></td>
+                            <td><input type="number" id="act_psm${i}" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
+                            <td><input type="text" id="persen_psm${i}" class="auto-calc table-input" readonly></td>
                         </tr>
                     `);
                 }
@@ -292,6 +294,38 @@
         }
     }
 
+    function calculateFokusPercent() {
+        for (let i = 1; i <= 4; i++) {
+            const targ = parseFloat(document.getElementById(`targ_fokus${i}`).value) || 0;
+            const act = parseFloat(document.getElementById(`act_fokus${i}`).value) || 0;
+            const pct = targ > 0 ? Math.round((act / targ) * 100) : 0;
+            document.getElementById(`persen_fokus${i}`).value = pct + '%';
+        }
+    }
+
+    function calculatePsmPercent() {
+        for (let i = 1; i <= 10; i++) {
+            const targ = parseFloat(document.getElementById(`targ_psm${i}`).value) || 0;
+            const act = parseFloat(document.getElementById(`act_psm${i}`).value) || 0;
+            const pct = targ > 0 ? Math.round((act / targ) * 100) : 0;
+            document.getElementById(`persen_psm${i}`).value = pct + '%';
+        }
+    }
+
+    function calculateMemberPercent() {
+        const total = parseFloat(document.getElementById('totalStruk').value) || 0;
+        const member = parseFloat(document.getElementById('strukMember').value) || 0;
+        const pct = total > 0 ? Math.round((member / total) * 100) : 0;
+        document.getElementById('persenMember').value = pct + '%';
+    }
+
+    function calculateAllCalculations() {
+        calculateRevenue();
+        calculateFokusPercent();
+        calculatePsmPercent();
+        calculateMemberPercent();
+    }
+
     function generateWaText() {
         const store = document.getElementById('storeSelect').value || '-';
         const date = document.getElementById('datePicker').value || '-';
@@ -313,23 +347,24 @@
         text += `Gap TF: Rp ${document.getElementById('gapTF').value}\n\n`;
 
         text += `*--- FOKUS CABANG ---*\n`;
-        text += `1. Tebus Murah: T=${document.getElementById('targ_fokus1').value||0} | A=${document.getElementById('act_fokus1').value||0} | OH=${document.getElementById('oh_fokus1').value||0}\n`;
-        text += `2. Serba Gratis: T=${document.getElementById('targ_fokus2').value||0} | A=${document.getElementById('act_fokus2').value||0} | OH=${document.getElementById('oh_fokus2').value||0}\n`;
-        text += `3. Suuegeer: T=${document.getElementById('targ_fokus3').value||0} | A=${document.getElementById('act_fokus3').value||0} | OH=${document.getElementById('oh_fokus3').value||0}\n`;
-        text += `4. Promo Ceban: T=${document.getElementById('targ_fokus4').value||0} | A=${document.getElementById('act_fokus4').value||0} | OH=${document.getElementById('oh_fokus4').value||0}\n\n`;
+        text += `1. Tebus Murah: T=${document.getElementById('targ_fokus1').value||0} | A=${document.getElementById('act_fokus1').value||0} | (${document.getElementById('persen_fokus1').value})\n`;
+        text += `2. Serba Gratis: T=${document.getElementById('targ_fokus2').value||0} | A=${document.getElementById('act_fokus2').value||0} | (${document.getElementById('persen_fokus2').value})\n`;
+        text += `3. Suuegeer: T=${document.getElementById('targ_fokus3').value||0} | A=${document.getElementById('act_fokus3').value||0} | (${document.getElementById('persen_fokus3').value})\n`;
+        text += `4. Promo Ceban: T=${document.getElementById('targ_fokus4').value||0} | A=${document.getElementById('act_fokus4').value||0} | (${document.getElementById('persen_fokus4').value})\n\n`;
 
         text += `*--- MEMBER ---*\n`;
         text += `New Member: ${document.getElementById('actualNewMember').value||0}\n`;
         text += `Total Struk: ${document.getElementById('totalStruk').value||0}\n`;
         text += `Struk Member: ${document.getElementById('strukMember').value||0}\n`;
-        text += `Kontribusi: ${document.getElementById('persenMember').value||0}%\n\n`;
+        text += `Kontribusi: ${document.getElementById('persenMember').value}\n\n`;
 
         text += `*--- PSM (10 ITEM) ---*\n`;
         for(let i=1; i<=10; i++) {
             const name = document.getElementById(`name_psm${i}`).value || `PSM ${i}`;
             const targ = document.getElementById(`targ_psm${i}`).value || 0;
             const act = document.getElementById(`act_psm${i}`).value || 0;
-            text += `${i}. ${name}: T=${targ} | A=${act}\n`;
+            const pct = document.getElementById(`persen_psm${i}`).value || '0%';
+            text += `${i}. ${name}: T=${targ} | A=${act} | (${pct})\n`;
         }
 
         text += `\n*--- CATEGORY & E-COMMERCE ---*\n`;
@@ -414,7 +449,7 @@
             }
         });
 
-        const achieveMTD = sumTargetMTD >  0 ? (sumActualSales / sumTargetMTD) * 100 : 0;
+        const achieveMTD = sumTargetMTD > 0 ? (sumActualSales / sumTargetMTD) * 100 : 0;
         const achieveTF = sumTargetTF > 0 ? (sumActualSales / sumTargetTF) * 100 : 0;
         const gapTarget = sumActualSales - sumTargetMTD;
         const gapTF = sumActualSales - sumTargetTF;
@@ -426,7 +461,7 @@
 
         const kontribusiMember = sumTotalStruk > 0 ? Math.round((sumStrukMember / sumTotalStruk) * 100) : 0;
 
-        // Format Teks Sesuai Permintaan
+        // Format Teks Rekap Sesuai Permintaan Sebelumnya
         let text = `*REPORT SALES*\n`;
         text += `PERIODE : ${selectedDate.split('-').reverse().join(' ')}\n`;
         text += `WH : Bekasi\n`;
@@ -563,7 +598,7 @@
                 document.getElementById(`targ_psm${i}`).value = '';
             }
         }
-        calculateRevenue();
+        calculateAllCalculations();
     }
 
     function loadDailyData() {
@@ -578,17 +613,12 @@
             document.getElementById('shiftSelect').value = data.shiftSelect || 'Shift 1';
             document.getElementById('actualSales').value = data.actualSales || '';
             document.getElementById('act_fokus1').value = data.act_fokus1 || '';
-            document.getElementById('oh_fokus1').value = data.oh_fokus1 || '';
             document.getElementById('act_fokus2').value = data.act_fokus2 || '';
-            document.getElementById('oh_fokus2').value = data.oh_fokus2 || '';
             document.getElementById('act_fokus3').value = data.act_fokus3 || '';
-            document.getElementById('oh_fokus3').value = data.oh_fokus3 || '';
             document.getElementById('act_fokus4').value = data.act_fokus4 || '';
-            document.getElementById('oh_fokus4').value = data.oh_fokus4 || '';
             document.getElementById('actualNewMember').value = data.actualNewMember || '';
             document.getElementById('totalStruk').value = data.totalStruk || '';
             document.getElementById('strukMember').value = data.strukMember || '';
-            document.getElementById('persenMember').value = data.persenMember || '';
 
             for(let i=1; i<=10; i++) {
                 document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
@@ -600,17 +630,12 @@
         } else {
             document.getElementById('actualSales').value = '';
             document.getElementById('act_fokus1').value = '';
-            document.getElementById('oh_fokus1').value = '';
             document.getElementById('act_fokus2').value = '';
-            document.getElementById('oh_fokus2').value = '';
             document.getElementById('act_fokus3').value = '';
-            document.getElementById('oh_fokus3').value = '';
             document.getElementById('act_fokus4').value = '';
-            document.getElementById('oh_fokus4').value = '';
             document.getElementById('actualNewMember').value = '';
             document.getElementById('totalStruk').value = '';
             document.getElementById('strukMember').value = '';
-            document.getElementById('persenMember').value = '';
 
             for(let i=1; i<=10; i++) {
                 document.getElementById(`act_psm${i}`).value = '';
@@ -620,7 +645,7 @@
             document.getElementById('catTelur').value = '';
             document.getElementById('feeBase').value = '';
         }
-        calculateRevenue();
+        calculateAllCalculations();
     }
 
     function autoSaveDaily() {
@@ -631,17 +656,12 @@
             shiftSelect: document.getElementById('shiftSelect').value,
             actualSales: document.getElementById('actualSales').value,
             act_fokus1: document.getElementById('act_fokus1').value,
-            oh_fokus1: document.getElementById('oh_fokus1').value,
             act_fokus2: document.getElementById('act_fokus2').value,
-            oh_fokus2: document.getElementById('oh_fokus2').value,
             act_fokus3: document.getElementById('act_fokus3').value,
-            oh_fokus3: document.getElementById('oh_fokus3').value,
             act_fokus4: document.getElementById('act_fokus4').value,
-            oh_fokus4: document.getElementById('oh_fokus4').value,
             actualNewMember: document.getElementById('actualNewMember').value,
             totalStruk: document.getElementById('totalStruk').value,
             strukMember: document.getElementById('strukMember').value,
-            persenMember: document.getElementById('persenMember').value,
             catToys: document.getElementById('catToys').value,
             catTelur: document.getElementById('catTelur').value,
             feeBase: document.getElementById('feeBase').value
@@ -652,20 +672,20 @@
         }
 
         localStorage.setItem(key, JSON.stringify(data));
-        calculateRevenue();
+        calculateAllCalculations();
     }
 
     document.getElementById('storeSelect').addEventListener('change', loadDailyData);
     document.getElementById('datePicker').addEventListener('change', function() {
         loadDailyData();
-        calculateRevenue();
+        calculateAllCalculations();
     });
 
-    document.querySelectorAll('.actual-field').forEach(input => {
+    document.querySelectorAll('.actual-field, .target-field').forEach(input => {
         input.addEventListener('input', autoSaveDaily);
     });
 
-    calculateRevenue();
+    calculateAllCalculations();
 </script>
 
 </body>
