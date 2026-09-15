@@ -75,8 +75,8 @@
     <div class="form-group">
         <label>Shift</label>
         <select id="shiftSelect" class="actual-field">
-            <option value="Shift 1">Shift 1</option>
-            <option value="Shift 2">Shift 2</option>
+            <option value="1">Shift 1</option>
+            <option value="2">Shift 2</option>
             <option value="Full Day">Full Day</option>
         </select>
     </div>
@@ -200,7 +200,7 @@
                     document.write(`
                         <tr>
                             <td>${i}</td>
-                            <td><input type="text" id="name_psm${i}" class="target-field table-input" value="PSM Item ${i}"></td>
+                            <td><input type="text" id="name_psm${i}" class="target-field table-input" value="PSM ${i}"></td>
                             <td><input type="number" id="targ_psm${i}" class="target-field table-input" oninput="calculateAllCalculations()"></td>
                             <td><input type="number" id="act_psm${i}" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
                             <td><input type="text" id="persen_psm${i}" class="auto-calc table-input" readonly></td>
@@ -326,51 +326,81 @@
         calculateMemberPercent();
     }
 
+    function formatPeriodeDate(dateStr) {
+        if(!dateStr) return "-";
+        const parts = dateStr.split('-');
+        if(parts.length !== 3) return dateStr;
+        const year = parts[0];
+        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const monthIndex = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+        return `${day} ${monthNames[monthIndex] || parts[1]}`;
+    }
+
     function generateWaText() {
-        const store = document.getElementById('storeSelect').value || '-';
-        const date = document.getElementById('datePicker').value || '-';
+        const storeVal = document.getElementById('storeSelect').value || " / -";
+        const storeParts = storeVal.split(' / ');
+        const kdStore = storeParts[0] || '-';
+        const namaStore = storeParts[1] || '-';
+        
+        const rawDate = document.getElementById('datePicker').value;
+        const periodeFormatted = formatPeriodeDate(rawDate);
         const shift = document.getElementById('shiftSelect').value || '-';
 
-        let text = `*DAILY SALES REPORT*\n`;
-        text += `Toko: *${store}*\n`;
-        text += `Tanggal: ${date}\n`;
-        text += `Shift: ${shift}\n\n`;
+        let text = `REPORT SALES HARIAN\n`;
+        text += `PERIODE : ${periodeFormatted}\n`;
+        text += `WH : Bekasi\n`;
+        text += `AM : SRD\n`;
+        text += `AC : Triyanto\n`;
+        text += `KD Toko : ${kdStore}\n`;
+        text += `Nama Toko : ${namaStore}\n`;
+        text += `Shift : ${shift}\n`;
+        text += `======================\n\n`;
 
-        text += `*--- REVENUE ---*\n`;
-        text += `Target MTD: Rp ${parseFloat(document.getElementById('targetMTD').value || 0).toLocaleString('id-ID')}\n`;
-        text += `Actual Sales: Rp ${parseFloat(document.getElementById('actualSales').value || 0).toLocaleString('id-ID')}\n`;
-        text += `Time Factor: ${document.getElementById('timeFactor').value}\n`;
-        text += `Target TF: Rp ${document.getElementById('targetTimeFactor').value}\n`;
-        text += `Achieve MTD: ${document.getElementById('achieveMTD').value}\n`;
-        text += `Achieve TF: ${document.getElementById('achieveTF').value}\n`;
-        text += `Gap Target: Rp ${document.getElementById('gapTarget').value}\n`;
-        text += `Gap TF: Rp ${document.getElementById('gapTF').value}\n\n`;
+        text += `*REVENUE*\n`;
+        text += `1. NET SALES\n`;
+        text += `- TIME FAKTOR : ${document.getElementById('timeFactor').value}\n`;
+        text += `- TARGET MTD : ${parseFloat(document.getElementById('targetMTD').value || 0).toLocaleString('id-ID')}\n`;
+        text += `- TARGET TIME FACTOR : ${document.getElementById('targetTimeFactor').value}\n`;
+        text += `- ACTUAL : ${parseFloat(document.getElementById('actualSales').value || 0).toLocaleString('id-ID')}\n`;
+        text += `- ACHIEVED MTD : ${document.getElementById('achieveMTD').value}\n`;
+        text += `- ACHIEVED TIME FACTOR : ${document.getElementById('achieveTF').value}\n`;
+        text += `- GAP TO TARGET : ${document.getElementById('gapTarget').value}\n`;
+        text += `- GAP TO TIME FACTOR : ${document.getElementById('gapTF').value}\n\n`;
 
-        text += `*--- FOKUS CABANG ---*\n`;
-        text += `1. Tebus Murah: T=${document.getElementById('targ_fokus1').value||0} | A=${document.getElementById('act_fokus1').value||0} | (${document.getElementById('persen_fokus1').value})\n`;
-        text += `2. Serba Gratis: T=${document.getElementById('targ_fokus2').value||0} | A=${document.getElementById('act_fokus2').value||0} | (${document.getElementById('persen_fokus2').value})\n`;
-        text += `3. Suuegeer: T=${document.getElementById('targ_fokus3').value||0} | A=${document.getElementById('act_fokus3').value||0} | (${document.getElementById('persen_fokus3').value})\n`;
-        text += `4. Promo Ceban: T=${document.getElementById('targ_fokus4').value||0} | A=${document.getElementById('act_fokus4').value||0} | (${document.getElementById('persen_fokus4').value})\n\n`;
+        text += `*FOKUS CABANG*\n`;
+        text += `======================\n`;
+        text += `TARGET/SALES/ACV%\n`;
+        text += `1. TEBUS MURAH : ${document.getElementById('targ_fokus1').value||0}/${document.getElementById('act_fokus1').value||0}/${document.getElementById('persen_fokus1').value}\n`;
+        text += `2. SERBA GRATIS : ${document.getElementById('targ_fokus2').value||0}/${document.getElementById('act_fokus2').value||0}/${document.getElementById('persen_fokus2').value}\n`;
+        text += `3. SUUEGEER : ${document.getElementById('targ_fokus3').value||0}/${document.getElementById('act_fokus3').value||0}/${document.getElementById('persen_fokus3').value}\n`;
+        text += `4. PROMO CEBAN : ${document.getElementById('targ_fokus4').value||0}/${document.getElementById('act_fokus4').value||0}/${document.getElementById('persen_fokus4').value}\n`;
+        text += `======================\n\n`;
 
-        text += `*--- MEMBER ---*\n`;
-        text += `New Member: ${document.getElementById('actualNewMember').value||0}\n`;
-        text += `Total Struk: ${document.getElementById('totalStruk').value||0}\n`;
-        text += `Struk Member: ${document.getElementById('strukMember').value||0}\n`;
-        text += `Kontribusi: ${document.getElementById('persenMember').value}\n\n`;
+        text += `*MEMBER*\n`;
+        text += `1. ACTUAL NEW MEMBER : ${document.getElementById('actualNewMember').value||0}\n`;
+        text += `2. KONTRIBUSI STRUK MEMBER (STRUK MEMBER : Total struk) = ${document.getElementById('strukMember').value||0}/${document.getElementById('totalStruk').value||0}/${document.getElementById('persenMember').value}\n`;
+        text += `======================\n\n`;
 
-        text += `*--- PSM (10 ITEM) ---*\n`;
+        text += `*PSM* (In Qty).\n`;
+        text += `( TARGET/ACTUAL /% )\n`;
         for(let i=1; i<=10; i++) {
-            const name = document.getElementById(`name_psm${i}`).value || `PSM ${i}`;
             const targ = document.getElementById(`targ_psm${i}`).value || 0;
             const act = document.getElementById(`act_psm${i}`).value || 0;
             const pct = document.getElementById(`persen_psm${i}`).value || '0%';
-            text += `${i}. ${name}: T=${targ} | A=${act} | (${pct})\n`;
+            text += `PSM ${i} : ${targ}/${act}/${pct}\n`;
         }
+        text += `======================\n\n`;
 
-        text += `\n*--- CATEGORY & E-COMMERCE ---*\n`;
-        text += `Toys: Rp ${parseFloat(document.getElementById('catToys').value || 0).toLocaleString('id-ID')}\n`;
-        text += `Telur: Rp ${parseFloat(document.getElementById('catTelur').value || 0).toLocaleString('id-ID')}\n`;
-        text += `Fee Base: Rp ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n`;
+        text += `*CATEGORY* (Rupiah)\n`;
+        text += `1. TOYS (NS) : Rp ${parseFloat(document.getElementById('catToys').value || 0).toLocaleString('id-ID')}\n`;
+        text += `2. TELUR (NS) : Rp ${parseFloat(document.getElementById('catTelur').value || 0).toLocaleString('id-ID')}\n`;
+        text += `======================\n\n`;
+
+        text += `*E-COMMERCE*\n`;
+        text += `1. FEE BASE (RP) : Rp ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n\n`;
+
+        text += `Terimakasih`;
 
         return text;
     }
@@ -378,6 +408,7 @@
     // FUNGSI REKAP TOTAL KESELURUHAN DARI 20 TOKO
     function generateRekapText() {
         const selectedDate = document.getElementById('datePicker').value || currentDateFormatted;
+        const periodeFormatted = formatPeriodeDate(selectedDate);
         
         let sumTargetMTD = 0;
         let sumActualSales = 0;
@@ -398,7 +429,7 @@
 
         let psmTotals = {};
         for(let i=1; i<=10; i++) {
-            psmTotals[i] = { targ: 0, act: 0, name: `PSM Item ${i}` };
+            psmTotals[i] = { targ: 0, act: 0, name: `PSM ${i}` };
         }
 
         const dateObj = new Date(selectedDate);
@@ -406,7 +437,6 @@
         const totalDaysInMonth = isNaN(dateObj.getFullYear()) ? 30 : new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).getDate();
         const tfPercent = (dayNum / totalDaysInMonth) * 100;
 
-        // Iterasi 20 toko untuk mengambil data localStorage masing-masing
         storeListCodes.forEach(storeCode => {
             const targetKey = `permanent_target_${storeCode}`;
             const dailyKey = `actual_${storeCode}_${selectedDate}`;
@@ -461,12 +491,11 @@
 
         const kontribusiMember = sumTotalStruk > 0 ? Math.round((sumStrukMember / sumTotalStruk) * 100) : 0;
 
-        // Format Teks Rekap Sesuai Permintaan Sebelumnya
-        let text = `*REPORT SALES*\n`;
-        text += `PERIODE : ${selectedDate.split('-').reverse().join(' ')}\n`;
+        let text = `REPORT SALES (REKAP TOTAL 20 TOKO)\n`;
+        text += `PERIODE : ${periodeFormatted}\n`;
         text += `WH : Bekasi\n`;
         text += `AM : SRD\n`;
-        text += `AC : TRIYANTO\n`;
+        text += `AC : Triyanto\n`;
         text += `======================\n`;
         text += `*REVENUE*\n`;
         text += `1. NET SALES\n`;
@@ -474,34 +503,34 @@
         text += `- TARGET MTD : ${sumTargetMTD.toLocaleString('id-ID')}\n`;
         text += `- TARGET TIME FACTOR : ${Math.round(sumTargetTF).toLocaleString('id-ID')}\n`;
         text += `- ACTUAL : ${sumActualSales.toLocaleString('id-ID')}\n`;
-        text += `- ACHIVE MTD : ${achieveMTD.toFixed(2).replace('.', ',')}%\n`;
-        text += `- ACHIEVER TIME FACTOR: ${achieveTF.toFixed(2).replace('.', ',')}%\n`;
+        text += `- ACHIEVED MTD : ${achieveMTD.toFixed(2).replace('.', ',')}%\n`;
+        text += `- ACHIEVED TIME FACTOR : ${achieveTF.toFixed(2).replace('.', ',')}%\n`;
         text += `- GAP TO TARGET : ${gapTarget.toLocaleString('id-ID')}\n`;
         text += `- GAP TO TIME FACTOR : ${Math.round(gapTF).toLocaleString('id-ID')}\n`;
         text += `======================\n`;
         text += `*FOKUS CABANG*\n`;
-        text += `TARGET/SALES/ ACV%\n`;
-        text += `1. TEBUS MURAH (QTY REDEEM) : ${sumTargF1}/${sumActF1}/${acvF1}%\n`;
-        text += `2. SERBA GRATIS (PAKET) : ${sumTargF2}/${sumActF2}/${acvF2}%\n`;
-        text += `3. SUEUGEER : ${sumTargF3}/${sumActF3}/${acvF3}%\n`;
+        text += `TARGET/SALES/ACV%\n`;
+        text += `1. TEBUS MURAH : ${sumTargF1}/${sumActF1}/${acvF1}%\n`;
+        text += `2. SERBA GRATIS : ${sumTargF2}/${sumActF2}/${acvF2}%\n`;
+        text += `3. SUUEGEER : ${sumTargF3}/${sumActF3}/${acvF3}%\n`;
         text += `4. PROMO CEBAN : ${sumTargF4}/${sumActF4}/${acvF4}%\n`;
-        text += `5. PSM :\n`;
-        
+        text += `======================\n`;
+        text += `*MEMBER*\n`;
+        text += `1. ACTUAL NEW MEMBER : ${sumNewMember}\n`;
+        text += `2. KONTRIBUSI STRUK MEMBER = ${sumStrukMember}/${sumTotalStruk}/${kontribusiMember}%\n`;
+        text += `======================\n`;
+        text += `*PSM* (In Qty).\n`;
         for(let i=1; i<=10; i++) {
             let psmAcv = psmTotals[i].targ > 0 ? Math.round((psmTotals[i].act / psmTotals[i].targ) * 100) : 0;
-            text += `   - ${i}. ${psmTotals[i].name} (${psmTotals[i].targ}/${psmTotals[i].act}/${psmAcv}%)\n`;
+            text += `PSM ${i} : ${psmTotals[i].targ}/${psmTotals[i].act}/${psmAcv}%\n`;
         }
-
-        text += `\n*MEMBER*\n`;
-        text += `1. ACTUAL NEW MEMBER : ${sumNewMember}\n`;
-        text += `2. KONTRIBUSI STRUK MEMBER : ${sumTotalStruk}/${sumStrukMember}/${kontribusiMember}%\n`;
-        text += `\n*CATEGORY* (Rupiah)\n`;
-        text += `( Sales )\n`;
-        text += `1. TOYS (NS) : ${sumToys.toLocaleString('id-ID')}\n`;
-        text += `2. TELUR : ${sumTelur.toLocaleString('id-ID')}\n`;
+        text += `======================\n`;
+        text += `*CATEGORY* (Rupiah)\n`;
+        text += `1. TOYS (NS) : Rp ${sumToys.toLocaleString('id-ID')}\n`;
+        text += `2. TELUR (NS) : Rp ${sumTelur.toLocaleString('id-ID')}\n`;
         text += `======================\n`;
         text += `*E-COMMERCE*\n`;
-        text += `1. FEE BASE (RP) : ${sumFeeBase.toLocaleString('id-ID')}\n`;
+        text += `1. FEE BASE (RP) : Rp ${sumFeeBase.toLocaleString('id-ID')}\n\n`;
         text += `Terimakasih`;
 
         return text;
@@ -610,7 +639,7 @@
         const saved = localStorage.getItem(key);
         if (saved) {
             const data = JSON.parse(saved);
-            document.getElementById('shiftSelect').value = data.shiftSelect || 'Shift 1';
+            document.getElementById('shiftSelect').value = data.shiftSelect || '1';
             document.getElementById('actualSales').value = data.actualSales || '';
             document.getElementById('act_fokus1').value = data.act_fokus1 || '';
             document.getElementById('act_fokus2').value = data.act_fokus2 || '';
