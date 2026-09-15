@@ -21,6 +21,7 @@
         .btn-save { background-color: #007bff; }
         .btn-preview { background-color: #17a2b8; }
         .btn-wa { background-color: #25D366; }
+        .btn-rekap { background-color: #6f42c1; }
         .btn:hover { opacity: 0.9; }
         .row-grid { display: flex; gap: 10px; }
         .row-grid > div { flex: 1; }
@@ -42,7 +43,7 @@
     <!-- INFORMASI UMUM TOKO -->
     <h3>Informasi Umum Toko</h3>
     <div class="form-group">
-        <label>Periode Tanggal</label>
+        <label>Periode Tanggal (Otomatis Sesuai Device)</label>
         <input type="date" id="datePicker">
     </div>
     
@@ -124,14 +125,14 @@
     </div>
 
     <!-- FOKUS CABANG -->
-    <h3>Fokus Cabang</h3>
+    <h3>Fokus Cabang (Target Permanen, Toko Isi Actual)</h3>
     <table>
         <thead>
             <tr>
                 <th>Program / Fokus</th>
-                <th>Target (Cloud)</th>
+                <th>Target (Permanen)</th>
                 <th>Actual (Harian)</th>
-                <th>Persen (%)</th>
+                <th>Persen (%) [Otomatis]</th>
             </tr>
         </thead>
         <tbody>
@@ -165,20 +166,20 @@
     <!-- MEMBER -->
     <h3>Member</h3>
     <div class="form-group">
-        <label>Actual New Member</label>
+        <label>Actual New Member [Diisi Harian]</label>
         <input type="number" id="actualNewMember" class="actual-field" placeholder="Jumlah member baru...">
     </div>
     <div class="row-grid">
         <div class="form-group">
-            <label>Total Struk</label>
+            <label>Total Struk [Diisi Harian]</label>
             <input type="number" id="totalStruk" class="actual-field" placeholder="Total struk..." oninput="calculateMemberPercent()">
         </div>
         <div class="form-group">
-            <label>Struk Member</label>
+            <label>Struk Member [Diisi Harian]</label>
             <input type="number" id="strukMember" class="actual-field" placeholder="Struk member..." oninput="calculateMemberPercent()">
         </div>
         <div class="form-group">
-            <label>Kontribusi (%)</label>
+            <label>Kontribusi (%) [Otomatis]</label>
             <input type="text" id="persenMember" class="auto-calc" readonly>
         </div>
     </div>
@@ -190,18 +191,19 @@
             <tr>
                 <th>No</th>
                 <th>Produk PSM</th>
-                <th>Target (Cloud)</th>
+                <th>Target (Permanen)</th>
                 <th>Actual (Harian)</th>
-                <th>Persen (%)</th>
+                <th>Persen (%) [Otomatis]</th>
             </tr>
         </thead>
         <tbody>
             <script>
+                const defaultPsmNames = ["Aqua", "Buavita", "FF", "Tango", "H&S", "French", "Mamy poko", "Biore", "PSM Item 9", "PSM Item 10"];
                 for(let i=1; i<=10; i++) {
                     document.write(`
                         <tr>
                             <td>${i}</td>
-                            <td><input type="text" id="name_psm${i}" class="target-field table-input" value="PSM ${i}"></td>
+                            <td><input type="text" id="name_psm${i}" class="target-field table-input" value="${defaultPsmNames[i-1]}"></td>
                             <td><input type="number" id="targ_psm${i}" class="target-field table-input" oninput="calculateAllCalculations()"></td>
                             <td><input type="number" id="act_psm${i}" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
                             <td><input type="text" id="persen_psm${i}" class="auto-calc table-input" readonly></td>
@@ -215,23 +217,25 @@
     <!-- CATEGORY & E-COMMERCE -->
     <h3>Category & E-Commerce (Rupiah)</h3>
     <div class="form-group">
-        <label>1. TOYS (NS)</label>
+        <label>1. TOYS (NS) [Diisi Harian]</label>
         <input type="number" id="catToys" class="actual-field" placeholder="Nilai Toys...">
     </div>
     <div class="form-group">
-        <label>2. TELUR</label>
+        <label>2. TELUR [Diisi Harian]</label>
         <input type="number" id="catTelur" class="actual-field" placeholder="Nilai Telur...">
     </div>
     <div class="form-group">
-        <label>Fee Base (Rp)</label>
+        <label>Fee Base (Rp) [Diisi Harian]</label>
         <input type="number" id="feeBase" class="actual-field" placeholder="Nilai Fee Base...">
     </div>
 
-    <!-- TOMBOL AKSI UTAMA -->
-    <button type="button" class="btn btn-target" onclick="saveStoreTargetToCloud()">💾 Simpan Target Permanen ke Cloud</button>
+    <!-- TOMBOL AKSI LENGKAP -->
+    <button type="button" class="btn btn-target" onclick="saveStoreTargetToCloud()">💾 Simpan Target Permanen Toko Ini</button>
     <button type="button" class="btn btn-save" onclick="alert('Laporan berhasil diproses & dikirim!')">Simpan & Kirim Laporan</button>
-    <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview WhatsApp</button>
-    <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim Teks ke WhatsApp</button>
+    <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview WhatsApp (Per Toko)</button>
+    <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim Teks ke WhatsApp (Per Toko)</button>
+    <button type="button" class="btn btn-rekap" onclick="showTotalSummaryPreview()">📊 Preview & Rekap Total Keseluruhan (20 Toko)</button>
+    <button type="button" class="btn btn-wa" onclick="sendTotalSummaryWhatsApp()">📲 Kirim Rekap Total ke WhatsApp</button>
 </div>
 
 <!-- MODAL POPUP PREVIEW WA -->
@@ -245,9 +249,10 @@
 </div>
 
 <script>
-    // URL Web App Google Script Anda sudah terpasang di bawah ini:
+    // URL Web App Google Script Anda
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRtCZ_gwQMiOutWqRm0sfC7CJARrCWQXAQcWb_bneEJghEb5Cwh4uw8ripuf1F26wC1g/exec";
 
+    // Set tanggal otomatis sesuai device HP/Laptop saat halaman dibuka
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
@@ -358,7 +363,8 @@
 
         text += `*PSM* (In Qty).\n( TARGET/ACTUAL /% )\n`;
         for(let i=1; i<=10; i++) {
-            text += `PSM ${i} : ${document.getElementById(`targ_psm${i}`).value||0}/${document.getElementById(`act_psm${i}`).value||0}/${document.getElementById(`persen_psm${i}`).value}\n`;
+            const pName = document.getElementById(`name_psm${i}`).value || `PSM ${i}`;
+            text += `${i}. ${pName} : ${document.getElementById(`targ_psm${i}`).value||0}/${document.getElementById(`act_psm${i}`).value||0}/${document.getElementById(`persen_psm${i}`).value}\n`;
         }
         text += `======================\n\n`;
 
@@ -373,24 +379,9 @@
     }
 
     function showWaPreview() {
-        document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp";
+        document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp (Per Toko)";
         document.getElementById('previewText').innerText = generateWaText();
         document.getElementById('waModal').style.display = 'block';
     }
 
-    function closeWaPreview() { document.getElementById('waModal').style.display = 'none'; }
-    function sendToWhatsApp() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank'); }
-
-    // FUNGSI TARIK DATA TARGET DARI CLOUD (GOOGLE SHEETS)
-    function loadStoreTargetFromCloud() {
-        const store = document.getElementById('storeSelect').value;
-        if (!store) return;
-
-        document.getElementById('loadingStatus').innerText = "Sedang mengambil data target dari Cloud...";
-        
-        fetch(`${WEB_APP_URL}?action=get&storeCode=${encodeURIComponent(store)}`)
-            .then(response => response.json())
-            .then(data => {
-                document.getElementById('loadingStatus').innerText = "";
-                if (data && Object.keys(data).length > 0) {
-                    d
+    function showTotal
