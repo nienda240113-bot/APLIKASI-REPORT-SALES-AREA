@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Sales Report Portal V2</title>
+    <title>Daily Sales Report Portal V2 (Online Sync)</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.5; margin: 0; padding: 15px; background-color: #f4f6f9; color: #333; }
         .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -21,7 +21,6 @@
         .btn-save { background-color: #007bff; }
         .btn-preview { background-color: #17a2b8; }
         .btn-wa { background-color: #25D366; }
-        .btn-rekap { background-color: #6f42c1; }
         .btn:hover { opacity: 0.9; }
         .row-grid { display: flex; gap: 10px; }
         .row-grid > div { flex: 1; }
@@ -30,24 +29,26 @@
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 13px; max-height: 70vh; overflow-y: auto; }
         .close-btn { background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; float: right; font-weight: bold; }
+        #loadingStatus { font-size: 12px; color: #d9534f; font-weight: bold; margin-top: 5px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>Daily Sales Report Portal V2</h2>
-    <p style="color: #666; font-size: 13px;">Mode: Auto-Save Active & Permanent Store Target</p>
+    <p style="color: #666; font-size: 13px;">Mode: Cloud Sync Target Active</p>
+    <div id="loadingStatus"></div>
 
     <!-- INFORMASI UMUM TOKO -->
     <h3>Informasi Umum Toko</h3>
     <div class="form-group">
-        <label>Periode Tanggal (Mengikuti Tanggal Perangkat)</label>
+        <label>Periode Tanggal</label>
         <input type="date" id="datePicker">
     </div>
     
     <div class="form-group">
         <label>Kode & Nama Toko</label>
-        <select id="storeSelect">
+        <select id="storeSelect" onchange="onStoreChange()">
             <option value="">-- Pilih Toko --</option>
             <option value="C624 / RWBT">C624 / RWBT</option>
             <option value="C560 / RAJ">C560 / RAJ</option>
@@ -84,53 +85,53 @@
     <!-- REVENUE / NET SALES -->
     <h3>Revenue / Net Sales</h3>
     <div class="form-group">
-        <label>Target MTD (Rp) [Permanen per Toko]</label>
+        <label>Target MTD (Rp) [Sinkron Cloud]</label>
         <input type="number" id="targetMTD" class="target-field" placeholder="Masukkan Target MTD..." oninput="calculateRevenue()">
     </div>
     <div class="form-group">
-        <label>Actual Sales (Rp) [Diisi Harian]</label>
+        <label>Actual Sales (Rp) [Harian]</label>
         <input type="number" id="actualSales" class="actual-field" placeholder="Masukkan Penjualan Aktual..." oninput="calculateRevenue()">
     </div>
     <div class="row-grid">
         <div class="form-group">
-            <label>Time Factor (%) [Otomatis]</label>
+            <label>Time Factor (%)</label>
             <input type="text" id="timeFactor" class="auto-calc" readonly>
         </div>
         <div class="form-group">
-            <label>Target Time Factor (Rp) [Otomatis]</label>
+            <label>Target Time Factor (Rp)</label>
             <input type="text" id="targetTimeFactor" class="auto-calc" readonly>
         </div>
     </div>
     <div class="row-grid">
         <div class="form-group">
-            <label>Achieve MTD (%) [Otomatis]</label>
+            <label>Achieve MTD (%)</label>
             <input type="text" id="achieveMTD" class="auto-calc" readonly>
         </div>
         <div class="form-group">
-            <label>Achieve Time Factor (%) [Otomatis]</label>
+            <label>Achieve Time Factor (%)</label>
             <input type="text" id="achieveTF" class="auto-calc" readonly>
         </div>
     </div>
     <div class="row-grid">
         <div class="form-group">
-            <label>Gap to Target (Rp) [Otomatis]</label>
+            <label>Gap to Target (Rp)</label>
             <input type="text" id="gapTarget" class="auto-calc" readonly>
         </div>
         <div class="form-group">
-            <label>Gap to Time Factor (Rp) [Otomatis]</label>
+            <label>Gap to Time Factor (Rp)</label>
             <input type="text" id="gapTF" class="auto-calc" readonly>
         </div>
     </div>
 
     <!-- FOKUS CABANG -->
-    <h3>Fokus Cabang (Target Permanen, Toko Isi Actual)</h3>
+    <h3>Fokus Cabang</h3>
     <table>
         <thead>
             <tr>
                 <th>Program / Fokus</th>
-                <th>Target (Permanen)</th>
+                <th>Target (Cloud)</th>
                 <th>Actual (Harian)</th>
-                <th>Persen (%) [Otomatis]</th>
+                <th>Persen (%)</th>
             </tr>
         </thead>
         <tbody>
@@ -164,20 +165,20 @@
     <!-- MEMBER -->
     <h3>Member</h3>
     <div class="form-group">
-        <label>Actual New Member [Diisi Harian]</label>
+        <label>Actual New Member</label>
         <input type="number" id="actualNewMember" class="actual-field" placeholder="Jumlah member baru...">
     </div>
     <div class="row-grid">
         <div class="form-group">
-            <label>Total Struk [Diisi Harian]</label>
+            <label>Total Struk</label>
             <input type="number" id="totalStruk" class="actual-field" placeholder="Total struk..." oninput="calculateMemberPercent()">
         </div>
         <div class="form-group">
-            <label>Struk Member [Diisi Harian]</label>
+            <label>Struk Member</label>
             <input type="number" id="strukMember" class="actual-field" placeholder="Struk member..." oninput="calculateMemberPercent()">
         </div>
         <div class="form-group">
-            <label>Kontribusi (%) [Otomatis]</label>
+            <label>Kontribusi (%)</label>
             <input type="text" id="persenMember" class="auto-calc" readonly>
         </div>
     </div>
@@ -189,9 +190,9 @@
             <tr>
                 <th>No</th>
                 <th>Produk PSM</th>
-                <th>Target (Permanen)</th>
+                <th>Target (Cloud)</th>
                 <th>Actual (Harian)</th>
-                <th>Persen (%) [Otomatis]</th>
+                <th>Persen (%)</th>
             </tr>
         </thead>
         <tbody>
@@ -214,29 +215,23 @@
     <!-- CATEGORY & E-COMMERCE -->
     <h3>Category & E-Commerce (Rupiah)</h3>
     <div class="form-group">
-        <label>1. TOYS (NS) [Diisi Harian]</label>
+        <label>1. TOYS (NS)</label>
         <input type="number" id="catToys" class="actual-field" placeholder="Nilai Toys...">
     </div>
     <div class="form-group">
-        <label>2. TELUR [Diisi Harian]</label>
+        <label>2. TELUR</label>
         <input type="number" id="catTelur" class="actual-field" placeholder="Nilai Telur...">
     </div>
     <div class="form-group">
-        <label>Fee Base (Rp) [Diisi Harian]</label>
+        <label>Fee Base (Rp)</label>
         <input type="number" id="feeBase" class="actual-field" placeholder="Nilai Fee Base...">
     </div>
 
     <!-- TOMBOL AKSI UTAMA -->
-    <button type="button" class="btn btn-target" onclick="saveStoreTarget()">💾 Simpan Target Permanen Toko Ini</button>
+    <button type="button" class="btn btn-target" onclick="saveStoreTargetToCloud()">💾 Simpan Target Permanen ke Cloud</button>
     <button type="button" class="btn btn-save" onclick="alert('Laporan berhasil diproses & dikirim!')">Simpan & Kirim Laporan</button>
-    
-    <!-- TOMBOL PREVIEW DAN WHATSAPP -->
-    <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview WhatsApp (Per Toko)</button>
-    <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim Teks ke WhatsApp (Per Toko)</button>
-    
-    <!-- TOMBOL REKAP TOTAL 20 TOKO -->
-    <button type="button" class="btn btn-rekap" onclick="showRekapPreview()">📊 Preview & Rekap Total Keseluruhan (20 Toko)</button>
-    <button type="button" class="btn btn-wa" onclick="sendRekapWhatsApp()">📲 Kirim Rekap Total ke WhatsApp</button>
+    <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview WhatsApp</button>
+    <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim Teks ke WhatsApp</button>
 </div>
 
 <!-- MODAL POPUP PREVIEW WA -->
@@ -250,20 +245,14 @@
 </div>
 
 <script>
-    // Set tanggal otomatis mengikuti tanggal online/sistem perangkat saat ini
+    // URL Web App Google Script Anda sudah terpasang di bawah ini:
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRtCZ_gwQMiOutWqRm0sfC7CJARrCWQXAQcWb_bneEJghEb5Cwh4uw8ripuf1F26wC1g/exec";
+
     const today = new Date();
     const year = today.getFullYear();
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
-    const currentDateFormatted = `${year}-${month}-${day}`;
-    document.getElementById('datePicker').value = currentDateFormatted;
-
-    const storeListCodes = [
-        "C624 / RWBT", "C560 / RAJ", "CH81 / CDKS", "CG76 / SPMM", "C573 / GMM", 
-        "CE47 / MKRI", "CI30 / STTD", "CH41 / KPMRK", "CG54 / MM21", "C935 / TLJ2", 
-        "CA71 / WSGN", "C965 / CBNU", "CG86 / JKST", "CA94 / KPTI", "C574 / SKU", 
-        "CI15 / RPSU", "CI54 / RJLB", "CF50 / DNIA", "CC21 / KUTN", "CI84 / TLKW"
-    ];
+    document.getElementById('datePicker').value = `${year}-${month}-${day}`;
 
     function calculateRevenue() {
         const targetMTD = parseFloat(document.getElementById('targetMTD').value) || 0;
@@ -330,35 +319,23 @@
         if(!dateStr) return "-";
         const parts = dateStr.split('-');
         if(parts.length !== 3) return dateStr;
-        const year = parts[0];
         const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        const monthIndex = parseInt(parts[1], 10) - 1;
-        const day = parseInt(parts[2], 10);
-        return `${day} ${monthNames[monthIndex] || parts[1]}`;
+        return `${parseInt(parts[2], 10)} ${monthNames[parseInt(parts[1], 10) - 1]}`;
     }
 
     function generateWaText() {
         const storeVal = document.getElementById('storeSelect').value || " / -";
         const storeParts = storeVal.split(' / ');
-        const kdStore = storeParts[0] || '-';
-        const namaStore = storeParts[1] || '-';
         
-        const rawDate = document.getElementById('datePicker').value;
-        const periodeFormatted = formatPeriodeDate(rawDate);
-        const shift = document.getElementById('shiftSelect').value || '-';
-
         let text = `REPORT SALES HARIAN\n`;
-        text += `PERIODE : ${periodeFormatted}\n`;
-        text += `WH : Bekasi\n`;
-        text += `AM : SRD\n`;
-        text += `AC : Triyanto\n`;
-        text += `KD Toko : ${kdStore}\n`;
-        text += `Nama Toko : ${namaStore}\n`;
-        text += `Shift : ${shift}\n`;
+        text += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
+        text += `WH : Bekasi\nAM : SRD\nAC : Triyanto\n`;
+        text += `KD Toko : ${storeParts[0] || '-'}\n`;
+        text += `Nama Toko : ${storeParts[1] || '-'}\n`;
+        text += `Shift : ${document.getElementById('shiftSelect').value || '-'}\n`;
         text += `======================\n\n`;
 
-        text += `*REVENUE*\n`;
-        text += `1. NET SALES\n`;
+        text += `*REVENUE*\n1. NET SALES\n`;
         text += `- TIME FAKTOR : ${document.getElementById('timeFactor').value}\n`;
         text += `- TARGET MTD : ${parseFloat(document.getElementById('targetMTD').value || 0).toLocaleString('id-ID')}\n`;
         text += `- TARGET TIME FACTOR : ${document.getElementById('targetTimeFactor').value}\n`;
@@ -368,27 +345,20 @@
         text += `- GAP TO TARGET : ${document.getElementById('gapTarget').value}\n`;
         text += `- GAP TO TIME FACTOR : ${document.getElementById('gapTF').value}\n\n`;
 
-        text += `*FOKUS CABANG*\n`;
-        text += `======================\n`;
-        text += `TARGET/SALES/ACV%\n`;
-        text += `1. TEBUS MURAH : ${document.getElementById('targ_fokus1').value||0}/${document.getElementById('act_fokus1').value||0}/${document.getElementById('persen_fokus1').value}\n`;
-        text += `2. SERBA GRATIS : ${document.getElementById('targ_fokus2').value||0}/${document.getElementById('act_fokus2').value||0}/${document.getElementById('persen_fokus2').value}\n`;
-        text += `3. SUUEGEER : ${document.getElementById('targ_fokus3').value||0}/${document.getElementById('act_fokus3').value||0}/${document.getElementById('persen_fokus3').value}\n`;
-        text += `4. PROMO CEBAN : ${document.getElementById('targ_fokus4').value||0}/${document.getElementById('act_fokus4').value||0}/${document.getElementById('persen_fokus4').value}\n`;
+        text += `*FOKUS CABANG*\n======================\nTARGET/SALES/ACV%\n`;
+        for(let i=1; i<=4; i++) {
+            const names = ["TEBUS MURAH", "SERBA GRATIS", "SUUEGEER", "PROMO CEBAN"];
+            text += `${i}. ${names[i-1]} : ${document.getElementById(`targ_fokus${i}`).value||0}/${document.getElementById(`act_fokus${i}`).value||0}/${document.getElementById(`persen_fokus${i}`).value}\n`;
+        }
         text += `======================\n\n`;
 
-        text += `*MEMBER*\n`;
-        text += `1. ACTUAL NEW MEMBER : ${document.getElementById('actualNewMember').value||0}\n`;
-        text += `2. KONTRIBUSI STRUK MEMBER (STRUK MEMBER : Total struk) = ${document.getElementById('strukMember').value||0}/${document.getElementById('totalStruk').value||0}/${document.getElementById('persenMember').value}\n`;
+        text += `*MEMBER*\n1. ACTUAL NEW MEMBER : ${document.getElementById('actualNewMember').value||0}\n`;
+        text += `2. KONTRIBUSI STRUK MEMBER = ${document.getElementById('strukMember').value||0}/${document.getElementById('totalStruk').value||0}/${document.getElementById('persenMember').value}\n`;
         text += `======================\n\n`;
 
-        text += `*PSM* (In Qty).\n`;
-        text += `( TARGET/ACTUAL /% )\n`;
+        text += `*PSM* (In Qty).\n( TARGET/ACTUAL /% )\n`;
         for(let i=1; i<=10; i++) {
-            const targ = document.getElementById(`targ_psm${i}`).value || 0;
-            const act = document.getElementById(`act_psm${i}`).value || 0;
-            const pct = document.getElementById(`persen_psm${i}`).value || '0%';
-            text += `PSM ${i} : ${targ}/${act}/${pct}\n`;
+            text += `PSM ${i} : ${document.getElementById(`targ_psm${i}`).value||0}/${document.getElementById(`act_psm${i}`).value||0}/${document.getElementById(`persen_psm${i}`).value}\n`;
         }
         text += `======================\n\n`;
 
@@ -397,325 +367,30 @@
         text += `2. TELUR (NS) : Rp ${parseFloat(document.getElementById('catTelur').value || 0).toLocaleString('id-ID')}\n`;
         text += `======================\n\n`;
 
-        text += `*E-COMMERCE*\n`;
-        text += `1. FEE BASE (RP) : Rp ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n\n`;
-
+        text += `*E-COMMERCE*\n1. FEE BASE (RP) : Rp ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n\n`;
         text += `Terimakasih`;
-
-        return text;
-    }
-
-    // FUNGSI REKAP TOTAL KESELURUHAN DARI 20 TOKO
-    function generateRekapText() {
-        const selectedDate = document.getElementById('datePicker').value || currentDateFormatted;
-        const periodeFormatted = formatPeriodeDate(selectedDate);
-        
-        let sumTargetMTD = 0;
-        let sumActualSales = 0;
-        let sumTargetTF = 0;
-        
-        let sumTargF1 = 0, sumActF1 = 0;
-        let sumTargF2 = 0, sumActF2 = 0;
-        let sumTargF3 = 0, sumActF3 = 0;
-        let sumTargF4 = 0, sumActF4 = 0;
-        
-        let sumNewMember = 0;
-        let sumTotalStruk = 0;
-        let sumStrukMember = 0;
-        
-        let sumToys = 0;
-        let sumTelur = 0;
-        let sumFeeBase = 0;
-
-        let psmTotals = {};
-        for(let i=1; i<=10; i++) {
-            psmTotals[i] = { targ: 0, act: 0, name: `PSM ${i}` };
-        }
-
-        const dateObj = new Date(selectedDate);
-        const dayNum = isNaN(dateObj.getDate()) ? 1 : dateObj.getDate();
-        const totalDaysInMonth = isNaN(dateObj.getFullYear()) ? 30 : new Date(dateObj.getFullYear(), dateObj.getMonth() + 1, 0).getDate();
-        const tfPercent = (dayNum / totalDaysInMonth) * 100;
-
-        storeListCodes.forEach(storeCode => {
-            const targetKey = `permanent_target_${storeCode}`;
-            const dailyKey = `actual_${storeCode}_${selectedDate}`;
-
-            let tData = JSON.parse(localStorage.getItem(targetKey) || '{}');
-            let dData = JSON.parse(localStorage.getItem(dailyKey) || '{}');
-
-            const tMTD = parseFloat(tData.targetMTD || 0);
-            const aSales = parseFloat(dData.actualSales || 0);
-            const tTF = tMTD * (dayNum / totalDaysInMonth);
-
-            sumTargetMTD += tMTD;
-            sumActualSales += aSales;
-            sumTargetTF += tTF;
-
-            sumTargF1 += parseFloat(tData.targ_fokus1 || 0);
-            sumActF1 += parseFloat(dData.act_fokus1 || 0);
-
-            sumTargF2 += parseFloat(tData.targ_fokus2 || 0);
-            sumActF2 += parseFloat(dData.act_fokus2 || 0);
-
-            sumTargF3 += parseFloat(tData.targ_fokus3 || 0);
-            sumActF3 += parseFloat(dData.act_fokus3 || 0);
-
-            sumTargF4 += parseFloat(tData.targ_fokus4 || 0);
-            sumActF4 += parseFloat(dData.act_fokus4 || 0);
-
-            sumNewMember += parseFloat(dData.actualNewMember || 0);
-            sumTotalStruk += parseFloat(dData.totalStruk || 0);
-            sumStrukMember += parseFloat(dData.strukMember || 0);
-
-            sumToys += parseFloat(dData.catToys || 0);
-            sumTelur += parseFloat(dData.catTelur || 0);
-            sumFeeBase += parseFloat(dData.feeBase || 0);
-
-            for(let i=1; i<=10; i++) {
-                if(tData[`name_psm${i}`]) psmTotals[i].name = tData[`name_psm${i}`];
-                psmTotals[i].targ += parseFloat(tData[`targ_psm${i}`] || 0);
-                psmTotals[i].act += parseFloat(dData[`act_psm${i}`] || 0);
-            }
-        });
-
-        const achieveMTD = sumTargetMTD > 0 ? (sumActualSales / sumTargetMTD) * 100 : 0;
-        const achieveTF = sumTargetTF > 0 ? (sumActualSales / sumTargetTF) * 100 : 0;
-        const gapTarget = sumActualSales - sumTargetMTD;
-        const gapTF = sumActualSales - sumTargetTF;
-
-        const acvF1 = sumTargF1 > 0 ? Math.round((sumActF1 / sumTargF1) * 100) : 0;
-        const acvF2 = sumTargF2 > 0 ? Math.round((sumActF2 / sumTargF2) * 100) : 0;
-        const acvF3 = sumTargF3 > 0 ? Math.round((sumActF3 / sumTargF3) * 100) : 0;
-        const acvF4 = sumTargF4 > 0 ? Math.round((sumActF4 / sumTargF4) * 100) : 0;
-
-        const kontribusiMember = sumTotalStruk > 0 ? Math.round((sumStrukMember / sumTotalStruk) * 100) : 0;
-
-        let text = `REPORT SALES (REKAP TOTAL 20 TOKO)\n`;
-        text += `PERIODE : ${periodeFormatted}\n`;
-        text += `WH : Bekasi\n`;
-        text += `AM : SRD\n`;
-        text += `AC : Triyanto\n`;
-        text += `======================\n`;
-        text += `*REVENUE*\n`;
-        text += `1. NET SALES\n`;
-        text += `- TIME FAKTOR : ${tfPercent.toFixed(2).replace('.', ',')}%\n`;
-        text += `- TARGET MTD : ${sumTargetMTD.toLocaleString('id-ID')}\n`;
-        text += `- TARGET TIME FACTOR : ${Math.round(sumTargetTF).toLocaleString('id-ID')}\n`;
-        text += `- ACTUAL : ${sumActualSales.toLocaleString('id-ID')}\n`;
-        text += `- ACHIEVED MTD : ${achieveMTD.toFixed(2).replace('.', ',')}%\n`;
-        text += `- ACHIEVED TIME FACTOR : ${achieveTF.toFixed(2).replace('.', ',')}%\n`;
-        text += `- GAP TO TARGET : ${gapTarget.toLocaleString('id-ID')}\n`;
-        text += `- GAP TO TIME FACTOR : ${Math.round(gapTF).toLocaleString('id-ID')}\n`;
-        text += `======================\n`;
-        text += `*FOKUS CABANG*\n`;
-        text += `TARGET/SALES/ACV%\n`;
-        text += `1. TEBUS MURAH : ${sumTargF1}/${sumActF1}/${acvF1}%\n`;
-        text += `2. SERBA GRATIS : ${sumTargF2}/${sumActF2}/${acvF2}%\n`;
-        text += `3. SUUEGEER : ${sumTargF3}/${sumActF3}/${acvF3}%\n`;
-        text += `4. PROMO CEBAN : ${sumTargF4}/${sumActF4}/${acvF4}%\n`;
-        text += `======================\n`;
-        text += `*MEMBER*\n`;
-        text += `1. ACTUAL NEW MEMBER : ${sumNewMember}\n`;
-        text += `2. KONTRIBUSI STRUK MEMBER = ${sumStrukMember}/${sumTotalStruk}/${kontribusiMember}%\n`;
-        text += `======================\n`;
-        text += `*PSM* (In Qty).\n`;
-        for(let i=1; i<=10; i++) {
-            let psmAcv = psmTotals[i].targ > 0 ? Math.round((psmTotals[i].act / psmTotals[i].targ) * 100) : 0;
-            text += `PSM ${i} : ${psmTotals[i].targ}/${psmTotals[i].act}/${psmAcv}%\n`;
-        }
-        text += `======================\n`;
-        text += `*CATEGORY* (Rupiah)\n`;
-        text += `1. TOYS (NS) : Rp ${sumToys.toLocaleString('id-ID')}\n`;
-        text += `2. TELUR (NS) : Rp ${sumTelur.toLocaleString('id-ID')}\n`;
-        text += `======================\n`;
-        text += `*E-COMMERCE*\n`;
-        text += `1. FEE BASE (RP) : Rp ${sumFeeBase.toLocaleString('id-ID')}\n\n`;
-        text += `Terimakasih`;
-
         return text;
     }
 
     function showWaPreview() {
-        document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp (Per Toko)";
+        document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp";
         document.getElementById('previewText').innerText = generateWaText();
         document.getElementById('waModal').style.display = 'block';
     }
 
-    function showRekapPreview() {
-        document.getElementById('modalTitle').innerText = "Pratinjau Rekap Total Keseluruhan (20 Toko)";
-        document.getElementById('previewText').innerText = generateRekapText();
-        document.getElementById('waModal').style.display = 'block';
-    }
+    function closeWaPreview() { document.getElementById('waModal').style.display = 'none'; }
+    function sendToWhatsApp() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank'); }
 
-    function closeWaPreview() {
-        document.getElementById('waModal').style.display = 'none';
-    }
-
-    function sendToWhatsApp() {
-        const text = generateWaText();
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-    }
-
-    function sendRekapWhatsApp() {
-        const text = generateRekapText();
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(text)}`, '_blank');
-    }
-
-    function getDailyKey() {
+    // FUNGSI TARIK DATA TARGET DARI CLOUD (GOOGLE SHEETS)
+    function loadStoreTargetFromCloud() {
         const store = document.getElementById('storeSelect').value;
-        const date = document.getElementById('datePicker').value;
-        if (!store || !date) return null;
-        return `actual_${store}_${date}`;
-    }
+        if (!store) return;
 
-    function getTargetKey() {
-        const store = document.getElementById('storeSelect').value;
-        if (!store) return null;
-        return `permanent_target_${store}`;
-    }
-
-    function saveStoreTarget() {
-        const store = document.getElementById('storeSelect').value;
-        if (!store) {
-            alert("Pilih Kode Toko terlebih dahulu!");
-            return;
-        }
-
-        const targetData = {
-            targetMTD: document.getElementById('targetMTD').value,
-            targ_fokus1: document.getElementById('targ_fokus1').value,
-            targ_fokus2: document.getElementById('targ_fokus2').value,
-            targ_fokus3: document.getElementById('targ_fokus3').value,
-            targ_fokus4: document.getElementById('targ_fokus4').value
-        };
-
-        for(let i=1; i<=10; i++) {
-            targetData[`name_psm${i}`] = document.getElementById(`name_psm${i}`).value;
-            targetData[`targ_psm${i}`] = document.getElementById(`targ_psm${i}`).value;
-        }
-
-        localStorage.setItem(getTargetKey(), JSON.stringify(targetData));
-        alert(`Sukses! Target permanen untuk toko ${store} berhasil disimpan.`);
-    }
-
-    function loadStoreTarget() {
-        const key = getTargetKey();
-        if (!key) return;
-
-        const saved = localStorage.getItem(key);
-        if (saved) {
-            const data = JSON.parse(saved);
-            document.getElementById('targetMTD').value = data.targetMTD || '';
-            document.getElementById('targ_fokus1').value = data.targ_fokus1 || '';
-            document.getElementById('targ_fokus2').value = data.targ_fokus2 || '';
-            document.getElementById('targ_fokus3').value = data.targ_fokus3 || '';
-            document.getElementById('targ_fokus4').value = data.targ_fokus4 || '';
-
-            for(let i=1; i<=10; i++) {
-                if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
-                document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
-            }
-        } else {
-            document.getElementById('targetMTD').value = '';
-            document.getElementById('targ_fokus1').value = '';
-            document.getElementById('targ_fokus2').value = '';
-            document.getElementById('targ_fokus3').value = '';
-            document.getElementById('targ_fokus4').value = '';
-
-            for(let i=1; i<=10; i++) {
-                document.getElementById(`targ_psm${i}`).value = '';
-            }
-        }
-        calculateAllCalculations();
-    }
-
-    function loadDailyData() {
-        loadStoreTarget(); 
-
-        const key = getDailyKey();
-        if (!key) return;
-
-        const saved = localStorage.getItem(key);
-        if (saved) {
-            const data = JSON.parse(saved);
-            document.getElementById('shiftSelect').value = data.shiftSelect || '1';
-            document.getElementById('actualSales').value = data.actualSales || '';
-            document.getElementById('act_fokus1').value = data.act_fokus1 || '';
-            document.getElementById('act_fokus2').value = data.act_fokus2 || '';
-            document.getElementById('act_fokus3').value = data.act_fokus3 || '';
-            document.getElementById('act_fokus4').value = data.act_fokus4 || '';
-            document.getElementById('actualNewMember').value = data.actualNewMember || '';
-            document.getElementById('totalStruk').value = data.totalStruk || '';
-            document.getElementById('strukMember').value = data.strukMember || '';
-
-            for(let i=1; i<=10; i++) {
-                document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
-            }
-
-            document.getElementById('catToys').value = data.catToys || '';
-            document.getElementById('catTelur').value = data.catTelur || '';
-            document.getElementById('feeBase').value = data.feeBase || '';
-        } else {
-            document.getElementById('actualSales').value = '';
-            document.getElementById('act_fokus1').value = '';
-            document.getElementById('act_fokus2').value = '';
-            document.getElementById('act_fokus3').value = '';
-            document.getElementById('act_fokus4').value = '';
-            document.getElementById('actualNewMember').value = '';
-            document.getElementById('totalStruk').value = '';
-            document.getElementById('strukMember').value = '';
-
-            for(let i=1; i<=10; i++) {
-                document.getElementById(`act_psm${i}`).value = '';
-            }
-
-            document.getElementById('catToys').value = '';
-            document.getElementById('catTelur').value = '';
-            document.getElementById('feeBase').value = '';
-        }
-        calculateAllCalculations();
-    }
-
-    function autoSaveDaily() {
-        const key = getDailyKey();
-        if (!key) return;
-
-        const data = {
-            shiftSelect: document.getElementById('shiftSelect').value,
-            actualSales: document.getElementById('actualSales').value,
-            act_fokus1: document.getElementById('act_fokus1').value,
-            act_fokus2: document.getElementById('act_fokus2').value,
-            act_fokus3: document.getElementById('act_fokus3').value,
-            act_fokus4: document.getElementById('act_fokus4').value,
-            actualNewMember: document.getElementById('actualNewMember').value,
-            totalStruk: document.getElementById('totalStruk').value,
-            strukMember: document.getElementById('strukMember').value,
-            catToys: document.getElementById('catToys').value,
-            catTelur: document.getElementById('catTelur').value,
-            feeBase: document.getElementById('feeBase').value
-        };
-
-        for(let i=1; i<=10; i++) {
-            data[`act_psm${i}`] = document.getElementById(`act_psm${i}`).value;
-        }
-
-        localStorage.setItem(key, JSON.stringify(data));
-        calculateAllCalculations();
-    }
-
-    document.getElementById('storeSelect').addEventListener('change', loadDailyData);
-    document.getElementById('datePicker').addEventListener('change', function() {
-        loadDailyData();
-        calculateAllCalculations();
-    });
-
-    document.querySelectorAll('.actual-field, .target-field').forEach(input => {
-        input.addEventListener('input', autoSaveDaily);
-    });
-
-    calculateAllCalculations();
-</script>
-
-</body>
-</html>
+        document.getElementById('loadingStatus').innerText = "Sedang mengambil data target dari Cloud...";
+        
+        fetch(`${WEB_APP_URL}?action=get&storeCode=${encodeURIComponent(store)}`)
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loadingStatus').innerText = "";
+                if (data && Object.keys(data).length > 0) {
+                    d
