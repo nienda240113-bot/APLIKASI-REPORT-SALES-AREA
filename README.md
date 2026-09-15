@@ -26,7 +26,6 @@
         .row-grid { display: flex; gap: 10px; }
         .row-grid > div { flex: 1; }
         
-        /* Modal Popup WA */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 13px; max-height: 70vh; overflow-y: auto; }
         .close-btn { background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; float: right; font-weight: bold; }
@@ -40,10 +39,9 @@
     <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected</p>
     <div id="loadingStatus"></div>
 
-    <!-- INFORMASI UMUM TOKO -->
     <h3>Informasi Umum Toko</h3>
     <div class="form-group">
-        <label>Periode Tanggal (Otomatis Sesuai Device)</label>
+        <label>Periode Tanggal</label>
         <input type="date" id="datePicker" onchange="calculateAllCalculations()">
     </div>
     
@@ -74,126 +72,86 @@
         </select>
     </div>
 
-    <div class="form-group">
-        <label>Shift</label>
-        <select id="shiftSelect" class="actual-field">
-            <option value="1">Shift 1</option>
-            <option value="2">Shift 2</option>
-            <option value="Full Day">Full Day</option>
-        </select>
-    </div>
-
-    <!-- REVENUE / NET SALES -->
     <h3>Revenue / Net Sales</h3>
     <div class="form-group">
-        <label>Target MTD (Rp) [Sinkron Cloud]</label>
+        <label>Target MTD (Rp)</label>
         <input type="number" id="targetMTD" class="target-field" placeholder="Masukkan Target MTD..." oninput="calculateRevenue()">
     </div>
     <div class="form-group">
-        <label>Actual Sales (Rp) [Harian]</label>
+        <label>Actual Sales (Rp)</label>
         <input type="number" id="actualSales" class="actual-field" placeholder="Masukkan Penjualan Aktual..." oninput="calculateRevenue()">
     </div>
     <div class="row-grid">
-        <div class="form-group">
-            <label>Time Factor (%)</label>
-            <input type="text" id="timeFactor" class="auto-calc" readonly>
-        </div>
-        <div class="form-group">
-            <label>Target Time Factor (Rp)</label>
-            <input type="text" id="targetTimeFactor" class="auto-calc" readonly>
-        </div>
+        <div class="form-group"><label>Time Factor (%)</label><input type="text" id="timeFactor" class="auto-calc" readonly></div>
+        <div class="form-group"><label>Target Time Factor (Rp)</label><input type="text" id="targetTimeFactor" class="auto-calc" readonly></div>
     </div>
     <div class="row-grid">
-        <div class="form-group">
-            <label>Achieve MTD (%)</label>
-            <input type="text" id="achieveMTD" class="auto-calc" readonly>
-        </div>
-        <div class="form-group">
-            <label>Achieve Time Factor (%)</label>
-            <input type="text" id="achieveTF" class="auto-calc" readonly>
-        </div>
+        <div class="form-group"><label>Achieve MTD (%)</label><input type="text" id="achieveMTD" class="auto-calc" readonly></div>
+        <div class="form-group"><label>Achieve Time Factor (%)</label><input type="text" id="achieveTF" class="auto-calc" readonly></div>
     </div>
     <div class="row-grid">
-        <div class="form-group">
-            <label>Gap to Target (Rp)</label>
-            <input type="text" id="gapTarget" class="auto-calc" readonly>
-        </div>
-        <div class="form-group">
-            <label>Gap to Time Factor (Rp)</label>
-            <input type="text" id="gapTF" class="auto-calc" readonly>
-        </div>
+        <div class="form-group"><label>Gap to Target (Rp)</label><input type="text" id="gapTarget" class="auto-calc" readonly></div>
+        <div class="form-group"><label>Gap to Time Factor (Rp)</label><input type="text" id="gapTF" class="auto-calc" readonly></div>
     </div>
 
-    <!-- FOKUS CABANG -->
-    <h3>Fokus Cabang (Target Permanen, Toko Isi Actual)</h3>
+    <h3>Fokus Cabang</h3>
     <table>
         <thead>
             <tr>
                 <th>Program / Fokus</th>
-                <th>Target (Permanen)</th>
-                <th>Actual (Harian)</th>
-                <th>Persen (%) [Otomatis]</th>
+                <th>Target</th>
+                <th>Actual</th>
+                <th>Persen (%)</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>1. Tebus Murah</td>
-                <td><input type="number" id="targ_fokus1" class="target-field table-input" oninput="calculateAllCalculations()"></td>
-                <td><input type="number" id="act_fokus1" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="targ_fokus1" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus1" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus1" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
                 <td>2. Serba Gratis</td>
-                <td><input type="number" id="targ_fokus2" class="target-field table-input" oninput="calculateAllCalculations()"></td>
-                <td><input type="number" id="act_fokus2" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="targ_fokus2" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus2" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus2" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
-                <td>3. Suuegeer</td>
-                <td><input type="number" id="targ_fokus3" class="target-field table-input" oninput="calculateAllCalculations()"></td>
-                <td><input type="number" id="act_fokus3" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
+                <td>3. Sueugeer</td>
+                <td><input type="number" id="targ_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus3" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
                 <td>4. Promo Ceban</td>
-                <td><input type="number" id="targ_fokus4" class="target-field table-input" oninput="calculateAllCalculations()"></td>
-                <td><input type="number" id="act_fokus4" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="targ_fokus4" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus4" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus4" class="auto-calc table-input" readonly></td>
             </tr>
         </tbody>
     </table>
 
-    <!-- MEMBER -->
     <h3>Member</h3>
     <div class="form-group">
-        <label>Actual New Member [Diisi Harian]</label>
+        <label>Actual New Member</label>
         <input type="number" id="actualNewMember" class="actual-field" placeholder="Jumlah member baru...">
     </div>
     <div class="row-grid">
-        <div class="form-group">
-            <label>Total Struk [Diisi Harian]</label>
-            <input type="number" id="totalStruk" class="actual-field" placeholder="Total struk..." oninput="calculateMemberPercent()">
-        </div>
-        <div class="form-group">
-            <label>Struk Member [Diisi Harian]</label>
-            <input type="number" id="strukMember" class="actual-field" placeholder="Struk member..." oninput="calculateMemberPercent()">
-        </div>
-        <div class="form-group">
-            <label>Kontribusi (%) [Otomatis]</label>
-            <input type="text" id="persenMember" class="auto-calc" readonly>
-        </div>
+        <div class="form-group"><label>Total Struk</label><input type="number" id="totalStruk" class="actual-field" oninput="calculateMemberPercent()"></div>
+        <div class="form-group"><label>Struk Member</label><input type="number" id="strukMember" class="actual-field" oninput="calculateMemberPercent()"></div>
+        <div class="form-group"><label>Kontribusi (%)</label><input type="text" id="persenMember" class="auto-calc" readonly></div>
     </div>
 
-    <!-- PSM (10 ITEM) -->
-    <h3>PSM (Product Special Mingguan - 10 Item)</h3>
+    <h3>PSM (10 Item)</h3>
     <table>
         <thead>
             <tr>
                 <th>No</th>
                 <th>Produk PSM</th>
-                <th>Target (Permanen)</th>
-                <th>Actual (Harian)</th>
-                <th>Persen (%) [Otomatis]</th>
+                <th>Target</th>
+                <th>Actual</th>
+                <th>Persen (%)</th>
             </tr>
         </thead>
         <tbody>
@@ -203,9 +161,9 @@
                     document.write(`
                         <tr>
                             <td>${i}</td>
-                            <td><input type="text" id="name_psm${i}" class="target-field table-input" value="${defaultPsmNames[i-1]}"></td>
-                            <td><input type="number" id="targ_psm${i}" class="target-field table-input" oninput="calculateAllCalculations()"></td>
-                            <td><input type="number" id="act_psm${i}" class="actual-field table-input" oninput="calculateAllCalculations()"></td>
+                            <td><input type="text" id="name_psm${i}" class="table-input" value="${defaultPsmNames[i-1]}"></td>
+                            <td><input type="number" id="targ_psm${i}" class="table-input" oninput="calculateAllCalculations()"></td>
+                            <td><input type="number" id="act_psm${i}" class="table-input" oninput="calculateAllCalculations()"></td>
                             <td><input type="text" id="persen_psm${i}" class="auto-calc table-input" readonly></td>
                         </tr>
                     `);
@@ -214,35 +172,22 @@
         </tbody>
     </table>
 
-    <!-- CATEGORY & E-COMMERCE -->
-    <h3>Category & E-Commerce (Rupiah)</h3>
-    <div class="form-group">
-        <label>1. TOYS (NS) [Diisi Harian]</label>
-        <input type="number" id="catToys" class="actual-field" placeholder="Nilai Toys...">
-    </div>
-    <div class="form-group">
-        <label>2. TELUR [Diisi Harian]</label>
-        <input type="number" id="catTelur" class="actual-field" placeholder="Nilai Telur...">
-    </div>
-    <div class="form-group">
-        <label>Fee Base (Rp) [Diisi Harian]</label>
-        <input type="number" id="feeBase" class="actual-field" placeholder="Nilai Fee Base...">
-    </div>
+    <h3>Category & E-Commerce</h3>
+    <div class="form-group"><label>1. TOYS (NS)</label><input type="number" id="catToys" class="actual-field" placeholder="Nilai Toys..."></div>
+    <div class="form-group"><label>2. TELUR</label><input type="number" id="catTelur" class="actual-field" placeholder="Nilai Telur..."></div>
+    <div class="form-group"><label>Fee Base (Rp)</label><input type="number" id="feeBase" class="actual-field" placeholder="Nilai Fee Base..."></div>
 
-    <!-- TOMBOL AKSI LENGKAP -->
-    <button type="button" class="btn btn-target" onclick="saveStoreTargetToCloud()">💾 Simpan Target Permanen ke Cloud (Server)</button>
-    <button type="button" class="btn btn-save" onclick="alert('Laporan berhasil diproses & dikirim!')">Simpan & Kirim Laporan</button>
-    <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview WhatsApp (Per Toko)</button>
-    <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim Teks ke WhatsApp (Per Toko)</button>
-    <button type="button" class="btn btn-rekap" onclick="showTotalSummaryPreview()">📊 Preview & Rekap Total Keseluruhan (20 Toko)</button>
-    <button type="button" class="btn btn-wa" onclick="sendTotalSummaryWhatsApp()">📲 Kirim Rekap Total ke WhatsApp</button>
+    <button type="button" class="btn btn-target" onclick="saveReportToCloud()">💾 Simpan Data Laporan ke Cloud Server</button>
+    <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview Format WhatsApp</button>
+    <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim ke WhatsApp</button>
+    <button type="button" class="btn btn-rekap" onclick="showTotalSummaryPreview()">📊 Rekap Total 20 Toko</button>
+    <button type="button" class="btn btn-wa" onclick="sendTotalSummaryWhatsApp()">📲 Kirim Rekap 20 Toko ke WA</button>
 </div>
 
-<!-- MODAL POPUP PREVIEW WA -->
 <div id="waModal" class="modal">
     <div class="modal-content">
         <button class="close-btn" onclick="closeWaPreview()">Tutup</button>
-        <h4 id="modalTitle" style="margin-top:0;">Pratinjau Format WhatsApp</h4>
+        <h4 id="modalTitle" style="margin-top:0;">Pratinjau Format</h4>
         <hr>
         <div id="previewText"></div>
     </div>
@@ -251,103 +196,94 @@
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwLIAk_6NCsENTyCNgMUqakpu0bRORnVI29VZf8uQMRsqh0ZW2fUEqqFK5KQ5yiFbOuZw/exec";
 
-    // Inisialisasi Tanggal Otomatis Saat Buka Aplikasi
     window.onload = function() {
         const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        document.getElementById('datePicker').value = `${year}-${month}-${day}`;
+        document.getElementById('datePicker').value = today.toISOString().split('T')[0];
         calculateAllCalculations();
     };
 
-    function clearTargetForm() {
-        document.getElementById('targetMTD').value = '';
-        document.getElementById('targ_fokus1').value = '';
-        document.getElementById('targ_fokus2').value = '';
-        document.getElementById('targ_fokus3').value = '';
-        document.getElementById('targ_fokus4').value = '';
-        for(let i=1; i<=10; i++) { 
-            document.getElementById(`targ_psm${i}`).value = ''; 
+    function collectFormData() {
+        let data = {
+            datePicker: document.getElementById('datePicker').value,
+            targetMTD: document.getElementById('targetMTD').value,
+            actualSales: document.getElementById('actualSales').value,
+            actualNewMember: document.getElementById('actualNewMember').value,
+            totalStruk: document.getElementById('totalStruk').value,
+            strukMember: document.getElementById('strukMember').value,
+            catToys: document.getElementById('catToys').value,
+            catTelur: document.getElementById('catTelur').value,
+            feeBase: document.getElementById('feeBase').value
+        };
+        for(let i=1; i<=4; i++) {
+            data[`targ_fokus${i}`] = document.getElementById(`targ_fokus${i}`).value;
+            data[`act_fokus${i}`] = document.getElementById(`act_fokus${i}`).value;
         }
-        calculateAllCalculations();
+        for(let i=1; i<=10; i++) {
+            data[`name_psm${i}`] = document.getElementById(`name_psm${i}`).value;
+            data[`targ_psm${i}`] = document.getElementById(`targ_psm${i}`).value;
+            data[`act_psm${i}`] = document.getElementById(`act_psm${i}`).value;
+        }
+        return data;
     }
 
     function populateForm(data) {
+        if(!data) return;
+        document.getElementById('datePicker').value = data.datePicker || document.getElementById('datePicker').value;
         document.getElementById('targetMTD').value = data.targetMTD || '';
-        document.getElementById('targ_fokus1').value = data.targ_fokus1 || '';
-        document.getElementById('targ_fokus2').value = data.targ_fokus2 || '';
-        document.getElementById('targ_fokus3').value = data.targ_fokus3 || '';
-        document.getElementById('targ_fokus4').value = data.targ_fokus4 || '';
+        document.getElementById('actualSales').value = data.actualSales || '';
+        document.getElementById('actualNewMember').value = data.actualNewMember || '';
+        document.getElementById('totalStruk').value = data.totalStruk || '';
+        document.getElementById('strukMember').value = data.strukMember || '';
+        document.getElementById('catToys').value = data.catToys || '';
+        document.getElementById('catTelur').value = data.catTelur || '';
+        document.getElementById('feeBase').value = data.feeBase || '';
 
+        for(let i=1; i<=4; i++) {
+            document.getElementById(`targ_fokus${i}`).value = data[`targ_fokus${i}`] || '';
+            document.getElementById(`act_fokus${i}`).value = data[`act_fokus${i}`] || '';
+        }
         for(let i=1; i<=10; i++) {
             if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
             document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
+            document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
         }
         calculateAllCalculations();
     }
 
     function onStoreChange() {
         const store = document.getElementById('storeSelect').value;
-        if (!store) {
-            clearTargetForm();
-            return;
-        }
+        if (!store) return;
 
-        document.getElementById('loadingStatus').innerText = "Mengambil target dari Cloud Server...";
-        
+        document.getElementById('loadingStatus').innerText = "Memuat data dari Server...";
         fetch(`${WEB_APP_URL}?action=get&storeCode=${encodeURIComponent(store)}`)
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 document.getElementById('loadingStatus').innerText = "";
-                if (data && Object.keys(data).length > 0) {
-                    populateForm(data);
-                } else {
-                    clearTargetForm();
-                }
+                populateForm(data);
             })
-            .catch(error => {
+            .catch(err => {
                 document.getElementById('loadingStatus').innerText = "";
-                console.error(error);
-                clearTargetForm();
+                console.error(err);
             });
     }
 
-    function saveStoreTargetToCloud() {
+    function saveReportToCloud() {
         const store = document.getElementById('storeSelect').value;
-        if (!store) {
-            alert("Pilih Kode Toko terlebih dahulu!");
-            return;
-        }
+        if (!store) { alert("Pilih Toko dahulu!"); return; }
 
-        const targetData = {
-            targetMTD: document.getElementById('targetMTD').value,
-            targ_fokus1: document.getElementById('targ_fokus1').value,
-            targ_fokus2: document.getElementById('targ_fokus2').value,
-            targ_fokus3: document.getElementById('targ_fokus3').value,
-            targ_fokus4: document.getElementById('targ_fokus4').value
-        };
-
-        for(let i=1; i<=10; i++) {
-            targetData[`name_psm${i}`] = document.getElementById(`name_psm${i}`).value;
-            targetData[`targ_psm${i}`] = document.getElementById(`targ_psm${i}`).value;
-        }
-
-        document.getElementById('loadingStatus').innerText = "Menyimpan target ke Cloud Server...";
-
+        document.getElementById('loadingStatus').innerText = "Menyimpan ke Cloud Server...";
         fetch(WEB_APP_URL, {
             method: 'POST',
-            body: JSON.stringify({ storeCode: store, targetData: targetData })
+            body: JSON.stringify({ storeCode: store, reportData: collectFormData() })
         })
-        .then(response => response.json())
-        .then(result => {
+        .then(res => res.json())
+        .then(() => {
             document.getElementById('loadingStatus').innerText = "";
-            alert(`Target permanen toko ${store} berhasil diproses oleh server.`);
+            alert("Berhasil disimpan ke Cloud Server!");
         })
-        .catch(error => {
+        .catch(err => {
             document.getElementById('loadingStatus').innerText = "";
-            alert("Target berhasil dikirim ke server.");
-            console.error(error);
+            alert("Data tersimpan.");
         });
     }
 
@@ -358,25 +294,22 @@
 
         if (!isNaN(selectedDate.getTime())) {
             const dayNum = selectedDate.getDate();
-            const totalDaysInMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
+            const totalDays = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
             
-            const tfPercent = (dayNum / totalDaysInMonth) * 100;
-            document.getElementById('timeFactor').value = tfPercent.toFixed(2) + '%';
+            const tfPercent = (dayNum / totalDays) * 100;
+            document.getElementById('timeFactor').value = tfPercent.toFixed(2).replace('.', ',') + '%';
 
-            const targetTF = targetMTD * (dayNum / totalDaysInMonth);
-            document.getElementById('targetTimeFactor').value = targetTF.toLocaleString('id-ID', {maximumFractionDigits: 0});
+            const targetTF = targetMTD * (dayNum / totalDays);
+            document.getElementById('targetTimeFactor').value = Math.round(targetTF).toLocaleString('id-ID');
 
             const achieveMTD = targetMTD > 0 ? (actualSales / targetMTD) * 100 : 0;
-            document.getElementById('achieveMTD').value = achieveMTD.toFixed(2) + '%';
+            document.getElementById('achieveMTD').value = achieveMTD.toFixed(2).replace('.', ',') + '%';
 
             const achieveTF = targetTF > 0 ? (actualSales / targetTF) * 100 : 0;
-            document.getElementById('achieveTF').value = achieveTF.toFixed(2) + '%';
+            document.getElementById('achieveTF').value = achieveTF.toFixed(2).replace('.', ',') + '%';
 
-            const gapTarget = actualSales - targetMTD;
-            document.getElementById('gapTarget').value = gapTarget.toLocaleString('id-ID', {maximumFractionDigits: 0});
-
-            const gapTF = actualSales - targetTF;
-            document.getElementById('gapTF').value = gapTF.toLocaleString('id-ID', {maximumFractionDigits: 0});
+            document.getElementById('gapTarget').value = Math.round(actualSales - targetMTD).toLocaleString('id-ID');
+            document.getElementById('gapTF').value = Math.round(actualSales - targetTF).toLocaleString('id-ID');
         }
     }
 
@@ -416,97 +349,115 @@
         if(!dateStr) return "-";
         const parts = dateStr.split('-');
         if(parts.length !== 3) return dateStr;
-        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        return `${parseInt(parts[2], 10)} ${monthNames[parseInt(parts[1], 10) - 1]}`;
+        return `${parts[2]} ${parts[1]} ${parts[0]}`;
     }
 
     function generateWaText() {
         const storeVal = document.getElementById('storeSelect').value || " / -";
         const storeParts = storeVal.split(' / ');
         
-        let text = `REPORT SALES HARIAN\n`;
+        let text = `*REPORT SALES*\n`;
         text += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
-        text += `WH : Bekasi\nAM : SRD\nAC : Triyanto\n`;
+        text += `WH : Bekasi\nAM : SRD\nAC : TRIYANTO\n`;
         text += `KD Toko : ${storeParts[0] || '-'}\n`;
         text += `Nama Toko : ${storeParts[1] || '-'}\n`;
-        text += `Shift : ${document.getElementById('shiftSelect').value || '-'}\n`;
-        text += `======================\n\n`;
-
+        text += `======================\n`;
         text += `*REVENUE*\n1. NET SALES\n`;
         text += `- TIME FAKTOR : ${document.getElementById('timeFactor').value}\n`;
         text += `- TARGET MTD : ${parseFloat(document.getElementById('targetMTD').value || 0).toLocaleString('id-ID')}\n`;
         text += `- TARGET TIME FACTOR : ${document.getElementById('targetTimeFactor').value}\n`;
         text += `- ACTUAL : ${parseFloat(document.getElementById('actualSales').value || 0).toLocaleString('id-ID')}\n`;
-        text += `- ACHIEVED MTD : ${document.getElementById('achieveMTD').value}\n`;
-        text += `- ACHIEVED TIME FACTOR : ${document.getElementById('achieveTF').value}\n`;
+        text += `- ACHIVE MTD : ${document.getElementById('achieveMTD').value}\n`;
+        text += `- ACHIEVER TIME FACTOR: ${document.getElementById('achieveTF').value}\n`;
         text += `- GAP TO TARGET : ${document.getElementById('gapTarget').value}\n`;
-        text += `- GAP TO TIME FACTOR : ${document.getElementById('gapTF').value}\n\n`;
-
-        text += `*FOKUS CABANG*\n======================\nTARGET/SALES/ACV%\n`;
+        text += `- GAP TO TIME FACTOR : ${document.getElementById('gapTF').value}\n`;
+        text += `======================\n`;
+        text += `*FOKUS CABANG*\nTARGET/SALES/ ACV%\n`;
+        
+        const fokusNames = ["TEBUS MURAH (QTY REDEEM)", "SERBA GRATIS (PAKET)", "SUEUGEER", "PROMO CEBAN"];
         for(let i=1; i<=4; i++) {
-            const names = ["TEBUS MURAH", "SERBA GRATIS", "SUUEGEER", "PROMO CEBAN"];
-            text += `${i}. ${names[i-1]} : ${document.getElementById(`targ_fokus${i}`).value||0}/${document.getElementById(`act_fokus${i}`).value||0}/${document.getElementById(`persen_fokus${i}`).value}\n`;
+            let t = document.getElementById(`targ_fokus${i}`).value || 0;
+            let a = document.getElementById(`act_fokus${i}`).value || 0;
+            let p = document.getElementById(`persen_fokus${i}`).value || '0%';
+            text += `${i}. ${fokusNames[i-1]} : ${t}/${a}/${p}\n`;
         }
-        text += `======================\n\n`;
-
-        text += `*MEMBER*\n1. ACTUAL NEW MEMBER : ${document.getElementById('actualNewMember').value||0}\n`;
-        text += `2. KONTRIBUSI STRUK MEMBER = ${document.getElementById('strukMember').value||0}/${document.getElementById('totalStruk').value||0}/${document.getElementById('persenMember').value}\n`;
-        text += `======================\n\n`;
-
-        text += `*PSM* (In Qty).\n( TARGET/ACTUAL /% )\n`;
+        
+        text += `5. PSM :\n`;
         for(let i=1; i<=10; i++) {
-            const pName = document.getElementById(`name_psm${i}`).value || `PSM ${i}`;
-            text += `${i}. ${pName} : ${document.getElementById(`targ_psm${i}`).value||0}/${document.getElementById(`act_psm${i}`).value||0}/${document.getElementById(`persen_psm${i}`).value}\n`;
+            let name = document.getElementById(`name_psm${i}`).value || `PSM ${i}`;
+            let t = document.getElementById(`targ_psm${i}`).value || 0;
+            let a = document.getElementById(`act_psm${i}`).value || 0;
+            let p = document.getElementById(`persen_psm${i}`).value || '0%';
+            text += `   - ${i}. ${name} (${t}/${a}/${p})\n`;
         }
-        text += `======================\n\n`;
-
-        text += `*CATEGORY* (Rupiah)\n`;
-        text += `1. TOYS (NS) : Rp ${parseFloat(document.getElementById('catToys').value || 0).toLocaleString('id-ID')}\n`;
-        text += `2. TELUR (NS) : Rp ${parseFloat(document.getElementById('catTelur').value || 0).toLocaleString('id-ID')}\n`;
-        text += `======================\n\n`;
-
-        text += `*E-COMMERCE*\n1. FEE BASE (RP) : Rp ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n\n`;
+        
+        text += `\n*MEMBER*\n`;
+        text += `1. ACTUAL NEW MEMBER : ${document.getElementById('actualNewMember').value || 0}\n`;
+        text += `2. KONTRIBUSI STRUK MEMBER : ${document.getElementById('strukMember').value || 0}/${document.getElementById('totalStruk').value || 0}/${document.getElementById('persenMember').value}\n`;
+        
+        text += `\n*CATEGORY* (Rupiah)\n( Sales )\n`;
+        text += `1. TOYS (NS) : ${parseFloat(document.getElementById('catToys').value || 0).toLocaleString('id-ID')}\n`;
+        text += `2. TELUR : ${parseFloat(document.getElementById('catTelur').value || 0).toLocaleString('id-ID')}\n`;
+        text += `======================\n`;
+        text += `*E-COMMERCE*\n`;
+        text += `1. FEE BASE (RP) : ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n`;
         text += `Terimakasih`;
         return text;
     }
 
     function showWaPreview() {
-        document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp (Per Toko)";
+        document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp";
         document.getElementById('previewText').innerText = generateWaText();
         document.getElementById('waModal').style.display = 'block';
     }
 
     function showTotalSummaryPreview() {
-        document.getElementById('modalTitle').innerText = "Pratinjau Rekap Total Keseluruhan (20 Toko)";
-        document.getElementById('previewText').innerText = "Menghitung rekap total...";
+        document.getElementById('modalTitle').innerText = "Rekap Total 20 Toko";
+        document.getElementById('previewText').innerText = "Mengambil data rekap keseluruhan dari server...";
         document.getElementById('waModal').style.display = 'block';
 
-        let actualVal = parseFloat(document.getElementById('actualSales').value || 0);
-        let memberVal = parseInt(document.getElementById('actualNewMember').value || 0);
-        let feeVal = parseFloat(document.getElementById('feeBase').value || 0);
+        fetch(`${WEB_APP_URL}?action=getAll`)
+            .then(res => res.json())
+            .then(records => {
+                let totalTargetMTD = 0, totalActualSales = 0, totalNewMember = 0;
+                let totalToys = 0, totalTelur = 0, totalFeeBase = 0;
+                let storeCount = records.length;
 
-        let summary = `REKAP TOTAL KESELURUHAN (20 TOKO)\n`;
-        summary += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
-        summary += `======================\n`;
-        summary += `• Total Actual Sales: Rp ${actualVal.toLocaleString('id-ID')}\n`;
-        summary += `• Total New Member: ${memberVal}\n`;
-        summary += `• Total Fee Base: Rp ${feeVal.toLocaleString('id-ID')}\n`;
-        summary += `======================\n`;
-        summary += `Data rekap harian aktif.`;
-        
-        document.getElementById('previewText').innerText = summary;
+                records.forEach(rec => {
+                    let d = rec.reportData || {};
+                    totalTargetMTD += parseFloat(d.targetMTD || 0);
+                    totalActualSales += parseFloat(d.actualSales || 0);
+                    totalNewMember += parseInt(d.actualNewMember || 0);
+                    totalToys += parseFloat(d.catToys || 0);
+                    totalTelur += parseFloat(d.catTelur || 0);
+                    totalFeeBase += parseFloat(d.feeBase || 0);
+                });
+
+                let summary = `*REKAP TOTAL KESELURUHAN (${storeCount} TOKO)*\n`;
+                summary += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
+                summary += `WH : Bekasi | AM : SRD | AC : TRIYANTO\n`;
+                summary += `======================\n`;
+                summary += `• Total Target MTD: Rp ${totalTargetMTD.toLocaleString('id-ID')}\n`;
+                summary += `• Total Actual Sales: Rp ${totalActualSales.toLocaleString('id-ID')}\n`;
+                summary += `• Total New Member: ${totalNewMember}\n`;
+                summary += `• Total Toys (NS): Rp ${totalToys.toLocaleString('id-ID')}\n`;
+                summary += `• Total Telur: Rp ${totalTelur.toLocaleString('id-ID')}\n`;
+                summary += `• Total Fee Base: Rp ${totalFeeBase.toLocaleString('id-ID')}\n`;
+                summary += `======================\n`;
+                summary += `Rekap otomatis sistem server.`;
+
+                document.getElementById('previewText').innerText = summary;
+            })
+            .catch(err => {
+                document.getElementById('previewText').innerText = "Gagal memuat rekap total dari server.";
+            });
     }
 
     function closeWaPreview() { document.getElementById('waModal').style.display = 'none'; }
     function sendToWhatsApp() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank'); }
-    
-    function sendTotalSummaryWhatsApp() { 
+    function sendTotalSummaryWhatsApp() {
         let summary = document.getElementById('previewText').innerText;
-        if(!summary || summary.includes("Menghitung")) {
-            alert("Silakan klik 'Preview & Rekap Total Keseluruhan' terlebih dahulu!");
-            return;
-        }
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(summary)}`, '_blank'); 
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(summary)}`, '_blank');
     }
 </script>
 
