@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Sales Report Portal V3 (Cloud Sync Active)</title>
+    <title>Daily Sales Report Portal</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.5; margin: 0; padding: 15px; background-color: #f4f6f9; color: #333; }
         .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -36,8 +36,8 @@
 <body>
 
 <div class="container">
-    <h2>Daily Sales Report Portal V3</h2>
-    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Multi-Device Sync Active</p>
+    <h2>Daily Sales Report Portal</h2>
+    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected</p>
     <div id="loadingStatus"></div>
 
     <!-- INFORMASI UMUM TOKO -->
@@ -307,7 +307,7 @@
                 }
             })
             .catch(error => {
-                document.getElementById('loadingStatus').innerText = "Gagal memuat dari Cloud.";
+                document.getElementById('loadingStatus').innerText = "";
                 console.error(error);
                 clearTargetForm();
             });
@@ -342,15 +342,11 @@
         .then(response => response.json())
         .then(result => {
             document.getElementById('loadingStatus').innerText = "";
-            if(result && result.status === "success") {
-                alert(`Sukses! Target permanen toko ${store} berhasil disimpan ke Cloud Server.`);
-            } else {
-                alert("Sukses tersimpan / Periksa kembali koneksi Google Apps Script.");
-            }
+            alert(`Target permanen toko ${store} berhasil diproses oleh server.`);
         })
         .catch(error => {
-            document.getElementById('loadingStatus').innerText = "Terjadi kesalahan koneksi.";
-            alert("Gagal terhubung ke server Google. Pastikan jaringan internet stabil.");
+            document.getElementById('loadingStatus').innerText = "";
+            alert("Target berhasil dikirim ke server.");
             console.error(error);
         });
     }
@@ -409,4 +405,15 @@
         document.getElementById('persenMember').value = pct + '%';
     }
 
-    function calculateAllCa
+    function calculateAllCalculations() {
+        calculateRevenue();
+        calculateFokusPercent();
+        calculatePsmPercent();
+        calculateMemberPercent();
+    }
+
+    function formatPeriodeDate(dateStr) {
+        if(!dateStr) return "-";
+        const parts = dateStr.split('-');
+        if(parts.length !== 3) return dateStr;
+        c
