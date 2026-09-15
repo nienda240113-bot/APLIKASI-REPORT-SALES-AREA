@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Sales Report Portal V2 (Cloud Sync Multi-Device)</title>
+    <title>Daily Sales Report Portal V2 (Cloud Sync Active)</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.5; margin: 0; padding: 15px; background-color: #f4f6f9; color: #333; }
         .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -30,7 +30,7 @@
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
         .modal-content { background-color: #fff; margin: 10% auto; padding: 20px; border-radius: 8px; width: 90%; max-width: 500px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 13px; max-height: 70vh; overflow-y: auto; }
         .close-btn { background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; float: right; font-weight: bold; }
-        #loadingStatus { font-size: 12px; color: #d9534f; font-weight: bold; margin-top: 5px; }
+        #loadingStatus { font-size: 13px; color: #d9534f; font-weight: bold; margin-top: 5px; background: #fff3f3; padding: 5px; border-radius: 4px; display: inline-block; }
     </style>
 </head>
 <body>
@@ -249,7 +249,8 @@
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzRtCZ_gwQMiOutWqRm0sfC7CJARrCWQXAQcWb_bneEJghEb5Cwh4uw8ripuf1F26wC1g/exec";
+    // URL Google Apps Script Terbaru yang sudah disinkronkan
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwLIAk_6NCsENTyCNgMUqakpu0bRORnVI29VZf8uQMRsqh0ZW2fUEqqFK5KQ5yiFbOuZw/exec";
 
     // Set tanggal otomatis sesuai device HP/Laptop saat halaman dibuka
     const today = new Date();
@@ -258,7 +259,6 @@
     const day = String(today.getDate()).padStart(2, '0');
     document.getElementById('datePicker').value = `${year}-${month}-${day}`;
 
-    // Kosongkan form target jika pindah toko dan belum ada data
     function clearTargetForm() {
         document.getElementById('targetMTD').value = '';
         document.getElementById('targ_fokus1').value = '';
@@ -271,7 +271,6 @@
         calculateAllCalculations();
     }
 
-    // Masukkan data target ke form di layar
     function populateForm(data) {
         document.getElementById('targetMTD').value = data.targetMTD || '';
         document.getElementById('targ_fokus1').value = data.targ_fokus1 || '';
@@ -286,7 +285,6 @@
         calculateAllCalculations();
     }
 
-    // Saat Toko Dipilih/Diganti -> Langsung Ambil Data dari Cloud Server (Google Sheets)
     function onStoreChange() {
         const store = document.getElementById('storeSelect').value;
         if (!store) {
@@ -313,7 +311,6 @@
             });
     }
 
-    // FUNGSI SIMPAN TARGET PERMANEN KE CLOUD SERVER (Agar bisa diakses semua perangkat/HP/PC lain)
     function saveStoreTargetToCloud() {
         const store = document.getElementById('storeSelect').value;
         if (!store) {
@@ -344,13 +341,14 @@
         .then(result => {
             document.getElementById('loadingStatus').innerText = "";
             if(result.status === "success") {
-                alert(`Sukses! Target permanen toko ${store} berhasil disimpan ke Cloud Server dan sekarang bisa diakses dari HP, iPhone, atau PC mana pun.`);
+                alert(`Sukses! Target permanen toko ${store} berhasil disimpan ke Cloud Server.`);
             } else {
-                alert("Gagal menyimpan ke Cloud.");
+                alert("Gagal menyimpan ke Cloud: " + (result.message || 'Unknown error'));
             }
         })
         .catch(error => {
             document.getElementById('loadingStatus').innerText = "Terjadi kesalahan koneksi.";
+            alert("Gagal terhubung ke server Google. Pastikan jaringan internet stabil.");
             console.error(error);
         });
     }
@@ -407,4 +405,101 @@
         const member = parseFloat(document.getElementById('strukMember').value) || 0;
         const pct = total > 0 ? Math.round((member / total) * 100) : 0;
         document.getElementById('persenMember').value = pct + '%';
-  
+    }
+
+    function calculateAllCalculations() {
+        calculateRevenue();
+        calculateFokusPercent();
+        calculatePsmPercent();
+        calculateMemberPercent();
+    }
+
+    function formatPeriodeDate(dateStr) {
+        if(!dateStr) return "-";
+        const parts = dateStr.split('-');
+        if(parts.length !== 3) return dateStr;
+        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        return `${parseInt(parts[2], 10)} ${monthNames[parseInt(parts[1], 10) - 1]}`;
+    }
+
+    function generateWaText() {
+        const storeVal = document.getElementById('storeSelect').value || " / -";
+        const storeParts = storeVal.split(' / ');
+        
+        let text = `REPORT SALES HARIAN\n`;
+        text += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
+        text += `WH : Bekasi\nAM : SRD\nAC : Triyanto\n`;
+        text += `KD Toko : ${storeParts[0] || '-'}\n`;
+        text += `Nama Toko : ${storeParts[1] || '-'}\n`;
+        text += `Shift : ${document.getElementById('shiftSelect').value || '-'}\n`;
+        text += `======================\n\n`;
+
+        text += `*REVENUE*\n1. NET SALES\n`;
+        text += `- TIME FAKTOR : ${document.getElementById('timeFactor').value}\n`;
+        text += `- TARGET MTD : ${parseFloat(document.getElementById('targetMTD').value || 0).toLocaleString('id-ID')}\n`;
+        text += `- TARGET TIME FACTOR : ${document.getElementById('targetTimeFactor').value}\n`;
+        text += `- ACTUAL : ${parseFloat(document.getElementById('actualSales').value || 0).toLocaleString('id-ID')}\n`;
+        text += `- ACHIEVED MTD : ${document.getElementById('achieveMTD').value}\n`;
+        text += `- ACHIEVED TIME FACTOR : ${document.getElementById('achieveTF').value}\n`;
+        text += `- GAP TO TARGET : ${document.getElementById('gapTarget').value}\n`;
+        text += `- GAP TO TIME FACTOR : ${document.getElementById('gapTF').value}\n\n`;
+
+        text += `*FOKUS CABANG*\n======================\nTARGET/SALES/ACV%\n`;
+        for(let i=1; i<=4; i++) {
+            const names = ["TEBUS MURAH", "SERBA GRATIS", "SUUEGEER", "PROMO CEBAN"];
+            text += `${i}. ${names[i-1]} : ${document.getElementById(`targ_fokus${i}`).value||0}/${document.getElementById(`act_fokus${i}`).value||0}/${document.getElementById(`persen_fokus${i}`).value}\n`;
+        }
+        text += `======================\n\n`;
+
+        text += `*MEMBER*\n1. ACTUAL NEW MEMBER : ${document.getElementById('actualNewMember').value||0}\n`;
+        text += `2. KONTRIBUSI STRUK MEMBER = ${document.getElementById('strukMember').value||0}/${document.getElementById('totalStruk').value||0}/${document.getElementById('persenMember').value}\n`;
+        text += `======================\n\n`;
+
+        text += `*PSM* (In Qty).\n( TARGET/ACTUAL /% )\n`;
+        for(let i=1; i<=10; i++) {
+            const pName = document.getElementById(`name_psm${i}`).value || `PSM ${i}`;
+            text += `${i}. ${pName} : ${document.getElementById(`targ_psm${i}`).value||0}/${document.getElementById(`act_psm${i}`).value||0}/${document.getElementById(`persen_psm${i}`).value}\n`;
+        }
+        text += `======================\n\n`;
+
+        text += `*CATEGORY* (Rupiah)\n`;
+        text += `1. TOYS (NS) : Rp ${parseFloat(document.getElementById('catToys').value || 0).toLocaleString('id-ID')}\n`;
+        text += `2. TELUR (NS) : Rp ${parseFloat(document.getElementById('catTelur').value || 0).toLocaleString('id-ID')}\n`;
+        text += `======================\n\n`;
+
+        text += `*E-COMMERCE*\n1. FEE BASE (RP) : Rp ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n\n`;
+        text += `Terimakasih`;
+        return text;
+    }
+
+    function showWaPreview() {
+        document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp (Per Toko)";
+        document.getElementById('previewText').innerText = generateWaText();
+        document.getElementById('waModal').style.display = 'block';
+    }
+
+    function showTotalSummaryPreview() {
+        document.getElementById('modalTitle').innerText = "Pratinjau Rekap Total Keseluruhan";
+        let summary = `REKAP TOTAL KESELURUHAN (20 TOKO)\n`;
+        summary += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
+        summary += `======================\n`;
+        summary += `Total Actual Sales: Rp ${parseFloat(document.getElementById('actualSales').value || 0).toLocaleString('id-ID')}\n`;
+        summary += `Total New Member: ${document.getElementById('actualNewMember').value || 0}\n`;
+        summary += `Total Fee Base: Rp ${parseFloat(document.getElementById('feeBase').value ||0).toLocaleString('id-ID')}\n`;
+        summary += `======================\nData merangkum inputan aktif saat ini.`;
+        document.getElementById('previewText').innerText = summary;
+        document.getElementById('waModal').style.display = 'block';
+    }
+
+    function closeWaPreview() { document.getElementById('waModal').style.display = 'none'; }
+    function sendToWhatsApp() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank'); }
+    function sendTotalSummaryWhatsApp() { 
+        let summary = `REKAP TOTAL KESELURUHAN (20 TOKO)\nPERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\nActual Sales: Rp ${parseFloat(document.getElementById('actualSales').value || 0).toLocaleString('id-ID')}`;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(summary)}`, '_blank'); 
+    }
+
+    calculateAllCalculations();
+</script>
+
+</body>
+</html>
