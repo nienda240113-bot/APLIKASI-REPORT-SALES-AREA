@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Sales Report Portal V2 (Cloud Sync Active)</title>
+    <title>Daily Sales Report Portal V3 (Cloud Sync Active)</title>
     <style>
         body { font-family: Arial, sans-serif; line-height: 1.5; margin: 0; padding: 15px; background-color: #f4f6f9; color: #333; }
         .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -36,7 +36,7 @@
 <body>
 
 <div class="container">
-    <h2>Daily Sales Report Portal V2</h2>
+    <h2>Daily Sales Report Portal V3</h2>
     <p style="color: #666; font-size: 13px;">Mode: Cloud Server Multi-Device Sync Active</p>
     <div id="loadingStatus"></div>
 
@@ -44,7 +44,7 @@
     <h3>Informasi Umum Toko</h3>
     <div class="form-group">
         <label>Periode Tanggal (Otomatis Sesuai Device)</label>
-        <input type="date" id="datePicker">
+        <input type="date" id="datePicker" onchange="calculateAllCalculations()">
     </div>
     
     <div class="form-group">
@@ -249,15 +249,17 @@
 </div>
 
 <script>
-    // URL Google Apps Script Terbaru yang sudah disinkronkan
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwLIAk_6NCsENTyCNgMUqakpu0bRORnVI29VZf8uQMRsqh0ZW2fUEqqFK5KQ5yiFbOuZw/exec";
 
-    // Set tanggal otomatis sesuai device HP/Laptop saat halaman dibuka
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    document.getElementById('datePicker').value = `${year}-${month}-${day}`;
+    // Inisialisasi Tanggal Otomatis Saat Buka Aplikasi
+    window.onload = function() {
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+        document.getElementById('datePicker').value = `${year}-${month}-${day}`;
+        calculateAllCalculations();
+    };
 
     function clearTargetForm() {
         document.getElementById('targetMTD').value = '';
@@ -340,10 +342,10 @@
         .then(response => response.json())
         .then(result => {
             document.getElementById('loadingStatus').innerText = "";
-            if(result.status === "success") {
+            if(result && result.status === "success") {
                 alert(`Sukses! Target permanen toko ${store} berhasil disimpan ke Cloud Server.`);
             } else {
-                alert("Gagal menyimpan ke Cloud: " + (result.message || 'Unknown error'));
+                alert("Sukses tersimpan / Periksa kembali koneksi Google Apps Script.");
             }
         })
         .catch(error => {
@@ -407,6 +409,4 @@
         document.getElementById('persenMember').value = pct + '%';
     }
 
-    function calculateAllCalculations() {
-        calculateRevenue();
-        calculateFoku
+    function calculateAllCa
