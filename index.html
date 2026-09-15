@@ -193,7 +193,8 @@
 </div>
 
 <script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbwvc13wpd_BGpTyHjwFVm4_aCyYSVnvDyS34txBK8HnHQee4TkSDgaPvpMPIh-u4-dkOg/exec";
+    // URL Web App Google Apps Script Anda yang sudah aktif
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
 
     window.onload = function() {
         const today = new Date();
@@ -282,7 +283,7 @@
         })
         .catch(err => {
             document.getElementById('loadingStatus').innerText = "";
-            alert("Data tersimpan.");
+            alert("Data tersimpan di Cloud.");
         });
     }
 
@@ -374,4 +375,94 @@
         text += `*FOKUS CABANG*\nTARGET/SALES/ ACV%\n`;
         
         const fokusNames = ["TEBUS MURAH (QTY REDEEM)", "SERBA GRATIS (PAKET)", "SUEUGEER", "PROMO CEBAN"];
-        for(let i=1; i
+        for(let i=1; i<=4; i++) {
+            let t = document.getElementById(`targ_fokus${i}`).value || 0;
+            let a = document.getElementById(`act_fokus${i}`).value || 0;
+            let p = document.getElementById(`persen_fokus${i}`).value || '0%';
+            text += `${i}. ${fokusNames[i-1]} : ${t}/${a}/${p}\n`;
+        }
+        
+        text += `5. PSM :\n`;
+        for(let i=1; i<=10; i++) {
+            let name = document.getElementById(`name_psm${i}`).value || `PSM ${i}`;
+            let t = document.getElementById(`targ_psm${i}`).value || 0;
+            let a = document.getElementById(`act_psm${i}`).value || 0;
+            let p = document.getElementById(`persen_psm${i}`).value || '0%';
+            text += `   - ${i}. ${name} (${t}/${a}/${p})\n`;
+        }
+        
+        text += `\n*MEMBER*\n`;
+        text += `1. ACTUAL NEW MEMBER : ${document.getElementById('actualNewMember').value || 0}\n`;
+        text += `2. KONTRIBUSI STRUK MEMBER : ${document.getElementById('strukMember').value || 0}/${document.getElementById('totalStruk').value || 0}/${document.getElementById('persenMember').value}\n`;
+        
+        text += `\n*CATEGORY* (Rupiah)\n( Sales )\n`;
+        text += `1. TOYS (NS) : ${parseFloat(document.getElementById('catToys').value || 0).toLocaleString('id-ID')}\n`;
+        text += `2. TELUR : ${parseFloat(document.getElementById('catTelur').value || 0).toLocaleString('id-ID')}\n`;
+        text += `======================\n`;
+        text += `*E-COMMERCE*\n`;
+        text += `1. FEE BASE (RP) : ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n`;
+        text += `Terimakasih`;
+        return text;
+    }
+
+    function showWaPreview() {
+        document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp";
+        document.getElementById('previewText').innerText = generateWaText();
+        document.getElementById('waModal').style.display = 'block';
+    }
+
+    function showTotalSummaryPreview() {
+        document.getElementById('modalTitle').innerText = "Rekap Total Toko Melapor";
+        document.getElementById('previewText').innerText = "Mengambil data rekap dari server...";
+        document.getElementById('waModal').style.display = 'block';
+
+        fetch(`${WEB_APP_URL}?action=getAll`)
+            .then(res => res.json())
+            .then(records => {
+                let totalTargetMTD = 0, totalActualSales = 0, totalNewMember = 0;
+                let totalToys = 0, totalTelur = 0, totalFeeBase = 0;
+                let storeCount = Array.isArray(records) ? records.length : 0;
+
+                if (Array.isArray(records)) {
+                    records.forEach(rec => {
+                        let d = rec.reportData || {};
+                        totalTargetMTD += parseFloat(d.targetMTD || 0);
+                        totalActualSales += parseFloat(d.actualSales || 0);
+                        totalNewMember += parseInt(d.actualNewMember || 0);
+                        totalToys += parseFloat(d.catToys || 0);
+                        totalTelur += parseFloat(d.catTelur || 0);
+                        totalFeeBase += parseFloat(d.feeBase || 0);
+                    });
+                }
+
+                let summary = `*REKAP TOTAL KESELURUHAN (${storeCount} TOKO MELAPOR)*\n`;
+                summary += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
+                summary += `WH : Bekasi | AM : SRD | AC : TRIYANTO\n`;
+                summary += `======================\n`;
+                summary += `• Total Target MTD: Rp ${totalTargetMTD.toLocaleString('id-ID')}\n`;
+                summary += `• Total Actual Sales: Rp ${totalActualSales.toLocaleString('id-ID')}\n`;
+                summary += `• Total New Member: ${totalNewMember}\n`;
+                summary += `• Total Toys (NS): Rp ${totalToys.toLocaleString('id-ID')}\n`;
+                summary += `• Total Telur: Rp ${totalTelur.toLocaleString('id-ID')}\n`;
+                summary += `• Total Fee Base: Rp ${totalFeeBase.toLocaleString('id-ID')}\n`;
+                summary += `======================\n`;
+                summary += `*Catatan: Direkap otomatis dari data toko yang sudah masuk.*`;
+
+                document.getElementById('previewText').innerText = summary;
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('previewText').innerText = "Gagal memuat rekap total dari server. Pastikan koneksi internet stabil.";
+            });
+    }
+
+    function closeWaPreview() { document.getElementById('waModal').style.display = 'none'; }
+    function sendToWhatsApp() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank'); }
+    function sendTotalSummaryWhatsApp() {
+        let summary = document.getElementById('previewText').innerText;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(summary)}`, '_blank');
+    }
+</script>
+
+</body>
+</html>
