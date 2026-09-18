@@ -35,7 +35,7 @@
 
 <div class="container">
     <h2>Daily Sales Report Portal</h2>
-    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected</p>
+    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Anti-Double Data)</p>
     <div id="loadingStatus"></div>
 
     <h3>Informasi Umum Toko</h3>
@@ -193,6 +193,7 @@
 </div>
 
 <script>
+    // URL Web App Google Apps Script Anda yang baru
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
 
     window.onload = function() {
@@ -278,7 +279,7 @@
         .then(res => res.json())
         .then(() => {
             document.getElementById('loadingStatus').innerText = "";
-            alert("Berhasil disimpan ke Cloud Server!");
+            alert("Berhasil disimpan & diperbarui di Cloud Server!");
         })
         .catch(err => {
             document.getElementById('loadingStatus').innerText = "";
@@ -412,7 +413,7 @@
 
     function showTotalSummaryPreview() {
         document.getElementById('modalTitle').innerText = "Rekap Total Keseluruhan 20 Toko";
-        document.getElementById('previewText').innerText = "Mengambil dan merekap data dari server...";
+        document.getElementById('previewText').innerText = "Mengambil dan merekap data terbaru dari server...";
         document.getElementById('waModal').style.display = 'block';
 
         fetch(`${WEB_APP_URL}?action=getAll`)
@@ -489,7 +490,7 @@
                 summary += `2. TELUR : Rp ${totTelur.toLocaleString('id-ID')}\n`;
                 summary += `3. FEE BASE : Rp ${totFeeBase.toLocaleString('id-ID')}\n`;
                 summary += `======================\n`;
-                summary += `*Direkap otomatis dari data server toko-toko.*`;
+                summary += `*Direkap otomatis dari data server toko-toko (Anti-Double).*`;
 
                 document.getElementById('previewText').innerText = summary;
             })
