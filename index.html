@@ -35,12 +35,12 @@
 
 <div class="container">
     <h2>Daily Sales Report Portal</h2>
-    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Anti-Double Data)</p>
+    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Universal Real-Time Date)</p>
     <div id="loadingStatus"></div>
 
     <h3>Informasi Umum Toko</h3>
     <div class="form-group">
-        <label>Periode Tanggal</label>
+        <label>Periode Tanggal (Otomatis Sesuai Perangkat)</label>
         <input type="date" id="datePicker" onchange="calculateAllCalculations()">
     </div>
     
@@ -194,13 +194,20 @@
 
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
-    let globalSummaryText = ""; // Variabel aman untuk menyimpan teks rekap
+    let globalSummaryText = "";
 
     window.onload = function() {
-        const today = new Date();
-        document.getElementById('datePicker').value = today.toISOString().split('T')[0];
+        setDeviceLocalDate();
         calculateAllCalculations();
     };
+
+    // Fungsi universal untuk menyamakan tanggal persis dengan waktu lokal perangkat (Android, iOS, PC)
+    function setDeviceLocalDate() {
+        const now = new Date();
+        // Menggunakan 'en-CA' menghasilkan format YYYY-MM-DD persis sesuai tanggal lokal perangkat tanpa selisih zona waktu
+        const localDate = now.toLocaleDateString('en-CA');
+        document.getElementById('datePicker').value = localDate;
+    }
 
     function collectFormData() {
         let data = {
@@ -228,7 +235,8 @@
 
     function populateForm(data) {
         if(!data) return;
-        document.getElementById('datePicker').value = data.datePicker || document.getElementById('datePicker').value;
+        setDeviceLocalDate(); // Selalu kunci tanggal sesuai perangkat lokal
+
         document.getElementById('targetMTD').value = data.targetMTD || '';
         document.getElementById('actualSales').value = data.actualSales || '';
         document.getElementById('actualNewMember').value = data.actualNewMember || '';
@@ -492,7 +500,7 @@
                 summary += `======================\n`;
                 summary += `*Direkap otomatis dari data server toko-toko (Anti-Double).*`;
 
-                globalSummaryText = summary; // Simpan ke variabel global aman
+                globalSummaryText = summary;
                 document.getElementById('previewText').innerText = summary;
             })
             .catch(err => {
