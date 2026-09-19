@@ -194,6 +194,7 @@
 
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
+    let globalSummaryText = ""; // Variabel global untuk menyimpan teks rekap asli dengan enter
 
     window.onload = function() {
         updateDeviceDate();
@@ -251,7 +252,7 @@
         }
         for(let i=1; i<=10; i++) {
             if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
-            document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
+            document.getElementById(`targ_psm${i}`].value = data[`targ_psm${i}`] || '';
             document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
         }
         calculateAllCalculations();
@@ -499,6 +500,8 @@
                 summary += `======================\n`;
                 summary += `*Direkap otomatis dari data server toko-toko (Anti-Double).*`;
 
+                // Simpan ke variabel global agar format baris baru (enter) terjaga saat dikirim ke WA
+                globalSummaryText = summary;
                 document.getElementById('previewText').innerText = summary;
             })
             .catch(err => {
@@ -509,9 +512,14 @@
 
     function closeWaPreview() { document.getElementById('waModal').style.display = 'none'; }
     function sendToWhatsApp() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank'); }
+    
     function sendTotalSummaryWhatsApp() {
-        let summary = document.getElementById('previewText').innerText;
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(summary)}`, '_blank');
+        // Menggunakan variabel globalSummaryText yang membawa struktur baris enter (\\n) dengan benar
+        if (!globalSummaryText) {
+            alert("Tunggu data rekap selesai dimuat terlebih dahulu!");
+            return;
+        }
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(globalSummaryText)}`, '_blank');
     }
 </script>
 
