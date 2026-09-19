@@ -35,12 +35,12 @@
 
 <div class="container">
     <h2>Daily Sales Report Portal</h2>
-    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Custom Redeem Format)</p>
+    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Anti-Double Data)</p>
     <div id="loadingStatus"></div>
 
     <h3>Informasi Umum Toko</h3>
     <div class="form-group">
-        <label>Periode Tanggal (Otomatis Device)</label>
+        <label>Periode Tanggal</label>
         <input type="date" id="datePicker" onchange="calculateAllCalculations()">
     </div>
     
@@ -98,7 +98,7 @@
         <thead>
             <tr>
                 <th>Program / Fokus</th>
-                <th>Target / Redeem</th>
+                <th>Target</th>
                 <th>Actual</th>
                 <th>Persen (%)</th>
             </tr>
@@ -117,7 +117,7 @@
                 <td><input type="text" id="persen_fokus2" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
-                <td>3. Promo Sueegeer</td>
+                <td>3. Sueugeer</td>
                 <td><input type="number" id="targ_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="number" id="act_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus3" class="auto-calc table-input" readonly></td>
@@ -227,47 +227,24 @@
 
     function populateForm(data) {
         if(!data) return;
-        const currentDeviceDate = document.getElementById('datePicker').value;
-        const dataDate = data.datePicker || "";
+        document.getElementById('datePicker').value = data.datePicker || document.getElementById('datePicker').value;
+        document.getElementById('targetMTD').value = data.targetMTD || '';
+        document.getElementById('actualSales').value = data.actualSales || '';
+        document.getElementById('actualNewMember').value = data.actualNewMember || '';
+        document.getElementById('totalStruk').value = data.totalStruk || '';
+        document.getElementById('strukMember').value = data.strukMember || '';
+        document.getElementById('catToys').value = data.catToys || '';
+        document.getElementById('catTelur').value = data.catTelur || '';
+        document.getElementById('feeBase').value = data.feeBase || '';
 
-        if (dataDate !== currentDeviceDate) {
-            document.getElementById('targetMTD').value = data.targetMTD || '';
-            document.getElementById('actualSales').value = '';
-            document.getElementById('actualNewMember').value = '';
-            document.getElementById('totalStruk').value = '';
-            document.getElementById('strukMember').value = '';
-            document.getElementById('catToys').value = '';
-            document.getElementById('catTelur').value = '';
-            document.getElementById('feeBase').value = '';
-
-            for(let i=1; i<=4; i++) {
-                document.getElementById(`targ_fokus${i}`).value = data[`targ_fokus${i}`] || '';
-                document.getElementById(`act_fokus${i}`).value = '';
-            }
-            for(let i=1; i<=10; i++) {
-                if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
-                document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
-                document.getElementById(`act_psm${i}`).value = '';
-            }
-        } else {
-            document.getElementById('targetMTD').value = data.targetMTD || '';
-            document.getElementById('actualSales').value = data.actualSales || '';
-            document.getElementById('actualNewMember').value = data.actualNewMember || '';
-            document.getElementById('totalStruk').value = data.totalStruk || '';
-            document.getElementById('strukMember').value = data.strukMember || '';
-            document.getElementById('catToys').value = data.catToys || '';
-            document.getElementById('catTelur').value = data.catTelur || '';
-            document.getElementById('feeBase').value = data.feeBase || '';
-
-            for(let i=1; i<=4; i++) {
-                document.getElementById(`targ_fokus${i}`).value = data[`targ_fokus${i}`] || '';
-                document.getElementById(`act_fokus${i}`).value = data[`act_fokus${i}`] || '';
-            }
-            for(let i=1; i<=10; i++) {
-                if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
-                document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
-                document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
-            }
+        for(let i=1; i<=4; i++) {
+            document.getElementById(`targ_fokus${i}`).value = data[`targ_fokus${i}`] || '';
+            document.getElementById(`act_fokus${i}`).value = data[`act_fokus${i}`] || '';
+        }
+        for(let i=1; i<=10; i++) {
+            if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
+            document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
+            document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
         }
         calculateAllCalculations();
     }
@@ -276,7 +253,7 @@
         const store = document.getElementById('storeSelect').value;
         if (!store) return;
 
-        document.getElementById('loadingStatus').innerText = "Memuat data & target dari Server...";
+        document.getElementById('loadingStatus').innerText = "Memuat data dari Server...";
         fetch(`${WEB_APP_URL}?action=get&storeCode=${encodeURIComponent(store)}`)
             .then(res => res.json())
             .then(data => {
@@ -379,4 +356,156 @@
         const storeParts = storeVal.split(' / ');
         
         let text = `*REPORT SALES*\n`;
-        text += `PERIODE : ${formatPeriodeDate(document.getElementById('
+        text += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
+        text += `WH : Bekasi\nAM : SRD\nAC : TRIYANTO\n`;
+        text += `KD Toko : ${storeParts[0] || '-'}\n`;
+        text += `Nama Toko : ${storeParts[1] || '-'}\n`;
+        text += `======================\n`;
+        text += `*REVENUE*\n1. NET SALES\n`;
+        text += `- TIME FAKTOR : ${document.getElementById('timeFactor').value}\n`;
+        text += `- TARGET MTD : ${parseFloat(document.getElementById('targetMTD').value || 0).toLocaleString('id-ID')}\n`;
+        text += `- TARGET TIME FACTOR : ${document.getElementById('targetTimeFactor').value}\n`;
+        text += `- ACTUAL : ${parseFloat(document.getElementById('actualSales').value || 0).toLocaleString('id-ID')}\n`;
+        text += `- ACHIVE MTD : ${document.getElementById('achieveMTD').value}\n`;
+        text += `- ACHIEVER TIME FACTOR: ${document.getElementById('achieveTF').value}\n`;
+        text += `- GAP TO TARGET : ${document.getElementById('gapTarget').value}\n`;
+        text += `- GAP TO TIME FACTOR : ${document.getElementById('gapTF').value}\n`;
+        text += `======================\n`;
+        text += `*FOKUS CABANG*\nTARGET/SALES/ ACV%\n`;
+        
+        const fokusNames = ["TEBUS MURAH (QTY REDEEM)", "SERBA GRATIS (PAKET)", "SUEUGEER", "PROMO CEBAN"];
+        for(let i=1; i<=4; i++) {
+            let t = document.getElementById(`targ_fokus${i}`).value || 0;
+            let a = document.getElementById(`act_fokus${i}`).value || 0;
+            let p = document.getElementById(`persen_fokus${i}`).value || '0%';
+            text += `${i}. ${fokusNames[i-1]} : ${t}/${a}/${p}\n`;
+        }
+        
+        text += `5. PSM :\n`;
+        for(let i=1; i<=10; i++) {
+            let name = document.getElementById(`name_psm${i}`).value || `PSM ${i}`;
+            let t = document.getElementById(`targ_psm${i}`).value || 0;
+            let a = document.getElementById(`act_psm${i}`).value || 0;
+            let p = document.getElementById(`persen_psm${i}`).value || '0%';
+            text += `   - ${i}. ${name} (${t}/${a}/${p})\n`;
+        }
+        
+        text += `\n*MEMBER*\n`;
+        text += `1. ACTUAL NEW MEMBER : ${document.getElementById('actualNewMember').value || 0}\n`;
+        text += `2. KONTRIBUSI STRUK MEMBER : ${document.getElementById('strukMember').value || 0}/${document.getElementById('totalStruk').value || 0}/${document.getElementById('persenMember').value}\n`;
+        
+        text += `\n*CATEGORY* (Rupiah)\n( Sales )\n`;
+        text += `1. TOYS (NS) : ${parseFloat(document.getElementById('catToys').value || 0).toLocaleString('id-ID')}\n`;
+        text += `2. TELUR : ${parseFloat(document.getElementById('catTelur').value || 0).toLocaleString('id-ID')}\n`;
+        text += `======================\n`;
+        text += `*E-COMMERCE*\n`;
+        text += `1. FEE BASE (RP) : ${parseFloat(document.getElementById('feeBase').value || 0).toLocaleString('id-ID')}\n`;
+        text += `Terimakasih`;
+        return text;
+    }
+
+    function showWaPreview() {
+        document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp";
+        document.getElementById('previewText').innerText = generateWaText();
+        document.getElementById('waModal').style.display = 'block';
+    }
+
+    function showTotalSummaryPreview() {
+        document.getElementById('modalTitle').innerText = "Rekap Total Keseluruhan 20 Toko";
+        document.getElementById('previewText').innerText = "Mengambil dan merekap data terbaru dari server...";
+        document.getElementById('waModal').style.display = 'block';
+
+        fetch(`${WEB_APP_URL}?action=getAll`)
+            .then(res => res.json())
+            .then(records => {
+                let storeCount = Array.isArray(records) ? records.length : 0;
+                let totTargetMTD = 0, totActualSales = 0, totNewMember = 0;
+                let totStruk = 0, totStrukMember = 0;
+                let totToys = 0, totTelur = 0, totFeeBase = 0;
+                
+                let fokusTot = { 
+                    1: {t:0, a:0}, 2: {t:0, a:0}, 3: {t:0, a:0}, 4: {t:0, a:0} 
+                };
+                let psmTot = {};
+                for(let i=1; i<=10; i++) psmTot[i] = {name: `PSM ${i}`, t:0, a:0};
+
+                if (Array.isArray(records)) {
+                    records.forEach(rec => {
+                        let d = rec.reportData || {};
+                        totTargetMTD += parseFloat(d.targetMTD || 0);
+                        totActualSales += parseFloat(d.actualSales || 0);
+                        totNewMember += parseInt(d.actualNewMember || 0);
+                        totStruk += parseInt(d.totalStruk || 0);
+                        totStrukMember += parseInt(d.strukMember || 0);
+                        totToys += parseFloat(d.catToys || 0);
+                        totTelur += parseFloat(d.catTelur || 0);
+                        totFeeBase += parseFloat(d.feeBase || 0);
+
+                        for(let i=1; i<=4; i++) {
+                            fokusTot[i].t += parseFloat(d[`targ_fokus${i}`] || 0);
+                            fokusTot[i].a += parseFloat(d[`act_fokus${i}`] || 0);
+                        }
+                        for(let i=1; i<=10; i++) {
+                            if(d[`name_psm${i}`]) psmTot[i].name = d[`name_psm${i}`];
+                            psmTot[i].t += parseFloat(d[`targ_psm${i}`] || 0);
+                            psmTot[i].a += parseFloat(d[`act_psm${i}`] || 0);
+                        }
+                    });
+                }
+
+                let achMtdTotal = totTargetMTD > 0 ? ((totActualSales / totTargetMTD) * 100).toFixed(2) : "0,00";
+                let kontriMemberTotal = totStruk > 0 ? Math.round((totStrukMember / totStruk) * 100) : 0;
+
+                let summary = `*REKAP TOTAL KESELURUHAN (${storeCount} TOKO MELAPOR)*\n`;
+                summary += `PERIODE : ${formatPeriodeDate(document.getElementById('datePicker').value)}\n`;
+                summary += `WH : Bekasi | AM : SRD | AC : TRIYANTO\n`;
+                summary += `======================\n`;
+                summary += `*REVENUE TOTAL*\n`;
+                summary += `• Target MTD : Rp ${totTargetMTD.toLocaleString('id-ID')}\n`;
+                summary += `• Actual Sales : Rp ${totActualSales.toLocaleString('id-ID')}\n`;
+                summary += `• Achieve MTD : ${achMtdTotal.replace('.', ',')}%\n`;
+                summary += `• Gap to Target : Rp ${(totActualSales - totTargetMTD).toLocaleString('id-ID')}\n`;
+                summary += `======================\n`;
+                summary += `*FOKUS CABANG (TOTAL)*\n`;
+                
+                const fokusNames = ["TEBUS MURAH", "SERBA GRATIS", "SUEUGEER", "PROMO CEBAN"];
+                for(let i=1; i<=4; i++) {
+                    let p = fokusTot[i].t > 0 ? Math.round((fokusTot[i].a / fokusTot[i].t) * 100) : 0;
+                    summary += `${i}. ${fokusNames[i-1]} : ${fokusTot[i].t}/${fokusTot[i].a}/${p}%\n`;
+                }
+
+                summary += `\n*PSM TOTAL (10 ITEM)*\n`;
+                for(let i=1; i<=10; i++) {
+                    let p = psmTot[i].t > 0 ? Math.round((psmTot[i].a / psmTot[i].t) * 100) : 0;
+                    summary += `- ${i}. ${psmTot[i].name} (${psmTot[i].t}/${psmTot[i].a}/${p}%)\n`;
+                }
+
+                summary += `\n*MEMBER TOTAL*\n`;
+                summary += `• Actual New Member : ${totNewMember}\n`;
+                summary += `• Kontribusi Struk Member : ${totStrukMember}/${totStruk}/${kontriMemberTotal}%\n`;
+
+                summary += `\n*CATEGORY & E-COMMERCE TOTAL*\n`;
+                summary += `1. TOYS (NS) : Rp ${totToys.toLocaleString('id-ID')}\n`;
+                summary += `2. TELUR : Rp ${totTelur.toLocaleString('id-ID')}\n`;
+                summary += `3. FEE BASE : Rp ${totFeeBase.toLocaleString('id-ID')}\n`;
+                summary += `======================\n`;
+                summary += `*Direkap otomatis dari data server toko-toko (Anti-Double).*`;
+
+                document.getElementById('previewText').innerText = summary;
+            })
+            .catch(err => {
+                console.error(err);
+                document.getElementById('previewText').innerText = "Gagal memuat rekap total dari server. Pastikan koneksi internet stabil.";
+            });
+    }
+
+    function closeWaPreview() { document.getElementById('waModal').style.display = 'none'; }
+    function sendToWhatsApp() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank'); }
+    function sendTotalSummaryWhatsApp() {
+        let summary = document.getElementById('previewText').innerText;
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(summary)}`, '_blank');
+    }
+</script>
+
+</body>
+</html>
