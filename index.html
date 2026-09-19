@@ -371,14 +371,14 @@
         text += `- GAP TO TARGET : ${document.getElementById('gapTarget').value}\n`;
         text += `- GAP TO TIME FACTOR : ${document.getElementById('gapTF').value}\n`;
         text += `======================\n`;
-        text += `*FOKUS CABANG*\nTARGET/SALES/ ACV%\n`;
+        text += `*FOKUS CABANG*\nTARGET | SALES | ACV%\n`;
         
         const fokusNames = ["TEBUS MURAH (QTY REDEEM)", "SERBA GRATIS (PAKET)", "SUEUGEER", "PROMO CEBAN"];
         for(let i=1; i<=4; i++) {
             let t = document.getElementById(`targ_fokus${i}`).value || 0;
             let a = document.getElementById(`act_fokus${i}`).value || 0;
             let p = document.getElementById(`persen_fokus${i}`).value || '0%';
-            text += `${i}. ${fokusNames[i-1]} : ${t}/${a}/${p}\n`;
+            text += `${i}. ${fokusNames[i-1]} : ${t} | ${a} | ${p}\n`;
         }
         
         text += `5. PSM :\n`;
@@ -387,12 +387,12 @@
             let t = document.getElementById(`targ_psm${i}`).value || 0;
             let a = document.getElementById(`act_psm${i}`).value || 0;
             let p = document.getElementById(`persen_psm${i}`).value || '0%';
-            text += `   - ${i}. ${name} (${t}/${a}/${p})\n`;
+            text += `   - ${i}. ${name} (${t} | ${a} | ${p})\n`;
         }
         
         text += `\n*MEMBER*\n`;
         text += `1. ACTUAL NEW MEMBER : ${document.getElementById('actualNewMember').value || 0}\n`;
-        text += `2. KONTRIBUSI STRUK MEMBER : ${document.getElementById('strukMember').value || 0}/${document.getElementById('totalStruk').value || 0}/${document.getElementById('persenMember').value}\n`;
+        text += `2. KONTRIBUSI STRUK MEMBER : ${document.getElementById('strukMember').value || 0} | ${document.getElementById('totalStruk').value || 0} | ${document.getElementById('persenMember').value}\n`;
         
         text += `\n*CATEGORY* (Rupiah)\n( Sales )\n`;
         text += `1. TOYS (NS) : ${parseFloat(document.getElementById('catToys').value || 0).toLocaleString('id-ID')}\n`;
@@ -471,18 +471,18 @@
                 const fokusNames = ["TEBUS MURAH", "SERBA GRATIS", "SUEUGEER", "PROMO CEBAN"];
                 for(let i=1; i<=4; i++) {
                     let p = fokusTot[i].t > 0 ? Math.round((fokusTot[i].a / fokusTot[i].t) * 100) : 0;
-                    summary += `${i}. ${fokusNames[i-1]} : ${fokusTot[i].t}/${fokusTot[i].a}/${p}%\n`;
+                    summary += `${i}. ${fokusNames[i-1]} : ${fokusTot[i].t} | ${fokusTot[i].a} | ${p}%\n`;
                 }
 
                 summary += `\n*PSM TOTAL (10 ITEM)*\n`;
                 for(let i=1; i<=10; i++) {
                     let p = psmTot[i].t > 0 ? Math.round((psmTot[i].a / psmTot[i].t) * 100) : 0;
-                    summary += `- ${i}. ${psmTot[i].name} (${psmTot[i].t}/${psmTot[i].a}/${p}%)\n`;
+                    summary += `- ${i}. ${psmTot[i].name} (${psmTot[i].t} | ${psmTot[i].a} | ${p}%)\n`;
                 }
 
                 summary += `\n*MEMBER TOTAL*\n`;
                 summary += `• Actual New Member : ${totNewMember}\n`;
-                summary += `• Kontribusi Struk Member : ${totStrukMember}/${totStruk}/${kontriMemberTotal}%\n`;
+                summary += `• Kontribusi Struk Member : ${totStrukMember} | ${totStruk} | ${kontriMemberTotal}%\n`;
 
                 summary += `\n*CATEGORY & E-COMMERCE TOTAL*\n`;
                 summary += `1. TOYS (NS) : Rp ${totToys.toLocaleString('id-ID')}\n`;
