@@ -35,12 +35,12 @@
 
 <div class="container">
     <h2>Daily Sales Report Portal</h2>
-    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Anti-Double Data)</p>
+    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Smart Target Retention)</p>
     <div id="loadingStatus"></div>
 
     <h3>Informasi Umum Toko</h3>
     <div class="form-group">
-        <label>Periode Tanggal</label>
+        <label>Periode Tanggal (Otomatis Device)</label>
         <input type="date" id="datePicker" onchange="calculateAllCalculations()">
     </div>
     
@@ -193,7 +193,6 @@
 </div>
 
 <script>
-    // URL Web App Google Apps Script Anda yang baru
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
 
     window.onload = function() {
@@ -228,24 +227,50 @@
 
     function populateForm(data) {
         if(!data) return;
-        document.getElementById('datePicker').value = data.datePicker || document.getElementById('datePicker').value;
-        document.getElementById('targetMTD').value = data.targetMTD || '';
-        document.getElementById('actualSales').value = data.actualSales || '';
-        document.getElementById('actualNewMember').value = data.actualNewMember || '';
-        document.getElementById('totalStruk').value = data.totalStruk || '';
-        document.getElementById('strukMember').value = data.strukMember || '';
-        document.getElementById('catToys').value = data.catToys || '';
-        document.getElementById('catTelur').value = data.catTelur || '';
-        document.getElementById('feeBase').value = data.feeBase || '';
+        const currentDeviceDate = document.getElementById('datePicker').value;
+        const dataDate = data.datePicker || "";
 
-        for(let i=1; i<=4; i++) {
-            document.getElementById(`targ_fokus${i}`).value = data[`targ_fokus${i}`] || '';
-            document.getElementById(`act_fokus${i}`).value = data[`act_fokus${i}`] || '';
-        }
-        for(let i=1; i<=10; i++) {
-            if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
-            document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
-            document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
+        // Jika tanggal perangkat BERBEDA dengan tanggal data terakhir di server,
+        // KITA HANYA AMBIL TARGETNYA SAJA, sedangkan data actual/pencapaian dikosongkan untuk hari baru.
+        if (dataDate !== currentDeviceDate) {
+            document.getElementById('targetMTD').value = data.targetMTD || '';
+            document.getElementById('actualSales').value = ''; // Reset actual
+            document.getElementById('actualNewMember').value = '';
+            document.getElementById('totalStruk').value = '';
+            document.getElementById('strukMember').value = '';
+            document.getElementById('catToys').value = '';
+            document.getElementById('catTelur').value = '';
+            document.getElementById('feeBase').value = '';
+
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`targ_fokus${i}`).value = data[`targ_fokus${i}`] || '';
+                document.getElementById(`act_fokus${i}`).value = ''; // Reset actual fokus
+            }
+            for(let i=1; i<=10; i++) {
+                if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
+                document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
+                document.getElementById(`act_psm${i}`).value = ''; // Reset actual psm
+            }
+        } else {
+            // Jika tanggalnya masih sama, muat seluruh data secara normal
+            document.getElementById('targetMTD').value = data.targetMTD || '';
+            document.getElementById('actualSales').value = data.actualSales || '';
+            document.getElementById('actualNewMember').value = data.actualNewMember || '';
+            document.getElementById('totalStruk').value = data.totalStruk || '';
+            document.getElementById('strukMember').value = data.strukMember || '';
+            document.getElementById('catToys').value = data.catToys || '';
+            document.getElementById('catTelur').value = data.catTelur || '';
+            document.getElementById('feeBase').value = data.feeBase || '';
+
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`targ_fokus${i}`).value = data[`targ_fokus${i}`] || '';
+                document.getElementById(`act_fokus${i}`).value = data[`act_fokus${i}`] || '';
+            }
+            for(let i=1; i<=10; i++) {
+                if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
+                document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
+                document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
+            }
         }
         calculateAllCalculations();
     }
@@ -254,7 +279,7 @@
         const store = document.getElementById('storeSelect').value;
         if (!store) return;
 
-        document.getElementById('loadingStatus').innerText = "Memuat data dari Server...";
+        document.getElementById('loadingStatus').innerText = "Memuat data & target dari Server...";
         fetch(`${WEB_APP_URL}?action=get&storeCode=${encodeURIComponent(store)}`)
             .then(res => res.json())
             .then(data => {
