@@ -35,7 +35,7 @@
 
 <div class="container">
     <h2>Daily Sales Report Portal</h2>
-    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Smart Target Retention)</p>
+    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Custom Redeem Focus)</p>
     <div id="loadingStatus"></div>
 
     <h3>Informasi Umum Toko</h3>
@@ -117,13 +117,13 @@
                 <td><input type="text" id="persen_fokus2" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
-                <td>3. Sueugeer</td>
+                <td>3. Redeem 1 (Sueugeer)</td>
                 <td><input type="number" id="targ_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="number" id="act_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus3" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
-                <td>4. Promo Ceban</td>
+                <td>4. Redeem 2 (Promo Ceban)</td>
                 <td><input type="number" id="targ_fokus4" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="number" id="act_fokus4" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus4" class="auto-calc table-input" readonly></td>
@@ -230,11 +230,9 @@
         const currentDeviceDate = document.getElementById('datePicker').value;
         const dataDate = data.datePicker || "";
 
-        // Jika tanggal perangkat BERBEDA dengan tanggal data terakhir di server,
-        // KITA HANYA AMBIL TARGETNYA SAJA, sedangkan data actual/pencapaian dikosongkan untuk hari baru.
         if (dataDate !== currentDeviceDate) {
             document.getElementById('targetMTD').value = data.targetMTD || '';
-            document.getElementById('actualSales').value = ''; // Reset actual
+            document.getElementById('actualSales').value = '';
             document.getElementById('actualNewMember').value = '';
             document.getElementById('totalStruk').value = '';
             document.getElementById('strukMember').value = '';
@@ -244,15 +242,14 @@
 
             for(let i=1; i<=4; i++) {
                 document.getElementById(`targ_fokus${i}`).value = data[`targ_fokus${i}`] || '';
-                document.getElementById(`act_fokus${i}`).value = ''; // Reset actual fokus
+                document.getElementById(`act_fokus${i}`).value = '';
             }
             for(let i=1; i<=10; i++) {
                 if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
                 document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
-                document.getElementById(`act_psm${i}`).value = ''; // Reset actual psm
+                document.getElementById(`act_psm${i}`).value = '';
             }
         } else {
-            // Jika tanggalnya masih sama, muat seluruh data secara normal
             document.getElementById('targetMTD').value = data.targetMTD || '';
             document.getElementById('actualSales').value = data.actualSales || '';
             document.getElementById('actualNewMember').value = data.actualNewMember || '';
@@ -399,7 +396,7 @@
         text += `======================\n`;
         text += `*FOKUS CABANG*\nTARGET/SALES/ ACV%\n`;
         
-        const fokusNames = ["TEBUS MURAH (QTY REDEEM)", "SERBA GRATIS (PAKET)", "SUEUGEER", "PROMO CEBAN"];
+        const fokusNames = ["TEBUS MURAH", "SERBA GRATIS", "REDEEM 1 (SUEUGEER)", "REDEEM 2 (PROMO CEBAN)"];
         for(let i=1; i<=4; i++) {
             let t = document.getElementById(`targ_fokus${i}`).value || 0;
             let a = document.getElementById(`act_fokus${i}`).value || 0;
@@ -494,7 +491,7 @@
                 summary += `======================\n`;
                 summary += `*FOKUS CABANG (TOTAL)*\n`;
                 
-                const fokusNames = ["TEBUS MURAH", "SERBA GRATIS", "SUEUGEER", "PROMO CEBAN"];
+                const fokusNames = ["TEBUS MURAH", "SERBA GRATIS", "REDEEM 1 (SUEUGEER)", "REDEEM 2 (PROMO CEBAN)"];
                 for(let i=1; i<=4; i++) {
                     let p = fokusTot[i].t > 0 ? Math.round((fokusTot[i].a / fokusTot[i].t) * 100) : 0;
                     summary += `${i}. ${fokusNames[i-1]} : ${fokusTot[i].t}/${fokusTot[i].a}/${p}%\n`;
