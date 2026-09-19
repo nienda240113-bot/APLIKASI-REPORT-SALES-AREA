@@ -5,41 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Sales Report Portal</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.4; margin: 0; padding: 10px; background-color: #f4f6f9; color: #333; }
-        .container { max-width: 900px; margin: auto; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        h2 { color: #0056b3; text-align: center; margin-bottom: 5px; font-size: 20px; }
-        .subtitle { text-align: center; color: #666; font-size: 12px; margin-bottom: 15px; }
-        h3 { color: #0056b3; border-bottom: 2px solid #e9ecef; padding-bottom: 4px; margin-top: 20px; font-size: 15px; text-transform: uppercase; letter-spacing: 0.5px; }
-        .form-group { margin-bottom: 10px; }
-        label { display: block; margin-bottom: 3px; font-weight: 600; font-size: 13px; color: #495057; }
-        input, select { width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 6px; box-sizing: border-box; font-size: 14px; background-color: #fff; }
-        input:focus, select:focus { border-color: #80bdff; outline: 0; box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25); }
+        body { font-family: Arial, sans-serif; line-height: 1.5; margin: 0; padding: 15px; background-color: #f4f6f9; color: #333; }
+        .container { max-width: 900px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        h2, h3 { color: #0056b3; border-bottom: 2px solid #eee; padding-bottom: 6px; margin-top: 20px; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 14px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         input.auto-calc { background-color: #e9ecef; font-weight: bold; color: #495057; }
-        table { width: 100%; border-collapse: collapse; margin-top: 5px; margin-bottom: 10px; font-size: 13px; }
-        th, td { border: 1px solid #dee2e6; padding: 6px; text-align: center; }
-        th { background-color: #0056b3; color: white; font-weight: 600; font-size: 12px; }
-        td:first-child { text-align: left; padding-left: 8px; font-weight: 500; }
-        input.table-input { width: 100%; padding: 5px; box-sizing: border-box; text-align: center; border: 1px solid #ced4da; border-radius: 4px; font-size: 13px; }
-        .btn { padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; color: white; width: 100%; font-size: 14px; margin-top: 8px; transition: opacity 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; margin-top: 8px; margin-bottom: 15px; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 6px; text-align: center; }
+        th { background-color: #0056b3; color: white; }
+        input.table-input { width: 100%; padding: 4px; box-sizing: border-box; text-align: center; border: 1px solid #bbb; }
+        .btn { padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; color: white; width: 100%; font-size: 16px; margin-top: 10px; }
         .btn-target { background-color: #28a745; }
         .btn-preview { background-color: #17a2b8; }
         .btn-wa { background-color: #25D366; }
         .btn-rekap { background-color: #6f42c1; }
         .btn:hover { opacity: 0.9; }
-        .row-grid { display: flex; gap: 8px; }
+        .row-grid { display: flex; gap: 10px; }
         .row-grid > div { flex: 1; }
         
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); backdrop-filter: blur(2px); }
-        .modal-content { background-color: #fff; margin: 3% auto; padding: 15px; border-radius: 8px; width: 95%; max-width: 600px; white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', Courier, monospace; font-size: 12px; max-height: 85vh; overflow-y: auto; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
-        .close-btn { background: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; float: right; font-weight: bold; font-size: 12px; }
-        #loadingStatus { font-size: 12px; color: #d9534f; font-weight: bold; margin-bottom: 10px; background: #fff3f3; padding: 6px 10px; border-radius: 6px; display: inline-block; border-left: 4px solid #d9534f; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fff; margin: 5% auto; padding: 20px; border-radius: 8px; width: 95%; max-width: 650px; white-space: pre-wrap; word-wrap: break-word; font-family: monospace; font-size: 12px; max-height: 80vh; overflow-y: auto; }
+        .close-btn { background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; float: right; font-weight: bold; }
+        #loadingStatus { font-size: 13px; color: #d9534f; font-weight: bold; margin-top: 5px; background: #fff3f3; padding: 5px; border-radius: 4px; display: inline-block; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>Daily Sales Report Portal</h2>
-    <div class="subtitle">Cloud Connected Portal (Anti-Double Data & Smart Target)</div>
+    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Custom Redeem Format)</p>
     <div id="loadingStatus"></div>
 
     <h3>Informasi Umum Toko</h3>
@@ -85,276 +81,4 @@
         <input type="number" id="actualSales" class="actual-field" placeholder="Masukkan Penjualan Aktual..." oninput="calculateRevenue()">
     </div>
     <div class="row-grid">
-        <div class="form-group"><label>Time Factor (%)</label><input type="text" id="timeFactor" class="auto-calc" readonly></div>
-        <div class="form-group"><label>Target Time Factor (Rp)</label><input type="text" id="targetTimeFactor" class="auto-calc" readonly></div>
-    </div>
-    <div class="row-grid">
-        <div class="form-group"><label>Achieve MTD (%)</label><input type="text" id="achieveMTD" class="auto-calc" readonly></div>
-        <div class="form-group"><label>Achieve Time Factor (%)</label><input type="text" id="achieveTF" class="auto-calc" readonly></div>
-    </div>
-    <div class="row-grid">
-        <div class="form-group"><label>Gap to Target (Rp)</label><input type="text" id="gapTarget" class="auto-calc" readonly></div>
-        <div class="form-group"><label>Gap to Time Factor (Rp)</label><input type="text" id="gapTF" class="auto-calc" readonly></div>
-    </div>
-
-    <h3>Fokus Cabang</h3>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 35%;">Program / Fokus</th>
-                <th>Target / Redeem</th>
-                <th>Actual</th>
-                <th>Persen (%)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>1. TEBUS MURAH</td>
-                <td><input type="number" id="targ_fokus1" class="table-input" oninput="calculateAllCalculations()"></td>
-                <td><input type="number" id="act_fokus1" class="table-input" oninput="calculateAllCalculations()"></td>
-                <td><input type="text" id="persen_fokus1" class="auto-calc table-input" readonly></td>
-            </tr>
-            <tr>
-                <td>2. SERBA GRATIS</td>
-                <td><input type="number" id="targ_fokus2" class="table-input" oninput="calculateAllCalculations()"></td>
-                <td><input type="number" id="act_fokus2" class="table-input" oninput="calculateAllCalculations()"></td>
-                <td><input type="text" id="persen_fokus2" class="auto-calc table-input" readonly></td>
-            </tr>
-            <tr>
-                <td>3. PROMO SUEEGEER</td>
-                <td><input type="number" id="targ_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
-                <td><input type="number" id="act_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
-                <td><input type="text" id="persen_fokus3" class="auto-calc table-input" readonly></td>
-            </tr>
-            <tr>
-                <td>4. PROMO CEBAN</td>
-                <td><input type="number" id="targ_fokus4" class="table-input" oninput="calculateAllCalculations()"></td>
-                <td><input type="number" id="act_fokus4" class="table-input" oninput="calculateAllCalculations()"></td>
-                <td><input type="text" id="persen_fokus4" class="auto-calc table-input" readonly></td>
-            </tr>
-        </tbody>
-    </table>
-
-    <h3>Member</h3>
-    <div class="form-group">
-        <label>Actual New Member</label>
-        <input type="number" id="actualNewMember" class="actual-field" placeholder="Jumlah member baru...">
-    </div>
-    <div class="row-grid">
-        <div class="form-group"><label>Total Struk</label><input type="number" id="totalStruk" class="actual-field" oninput="calculateMemberPercent()"></div>
-        <div class="form-group"><label>Struk Member</label><input type="number" id="strukMember" class="actual-field" oninput="calculateMemberPercent()"></div>
-        <div class="form-group"><label>Kontribusi (%)</label><input type="text" id="persenMember" class="auto-calc" readonly></div>
-    </div>
-
-    <h3>PSM (10 Item)</h3>
-    <table>
-        <thead>
-            <tr>
-                <th style="width: 8%;">No</th>
-                <th style="width: 42%;">Produk PSM</th>
-                <th>Target</th>
-                <th>Actual</th>
-                <th>Persen (%)</th>
-            </tr>
-        </thead>
-        <tbody>
-            <script>
-                const defaultPsmNames = ["FF", "HOTTES/CHUBA", "PIATTOS", "LEMIN", "NABATI", "PEPSODENT", "SOSOFT", "VASELINE", "PSM Item 9", "PSM Item 10"];
-                for(let i=1; i<=10; i++) {
-                    document.write(`
-                        <tr>
-                            <td>${i}</td>
-                            <td><input type="text" id="name_psm${i}" class="table-input" style="text-align:left; padding-left:6px;" value="${defaultPsmNames[i-1]}"></td>
-                            <td><input type="number" id="targ_psm${i}" class="table-input" oninput="calculateAllCalculations()"></td>
-                            <td><input type="number" id="act_psm${i}" class="table-input" oninput="calculateAllCalculations()"></td>
-                            <td><input type="text" id="persen_psm${i}" class="auto-calc table-input" readonly></td>
-                        </tr>
-                    `);
-                }
-            </script>
-        </tbody>
-    </table>
-
-    <h3>Category & E-Commerce</h3>
-    <div class="form-group"><label>1. TOYS (NS)</label><input type="number" id="catToys" class="actual-field" placeholder="Nilai Toys..."></div>
-    <div class="form-group"><label>2. TELUR</label><input type="number" id="catTelur" class="actual-field" placeholder="Nilai Telur..."></div>
-    <div class="form-group"><label>Fee Base (Rp)</label><input type="number" id="feeBase" class="actual-field" placeholder="Nilai Fee Base..."></div>
-
-    <button type="button" class="btn btn-target" onclick="saveReportToCloud()">💾 Simpan Data Laporan ke Cloud Server</button>
-    <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview Format WhatsApp</button>
-    <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim ke WhatsApp</button>
-    <button type="button" class="btn btn-rekap" onclick="showTotalSummaryPreview()">📊 Rekap Total 20 Toko</button>
-    <button type="button" class="btn btn-wa" onclick="sendTotalSummaryWhatsApp()">📲 Kirim Rekap ke WA</button>
-</div>
-
-<div id="waModal" class="modal">
-    <div class="modal-content">
-        <button class="close-btn" onclick="closeWaPreview()">Tutup</button>
-        <h4 id="modalTitle" style="margin-top:0; color:#0056b3; border-bottom:1px solid #ddd; padding-bottom:5px;">Pratinjau Format</h4>
-        <div id="previewText"></div>
-    </div>
-</div>
-
-<script>
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
-
-    window.onload = function() {
-        const today = new Date();
-        document.getElementById('datePicker').value = today.toISOString().split('T')[0];
-        calculateAllCalculations();
-    };
-
-    function collectFormData() {
-        let data = {
-            datePicker: document.getElementById('datePicker').value,
-            targetMTD: document.getElementById('targetMTD').value,
-            actualSales: document.getElementById('actualSales').value,
-            actualNewMember: document.getElementById('actualNewMember').value,
-            totalStruk: document.getElementById('totalStruk').value,
-            strukMember: document.getElementById('strukMember').value,
-            catToys: document.getElementById('catToys').value,
-            catTelur: document.getElementById('catTelur').value,
-            feeBase: document.getElementById('feeBase').value
-        };
-        for(let i=1; i<=4; i++) {
-            data[`targ_fokus${i}`] = document.getElementById(`targ_fokus${i}`).value;
-            data[`act_fokus${i}`] = document.getElementById(`act_fokus${i}`).value;
-        }
-        for(let i=1; i<=10; i++) {
-            data[`name_psm${i}`] = document.getElementById(`name_psm${i}`).value;
-            data[`targ_psm${i}`] = document.getElementById(`targ_psm${i}`).value;
-            data[`act_psm${i}`] = document.getElementById(`act_psm${i}`).value;
-        }
-        return data;
-    }
-
-    function populateForm(data) {
-        if(!data) return;
-        const currentDeviceDate = document.getElementById('datePicker').value;
-        const dataDate = data.datePicker || "";
-
-        if (dataDate !== currentDeviceDate) {
-            document.getElementById('targetMTD').value = data.targetMTD || '';
-            document.getElementById('actualSales').value = '';
-            document.getElementById('actualNewMember').value = '';
-            document.getElementById('totalStruk').value = '';
-            document.getElementById('strukMember').value = '';
-            document.getElementById('catToys').value = '';
-            document.getElementById('catTelur').value = '';
-            document.getElementById('feeBase').value = '';
-
-            for(let i=1; i<=4; i++) {
-                document.getElementById(`targ_fokus${i}`).value = data[`targ_fokus${i}`] || '';
-                document.getElementById(`act_fokus${i}`).value = '';
-            }
-            for(let i=1; i<=10; i++) {
-                if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
-                document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
-                document.getElementById(`act_psm${i}`).value = '';
-            }
-        } else {
-            document.getElementById('targetMTD').value = data.targetMTD || '';
-            document.getElementById('actualSales').value = data.actualSales || '';
-            document.getElementById('actualNewMember').value = data.actualNewMember || '';
-            document.getElementById('totalStruk').value = data.totalStruk || '';
-            document.getElementById('strukMember').value = data.strukMember || '';
-            document.getElementById('catToys').value = data.catToys || '';
-            document.getElementById('catTelur').value = data.catTelur || '';
-            document.getElementById('feeBase').value = data.feeBase || '';
-
-            for(let i=1; i<=4; i++) {
-                document.getElementById(`targ_fokus${i}`).value = data[`targ_fokus${i}`] || '';
-                document.getElementById(`act_fokus${i}`).value = data[`act_fokus${i}`] || '';
-            }
-            for(let i=1; i<=10; i++) {
-                if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
-                document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
-                document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
-            }
-        }
-        calculateAllCalculations();
-    }
-
-    function onStoreChange() {
-        const store = document.getElementById('storeSelect').value;
-        if (!store) return;
-
-        document.getElementById('loadingStatus').innerText = "Memuat data & target dari Server...";
-        fetch(`${WEB_APP_URL}?action=get&storeCode=${encodeURIComponent(store)}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById('loadingStatus').innerText = "";
-                populateForm(data);
-            })
-            .catch(err => {
-                document.getElementById('loadingStatus').innerText = "";
-                console.error(err);
-            });
-    }
-
-    function saveReportToCloud() {
-        const store = document.getElementById('storeSelect').value;
-        if (!store) { alert("Pilih Toko dahulu!"); return; }
-
-        document.getElementById('loadingStatus').innerText = "Menyimpan ke Cloud Server...";
-        fetch(WEB_APP_URL, {
-            method: 'POST',
-            body: JSON.stringify({ storeCode: store, reportData: collectFormData() })
-        })
-        .then(res => res.json())
-        .then(() => {
-            document.getElementById('loadingStatus').innerText = "";
-            alert("Berhasil disimpan & diperbarui di Cloud Server!");
-        })
-        .catch(err => {
-            document.getElementById('loadingStatus').innerText = "";
-            alert("Data tersimpan di Cloud.");
-        });
-    }
-
-    function calculateRevenue() {
-        const targetMTD = parseFloat(document.getElementById('targetMTD').value) || 0;
-        const actualSales = parseFloat(document.getElementById('actualSales').value) || 0;
-        const selectedDate = new Date(document.getElementById('datePicker').value);
-
-        if (!isNaN(selectedDate.getTime())) {
-            const dayNum = selectedDate.getDate();
-            const totalDays = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
-            
-            const tfPercent = (dayNum / totalDays) * 100;
-            document.getElementById('timeFactor').value = tfPercent.toFixed(2).replace('.', ',') + '%';
-
-            const targetTF = targetMTD * (dayNum / totalDays);
-            document.getElementById('targetTimeFactor').value = Math.round(targetTF).toLocaleString('id-ID');
-
-            const achieveMTD = targetMTD > 0 ? (actualSales / targetMTD) * 100 : 0;
-            document.getElementById('achieveMTD').value = achieveMTD.toFixed(2).replace('.', ',') + '%';
-
-            const achieveTF = targetTF > 0 ? (actualSales / targetTF) * 100 : 0;
-            document.getElementById('achieveTF').value = achieveTF.toFixed(2).replace('.', ',') + '%';
-
-            document.getElementById('gapTarget').value = Math.round(actualSales - targetMTD).toLocaleString('id-ID');
-            document.getElementById('gapTF').value = Math.round(actualSales - targetTF).toLocaleString('id-ID');
-        }
-    }
-
-    function calculateFokusPercent() {
-        for (let i = 1; i <= 4; i++) {
-            const targ = parseFloat(document.getElementById(`targ_fokus${i}`).value) || 0;
-            const act = parseFloat(document.getElementById(`act_fokus${i}`).value) || 0;
-            const pct = targ > 0 ? Math.round((act / targ) * 100) : 0;
-            document.getElementById(`persen_fokus${i}`).value = pct + '%';
-        }
-    }
-
-    function calculatePsmPercent() {
-        for (let i = 1; i <= 10; i++) {
-            const targ = parseFloat(document.getElementById(`targ_psm${i}`).value) || 0;
-            const act = parseFloat(document.getElementById(`act_psm${i}`).value) || 0;
-            const pct = targ > 0 ? Math.round((act / targ) * 100) : 0;
-            document.getElementById(`persen_psm${i}`).value = pct + '%';
-        }
-    }
-
-    function calculateMemberPercent() {
-        const
+        <div class="form-group"><label>Time Factor (%)</label><input type="text" id="timeFact
