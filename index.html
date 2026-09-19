@@ -35,12 +35,12 @@
 
 <div class="container">
     <h2>Daily Sales Report Portal</h2>
-    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Real-Time Device Date)</p>
+    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Anti-Double Data)</p>
     <div id="loadingStatus"></div>
 
     <h3>Informasi Umum Toko</h3>
     <div class="form-group">
-        <label>Periode Tanggal (Otomatis Real-Time Device)</label>
+        <label>Periode Tanggal</label>
         <input type="date" id="datePicker" onchange="calculateAllCalculations()">
     </div>
     
@@ -194,20 +194,13 @@
 
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
-    let globalSummaryText = ""; // Variabel global untuk menyimpan teks rekap asli dengan enter
+    let globalSummaryText = ""; // Variabel aman untuk menyimpan teks rekap
 
     window.onload = function() {
-        updateDeviceDate();
+        const today = new Date();
+        document.getElementById('datePicker').value = today.toISOString().split('T')[0];
         calculateAllCalculations();
     };
-
-    function updateDeviceDate() {
-        const now = new Date();
-        const year = now.getFullYear();
-        const month = String(now.getMonth() + 1).padStart(2, '0');
-        const day = String(now.getDate()).padStart(2, '0');
-        document.getElementById('datePicker').value = `${year}-${month}-${day}`;
-    }
 
     function collectFormData() {
         let data = {
@@ -235,8 +228,7 @@
 
     function populateForm(data) {
         if(!data) return;
-        updateDeviceDate();
-
+        document.getElementById('datePicker').value = data.datePicker || document.getElementById('datePicker').value;
         document.getElementById('targetMTD').value = data.targetMTD || '';
         document.getElementById('actualSales').value = data.actualSales || '';
         document.getElementById('actualNewMember').value = data.actualNewMember || '';
@@ -252,7 +244,7 @@
         }
         for(let i=1; i<=10; i++) {
             if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
-            document.getElementById(`targ_psm${i}`].value = data[`targ_psm${i}`] || '';
+            document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
             document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
         }
         calculateAllCalculations();
@@ -382,7 +374,7 @@
         text += `======================\n`;
         text += `*FOKUS CABANG*\nTARGET | SALES | ACV%\n`;
         
-        const fokusNames = ["TEBUS MURAH (QTY REDEEM)", "SERBA GRATIS (PAKET)", "SUEUGEER", "PROMO CEBAN"];
+        const fokusNames = ["TEBUS MURAH", "SERBA GRATIS", "SUEUGEER", "PROMO CEBAN"];
         for(let i=1; i<=4; i++) {
             let t = document.getElementById(`targ_fokus${i}`).value || 0;
             let a = document.getElementById(`act_fokus${i}`).value || 0;
@@ -500,8 +492,7 @@
                 summary += `======================\n`;
                 summary += `*Direkap otomatis dari data server toko-toko (Anti-Double).*`;
 
-                // Simpan ke variabel global agar format baris baru (enter) terjaga saat dikirim ke WA
-                globalSummaryText = summary;
+                globalSummaryText = summary; // Simpan ke variabel global aman
                 document.getElementById('previewText').innerText = summary;
             })
             .catch(err => {
@@ -514,9 +505,8 @@
     function sendToWhatsApp() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank'); }
     
     function sendTotalSummaryWhatsApp() {
-        // Menggunakan variabel globalSummaryText yang membawa struktur baris enter (\\n) dengan benar
         if (!globalSummaryText) {
-            alert("Tunggu data rekap selesai dimuat terlebih dahulu!");
+            alert("Silakan klik tombol 'Rekap Total 20 Toko' terlebih dahulu untuk memuat data!");
             return;
         }
         window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(globalSummaryText)}`, '_blank');
