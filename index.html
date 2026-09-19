@@ -195,7 +195,6 @@
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
 
-    // Mengambil tanggal real-time dari device lokal dengan penyesuaian zona waktu Indonesia (WIB/WITA/WIT) secara akurat
     window.onload = function() {
         updateDeviceDate();
         calculateAllCalculations();
@@ -203,13 +202,10 @@
 
     function updateDeviceDate() {
         const now = new Date();
-        // Format YYYY-MM-DD menggunakan waktu lokal perangkat
         const year = now.getFullYear();
         const month = String(now.getMonth() + 1).padStart(2, '0');
         const day = String(now.getDate()).padStart(2, '0');
-        const localDateString = `${year}-${month}-${day}`;
-        
-        document.getElementById('datePicker').value = localDateString;
+        document.getElementById('datePicker').value = `${year}-${month}-${day}`;
     }
 
     function collectFormData() {
@@ -238,9 +234,6 @@
 
     function populateForm(data) {
         if(!data) return;
-        
-        // Selalu pastikan tanggal mengikuti device saat ini secara real-time, 
-        // namun ambil data target & laporan dari server.
         updateDeviceDate();
 
         document.getElementById('targetMTD').value = data.targetMTD || '';
@@ -501,7 +494,7 @@
 
                 summary += `\n*CATEGORY & E-COMMERCE TOTAL*\n`;
                 summary += `1. TOYS (NS) : Rp ${totToys.toLocaleString('id-ID')}\n`;
-                summary += `2. TELUR : Rp ${totTelelur || totTelur.toLocaleString('id-ID')}\n`;
+                summary += `2. TELUR : Rp ${totTelur.toLocaleString('id-ID')}\n`;
                 summary += `3. FEE BASE : Rp ${totFeeBase.toLocaleString('id-ID')}\n`;
                 summary += `======================\n`;
                 summary += `*Direkap otomatis dari data server toko-toko (Anti-Double).*`;
