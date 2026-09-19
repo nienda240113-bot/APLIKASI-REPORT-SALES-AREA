@@ -35,7 +35,7 @@
 
 <div class="container">
     <h2>Daily Sales Report Portal</h2>
-    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Custom Redeem Focus)</p>
+    <p style="color: #666; font-size: 13px;">Mode: Cloud Server Connected (Custom Redeem Format)</p>
     <div id="loadingStatus"></div>
 
     <h3>Informasi Umum Toko</h3>
@@ -98,7 +98,7 @@
         <thead>
             <tr>
                 <th>Program / Fokus</th>
-                <th>Target</th>
+                <th>Target / Redeem</th>
                 <th>Actual</th>
                 <th>Persen (%)</th>
             </tr>
@@ -117,13 +117,13 @@
                 <td><input type="text" id="persen_fokus2" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
-                <td>3. Redeem 1 (Sueugeer)</td>
+                <td>3. Promo Sueegeer</td>
                 <td><input type="number" id="targ_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="number" id="act_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus3" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
-                <td>4. Redeem 2 (Promo Ceban)</td>
+                <td>4. Promo Ceban</td>
                 <td><input type="number" id="targ_fokus4" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="number" id="act_fokus4" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus4" class="auto-calc table-input" readonly></td>
@@ -394,17 +394,17 @@
         text += `- GAP TO TARGET : ${document.getElementById('gapTarget').value}\n`;
         text += `- GAP TO TIME FACTOR : ${document.getElementById('gapTF').value}\n`;
         text += `======================\n`;
-        text += `*FOKUS CABANG*\nTARGET/SALES/ ACV%\n`;
+        text += `*FOKUS CABANG*\n`;
         
-        const fokusNames = ["TEBUS MURAH", "SERBA GRATIS", "REDEEM 1 (SUEUGEER)", "REDEEM 2 (PROMO CEBAN)"];
+        const fokusNames = ["1. TEBUS MURAH", "2. SERBA GRATIS", "3. PROMO SUEEGEER (Redeem)", "4. PROMO CEBAN (Redeem)"];
         for(let i=1; i<=4; i++) {
             let t = document.getElementById(`targ_fokus${i}`).value || 0;
             let a = document.getElementById(`act_fokus${i}`).value || 0;
             let p = document.getElementById(`persen_fokus${i}`).value || '0%';
-            text += `${i}. ${fokusNames[i-1]} : ${t}/${a}/${p}\n`;
+            text += `${fokusNames[i-1]} : ${t} | ${a} | ${p}\n`;
         }
         
-        text += `5. PSM :\n`;
+        text += `\n*PSM (10 Item)*:\n`;
         for(let i=1; i<=10; i++) {
             let name = document.getElementById(`name_psm${i}`).value || `PSM ${i}`;
             let t = document.getElementById(`targ_psm${i}`).value || 0;
@@ -417,7 +417,7 @@
         text += `1. ACTUAL NEW MEMBER : ${document.getElementById('actualNewMember').value || 0}\n`;
         text += `2. KONTRIBUSI STRUK MEMBER : ${document.getElementById('strukMember').value || 0}/${document.getElementById('totalStruk').value || 0}/${document.getElementById('persenMember').value}\n`;
         
-        text += `\n*CATEGORY* (Rupiah)\n( Sales )\n`;
+        text += `\n*CATEGORY* (Rupiah)\n`;
         text += `1. TOYS (NS) : ${parseFloat(document.getElementById('catToys').value || 0).toLocaleString('id-ID')}\n`;
         text += `2. TELUR : ${parseFloat(document.getElementById('catTelur').value || 0).toLocaleString('id-ID')}\n`;
         text += `======================\n`;
@@ -491,10 +491,10 @@
                 summary += `======================\n`;
                 summary += `*FOKUS CABANG (TOTAL)*\n`;
                 
-                const fokusNames = ["TEBUS MURAH", "SERBA GRATIS", "REDEEM 1 (SUEUGEER)", "REDEEM 2 (PROMO CEBAN)"];
+                const fokusNames = ["1. TEBUS MURAH", "2. SERBA GRATIS", "3. PROMO SUEEGEER (Redeem)", "4. PROMO CEBAN (Redeem)"];
                 for(let i=1; i<=4; i++) {
                     let p = fokusTot[i].t > 0 ? Math.round((fokusTot[i].a / fokusTot[i].t) * 100) : 0;
-                    summary += `${i}. ${fokusNames[i-1]} : ${fokusTot[i].t}/${fokusTot[i].a}/${p}%\n`;
+                    summary += `${fokusNames[i-1]} : ${fokusTot[i].t} | ${fokusTot[i].a} | ${p}%\n`;
                 }
 
                 summary += `\n*PSM TOTAL (10 ITEM)*\n`;
