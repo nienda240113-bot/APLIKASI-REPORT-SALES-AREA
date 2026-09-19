@@ -81,4 +81,302 @@
         <input type="number" id="actualSales" class="actual-field" placeholder="Masukkan Penjualan Aktual..." oninput="calculateRevenue()">
     </div>
     <div class="row-grid">
-        <div class="form-group"><label>Time Factor (%)</label><input type="text" id="timeFact
+        <div class="form-group"><label>Time Factor (%)</label><input type="text" id="timeFactor" class="auto-calc" readonly></div>
+        <div class="form-group"><label>Target Time Factor (Rp)</label><input type="text" id="targetTimeFactor" class="auto-calc" readonly></div>
+    </div>
+    <div class="row-grid">
+        <div class="form-group"><label>Achieve MTD (%)</label><input type="text" id="achieveMTD" class="auto-calc" readonly></div>
+        <div class="form-group"><label>Achieve Time Factor (%)</label><input type="text" id="achieveTF" class="auto-calc" readonly></div>
+    </div>
+    <div class="row-grid">
+        <div class="form-group"><label>Gap to Target (Rp)</label><input type="text" id="gapTarget" class="auto-calc" readonly></div>
+        <div class="form-group"><label>Gap to Time Factor (Rp)</label><input type="text" id="gapTF" class="auto-calc" readonly></div>
+    </div>
+
+    <h3>Fokus Cabang</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Program / Fokus</th>
+                <th>Target / Redeem</th>
+                <th>Actual</th>
+                <th>Persen (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1. Tebus Murah</td>
+                <td><input type="number" id="targ_fokus1" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus1" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="text" id="persen_fokus1" class="auto-calc table-input" readonly></td>
+            </tr>
+            <tr>
+                <td>2. Serba Gratis</td>
+                <td><input type="number" id="targ_fokus2" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus2" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="text" id="persen_fokus2" class="auto-calc table-input" readonly></td>
+            </tr>
+            <tr>
+                <td>3. Promo Sueegeer</td>
+                <td><input type="number" id="targ_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="text" id="persen_fokus3" class="auto-calc table-input" readonly></td>
+            </tr>
+            <tr>
+                <td>4. Promo Ceban</td>
+                <td><input type="number" id="targ_fokus4" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus4" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="text" id="persen_fokus4" class="auto-calc table-input" readonly></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Member</h3>
+    <div class="form-group">
+        <label>Actual New Member</label>
+        <input type="number" id="actualNewMember" class="actual-field" placeholder="Jumlah member baru...">
+    </div>
+    <div class="row-grid">
+        <div class="form-group"><label>Total Struk</label><input type="number" id="totalStruk" class="actual-field" oninput="calculateMemberPercent()"></div>
+        <div class="form-group"><label>Struk Member</label><input type="number" id="strukMember" class="actual-field" oninput="calculateMemberPercent()"></div>
+        <div class="form-group"><label>Kontribusi (%)</label><input type="text" id="persenMember" class="auto-calc" readonly></div>
+    </div>
+
+    <h3>PSM (10 Item)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>No</th>
+                <th>Produk PSM</th>
+                <th>Target</th>
+                <th>Actual</th>
+                <th>Persen (%)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <script>
+                const defaultPsmNames = ["Aqua", "Buavita", "FF", "Tango", "H&S", "French", "Mamy poko", "Biore", "PSM Item 9", "PSM Item 10"];
+                for(let i=1; i<=10; i++) {
+                    document.write(`
+                        <tr>
+                            <td>${i}</td>
+                            <td><input type="text" id="name_psm${i}" class="table-input" value="${defaultPsmNames[i-1]}"></td>
+                            <td><input type="number" id="targ_psm${i}" class="table-input" oninput="calculateAllCalculations()"></td>
+                            <td><input type="number" id="act_psm${i}" class="table-input" oninput="calculateAllCalculations()"></td>
+                            <td><input type="text" id="persen_psm${i}" class="auto-calc table-input" readonly></td>
+                        </tr>
+                    `);
+                }
+            </script>
+        </tbody>
+    </table>
+
+    <h3>Category & E-Commerce</h3>
+    <div class="form-group"><label>1. TOYS (NS)</label><input type="number" id="catToys" class="actual-field" placeholder="Nilai Toys..."></div>
+    <div class="form-group"><label>2. TELUR</label><input type="number" id="catTelur" class="actual-field" placeholder="Nilai Telur..."></div>
+    <div class="form-group"><label>Fee Base (Rp)</label><input type="number" id="feeBase" class="actual-field" placeholder="Nilai Fee Base..."></div>
+
+    <button type="button" class="btn btn-target" onclick="saveReportToCloud()">💾 Simpan Data Laporan ke Cloud Server</button>
+    <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview Format WhatsApp</button>
+    <button type="button" class="btn btn-wa" onclick="sendToWhatsApp()">📲 Kirim ke WhatsApp</button>
+    <button type="button" class="btn btn-rekap" onclick="showTotalSummaryPreview()">📊 Rekap Total 20 Toko</button>
+    <button type="button" class="btn btn-wa" onclick="sendTotalSummaryWhatsApp()">📲 Kirim Rekap ke WA</button>
+</div>
+
+<div id="waModal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" onclick="closeWaPreview()">Tutup</button>
+        <h4 id="modalTitle" style="margin-top:0;">Pratinjau Format</h4>
+        <hr>
+        <div id="previewText"></div>
+    </div>
+</div>
+
+<script>
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
+
+    window.onload = function() {
+        const today = new Date();
+        document.getElementById('datePicker').value = today.toISOString().split('T')[0];
+        calculateAllCalculations();
+    };
+
+    function collectFormData() {
+        let data = {
+            datePicker: document.getElementById('datePicker').value,
+            targetMTD: document.getElementById('targetMTD').value,
+            actualSales: document.getElementById('actualSales').value,
+            actualNewMember: document.getElementById('actualNewMember').value,
+            totalStruk: document.getElementById('totalStruk').value,
+            strukMember: document.getElementById('strukMember').value,
+            catToys: document.getElementById('catToys').value,
+            catTelur: document.getElementById('catTelur').value,
+            feeBase: document.getElementById('feeBase').value
+        };
+        for(let i=1; i<=4; i++) {
+            data[`targ_fokus${i}`] = document.getElementById(`targ_fokus${i}`).value;
+            data[`act_fokus${i}`] = document.getElementById(`act_fokus${i}`).value;
+        }
+        for(let i=1; i<=10; i++) {
+            data[`name_psm${i}`] = document.getElementById(`name_psm${i}`).value;
+            data[`targ_psm${i}`] = document.getElementById(`targ_psm${i}`).value;
+            data[`act_psm${i}`] = document.getElementById(`act_psm${i}`).value;
+        }
+        return data;
+    }
+
+    function populateForm(data) {
+        if(!data) return;
+        const currentDeviceDate = document.getElementById('datePicker').value;
+        const dataDate = data.datePicker || "";
+
+        if (dataDate !== currentDeviceDate) {
+            document.getElementById('targetMTD').value = data.targetMTD || '';
+            document.getElementById('actualSales').value = '';
+            document.getElementById('actualNewMember').value = '';
+            document.getElementById('totalStruk').value = '';
+            document.getElementById('strukMember').value = '';
+            document.getElementById('catToys').value = '';
+            document.getElementById('catTelur').value = '';
+            document.getElementById('feeBase').value = '';
+
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`targ_fokus${i}`).value = data[`targ_fokus${i}`] || '';
+                document.getElementById(`act_fokus${i}`).value = '';
+            }
+            for(let i=1; i<=10; i++) {
+                if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
+                document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
+                document.getElementById(`act_psm${i}`).value = '';
+            }
+        } else {
+            document.getElementById('targetMTD').value = data.targetMTD || '';
+            document.getElementById('actualSales').value = data.actualSales || '';
+            document.getElementById('actualNewMember').value = data.actualNewMember || '';
+            document.getElementById('totalStruk').value = data.totalStruk || '';
+            document.getElementById('strukMember').value = data.strukMember || '';
+            document.getElementById('catToys').value = data.catToys || '';
+            document.getElementById('catTelur').value = data.catTelur || '';
+            document.getElementById('feeBase').value = data.feeBase || '';
+
+            for(let i=1; i<=4; i++) {
+                document.getElementById(`targ_fokus${i}`).value = data[`targ_fokus${i}`] || '';
+                document.getElementById(`act_fokus${i}`).value = data[`act_fokus${i}`] || '';
+            }
+            for(let i=1; i<=10; i++) {
+                if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
+                document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
+                document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
+            }
+        }
+        calculateAllCalculations();
+    }
+
+    function onStoreChange() {
+        const store = document.getElementById('storeSelect').value;
+        if (!store) return;
+
+        document.getElementById('loadingStatus').innerText = "Memuat data & target dari Server...";
+        fetch(`${WEB_APP_URL}?action=get&storeCode=${encodeURIComponent(store)}`)
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('loadingStatus').innerText = "";
+                populateForm(data);
+            })
+            .catch(err => {
+                document.getElementById('loadingStatus').innerText = "";
+                console.error(err);
+            });
+    }
+
+    function saveReportToCloud() {
+        const store = document.getElementById('storeSelect').value;
+        if (!store) { alert("Pilih Toko dahulu!"); return; }
+
+        document.getElementById('loadingStatus').innerText = "Menyimpan ke Cloud Server...";
+        fetch(WEB_APP_URL, {
+            method: 'POST',
+            body: JSON.stringify({ storeCode: store, reportData: collectFormData() })
+        })
+        .then(res => res.json())
+        .then(() => {
+            document.getElementById('loadingStatus').innerText = "";
+            alert("Berhasil disimpan & diperbarui di Cloud Server!");
+        })
+        .catch(err => {
+            document.getElementById('loadingStatus').innerText = "";
+            alert("Data tersimpan di Cloud.");
+        });
+    }
+
+    function calculateRevenue() {
+        const targetMTD = parseFloat(document.getElementById('targetMTD').value) || 0;
+        const actualSales = parseFloat(document.getElementById('actualSales').value) || 0;
+        const selectedDate = new Date(document.getElementById('datePicker').value);
+
+        if (!isNaN(selectedDate.getTime())) {
+            const dayNum = selectedDate.getDate();
+            const totalDays = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
+            
+            const tfPercent = (dayNum / totalDays) * 100;
+            document.getElementById('timeFactor').value = tfPercent.toFixed(2).replace('.', ',') + '%';
+
+            const targetTF = targetMTD * (dayNum / totalDays);
+            document.getElementById('targetTimeFactor').value = Math.round(targetTF).toLocaleString('id-ID');
+
+            const achieveMTD = targetMTD > 0 ? (actualSales / targetMTD) * 100 : 0;
+            document.getElementById('achieveMTD').value = achieveMTD.toFixed(2).replace('.', ',') + '%';
+
+            const achieveTF = targetTF > 0 ? (actualSales / targetTF) * 100 : 0;
+            document.getElementById('achieveTF').value = achieveTF.toFixed(2).replace('.', ',') + '%';
+
+            document.getElementById('gapTarget').value = Math.round(actualSales - targetMTD).toLocaleString('id-ID');
+            document.getElementById('gapTF').value = Math.round(actualSales - targetTF).toLocaleString('id-ID');
+        }
+    }
+
+    function calculateFokusPercent() {
+        for (let i = 1; i <= 4; i++) {
+            const targ = parseFloat(document.getElementById(`targ_fokus${i}`).value) || 0;
+            const act = parseFloat(document.getElementById(`act_fokus${i}`).value) || 0;
+            const pct = targ > 0 ? Math.round((act / targ) * 100) : 0;
+            document.getElementById(`persen_fokus${i}`).value = pct + '%';
+        }
+    }
+
+    function calculatePsmPercent() {
+        for (let i = 1; i <= 10; i++) {
+            const targ = parseFloat(document.getElementById(`targ_psm${i}`).value) || 0;
+            const act = parseFloat(document.getElementById(`act_psm${i}`).value) || 0;
+            const pct = targ > 0 ? Math.round((act / targ) * 100) : 0;
+            document.getElementById(`persen_psm${i}`).value = pct + '%';
+        }
+    }
+
+    function calculateMemberPercent() {
+        const total = parseFloat(document.getElementById('totalStruk').value) || 0;
+        const member = parseFloat(document.getElementById('strukMember').value) || 0;
+        const pct = total > 0 ? Math.round((member / total) * 100) : 0;
+        document.getElementById('persenMember').value = pct + '%';
+    }
+
+    function calculateAllCalculations() {
+        calculateRevenue();
+        calculateFokusPercent();
+        calculatePsmPercent();
+        calculateMemberPercent();
+    }
+
+    function formatPeriodeDate(dateStr) {
+        if(!dateStr) return "-";
+        const parts = dateStr.split('-');
+        if(parts.length !== 3) return dateStr;
+        return `${parts[2]} ${parts[1]} ${parts[0]}`;
+    }
+
+    function generateWaText() {
+        const storeVal = document.getElementById('storeSelect').value || " / -";
+        const storeParts = storeVal.split(' / ');
+        
+        let text = `*REPORT SALES*\n`;
+        text += `PERIODE : ${formatPeriodeDate(document.getElementById('
