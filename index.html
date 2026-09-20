@@ -201,10 +201,8 @@
         calculateAllCalculations();
     };
 
-    // Fungsi universal untuk menyamakan tanggal persis dengan waktu lokal perangkat (Android, iOS, PC)
     function setDeviceLocalDate() {
         const now = new Date();
-        // Menggunakan 'en-CA' menghasilkan format YYYY-MM-DD persis sesuai tanggal lokal perangkat tanpa selisih zona waktu
         const localDate = now.toLocaleDateString('en-CA');
         document.getElementById('datePicker').value = localDate;
     }
@@ -235,7 +233,7 @@
 
     function populateForm(data) {
         if(!data) return;
-        setDeviceLocalDate(); // Selalu kunci tanggal sesuai perangkat lokal
+        setDeviceLocalDate();
 
         document.getElementById('targetMTD').value = data.targetMTD || '';
         document.getElementById('actualSales').value = data.actualSales || '';
@@ -462,7 +460,20 @@
                     });
                 }
 
-                let achMtdTotal = totTargetMTD > 0 ? ((totActualSales / totTargetMTD) * 100).toFixed(2) : "0,00";
+                // Kalkulasi lengkap Time Factor untuk Rekap Total
+                const selectedDate = new Date(document.getElementById('datePicker').value);
+                let dayNum = 1, totalDays = 30;
+                if (!isNaN(selectedDate.getTime())) {
+                    dayNum = selectedDate.getDate();
+                    totalDays = new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0).getDate();
+                }
+
+                const tfPercentVal = (dayNum / totalDays) * 100;
+                const totTargetTF = totTargetMTD * (dayNum / totalDays);
+                const achieveMtdTotal = totTargetMTD > 0 ? ((totActualSales / totTargetMTD) * 100) : 0;
+                const achieveTfTotal = totTargetTF > 0 ? ((totActualSales / totTargetTF) * 100) : 0;
+                const gapTargetTotal = totActualSales - totTargetMTD;
+                const gapTfTotal = totActualSales - totTargetTF;
                 let kontriMemberTotal = totStruk > 0 ? Math.round((totStrukMember / totStruk) * 100) : 0;
 
                 let summary = `*REKAP TOTAL KESELURUHAN (${storeCount} TOKO MELAPOR)*\n`;
@@ -470,10 +481,14 @@
                 summary += `WH : Bekasi | AM : SRD | AC : TRIYANTO\n`;
                 summary += `======================\n`;
                 summary += `*REVENUE TOTAL*\n`;
+                summary += `• Time Factor : ${tfPercentVal.toFixed(2).replace('.', ',')}%\n`;
                 summary += `• Target MTD : Rp ${totTargetMTD.toLocaleString('id-ID')}\n`;
+                summary += `• Target Time Factor : Rp ${Math.round(totTargetTF).toLocaleString('id-ID')}\n`;
                 summary += `• Actual Sales : Rp ${totActualSales.toLocaleString('id-ID')}\n`;
-                summary += `• Achieve MTD : ${achMtdTotal.replace('.', ',')}%\n`;
-                summary += `• Gap to Target : Rp ${(totActualSales - totTargetMTD).toLocaleString('id-ID')}\n`;
+                summary += `• Achieve MTD : ${achieveMtdTotal.toFixed(2).replace('.', ',')}%\n`;
+                summary += `• Achieve Time Factor : ${achieveTfTotal.toFixed(2).replace('.', ',')}%\n`;
+                summary += `• Gap to Target : Rp ${Math.round(gapTargetTotal).toLocaleString('id-ID')}\n`;
+                summary += `• Gap to Time Factor : Rp ${Math.round(gapTfTotal).toLocaleString('id-ID')}\n`;
                 summary += `======================\n`;
                 summary += `*FOKUS CABANG (TOTAL)*\n`;
                 
