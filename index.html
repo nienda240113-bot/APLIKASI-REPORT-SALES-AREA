@@ -195,18 +195,19 @@
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
     let globalSummaryText = "";
-    let isSavedToCloud = false;
+    let isSavedToCloud = false; // Status awal belum tersimpan
 
     window.onload = function() {
         setDeviceLocalDate();
         calculateAllCalculations();
-        isSavedToCloud = false;
     };
 
     function setDeviceLocalDate() {
-        const now = new Date();
-        const localDate = now.toLocaleDateString('en-CA');
-        document.getElementById('datePicker').value = localDate;
+        const dateInput = document.getElementById('datePicker');
+        if (!dateInput.value) {
+            const now = new Date();
+            dateInput.value = now.toLocaleDateString('en-CA');
+        }
     }
 
     function markAsUnsaved() {
@@ -255,8 +256,6 @@
         
         if(data.datePicker) {
             document.getElementById('datePicker').value = data.datePicker;
-        } else {
-            setDeviceLocalDate();
         }
 
         document.getElementById('targetMTD').value = data.targetMTD || '';
@@ -278,7 +277,7 @@
             document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
         }
         calculateAllCalculations();
-        isSavedToCloud = true;
+        isSavedToCloud = true; // Data dari server dianggap sudah tersimpan
     }
 
     function onStoreChange() {
