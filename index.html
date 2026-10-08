@@ -253,7 +253,6 @@
     function populateForm(data) {
         if(!data) return;
         
-        // Gunakan tanggal dari server jika ada, jika kosong tetap gunakan tanggal perangkat
         if(data.datePicker) {
             document.getElementById('datePicker').value = data.datePicker;
         } else {
@@ -274,12 +273,12 @@
             document.getElementById(`act_fokus${i}`).value = data[`act_fokus${i}`] || '';
         }
         for(let i=1; i<=10; i++) {
-            if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
+            if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`].value = data[`name_psm${i}`];
             document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
             document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
         }
         calculateAllCalculations();
-        isSavedToCloud = true; // Data dari server ditandai sudah tersimpan
+        isSavedToCloud = true;
     }
 
     function onStoreChange() {
@@ -440,6 +439,10 @@
     }
 
     function showWaPreview() {
+        if (!isSavedToCloud) {
+            alert("⚠️ PERINGATAN: Data laporan belum disimpan ke Cloud Server!\n\nSilakan klik tombol hijau '💾 Simpan Data Laporan ke Cloud Server' terlebih dahulu sebelum melihat Preview WhatsApp.");
+            return;
+        }
         document.getElementById('modalTitle').innerText = "Pratinjau Format WhatsApp";
         document.getElementById('previewText').innerText = generateWaText();
         document.getElementById('waModal').style.display = 'block';
