@@ -195,7 +195,7 @@
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
     let globalSummaryText = "";
-    let isSavedToCloud = false; // Status awal belum tersimpan
+    let isSavedToCloud = false;
 
     window.onload = function() {
         setDeviceLocalDate();
@@ -203,11 +203,9 @@
     };
 
     function setDeviceLocalDate() {
-        const dateInput = document.getElementById('datePicker');
-        if (!dateInput.value) {
-            const now = new Date();
-            dateInput.value = now.toLocaleDateString('en-CA');
-        }
+        const now = new Date();
+        const localDate = now.toLocaleDateString('en-CA');
+        document.getElementById('datePicker').value = localDate;
     }
 
     function markAsUnsaved() {
@@ -256,6 +254,8 @@
         
         if(data.datePicker) {
             document.getElementById('datePicker').value = data.datePicker;
+        } else {
+            setDeviceLocalDate();
         }
 
         document.getElementById('targetMTD').value = data.targetMTD || '';
@@ -277,7 +277,7 @@
             document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
         }
         calculateAllCalculations();
-        isSavedToCloud = true; // Data dari server dianggap sudah tersimpan
+        isSavedToCloud = true;
     }
 
     function onStoreChange() {
@@ -544,33 +544,33 @@
                 summary += `======================\n`;
                 summary += `*Direkap otomatis dari data server toko-toko (Anti-Double).*`;
 
-                globalSummaryText = summary;
-                document.getElementById('previewText').innerText = summary;
-            })
-            .catch(err => {
-                console.error(err);
-                document.getElementById('previewText').innerText = "Gagal memuat rekap total dari server. Pastikan koneksi internet stabil.";
-            });
-    }
-
-    function closeWaPreview() { document.getElementById('waModal').style.display = 'none'; }
-    
-    function sendToWhatsApp() {
-        if (!isSavedToCloud) {
-            alert("⚠️ PERINGATAN: Data laporan belum disimpan ke Cloud Server!\n\nSilakan klik tombol hijau '💾 Simpan Data Laporan ke Cloud Server' terlebih dahulu sebelum mengirim laporan ke WhatsApp.");
-            return;
+                    globalSummaryText = summary;
+                    document.getElementById('previewText').innerText = summary;
+                })
+                .catch(err => {
+                    console.error(err);
+                    document.getElementById('previewText').innerText = "Gagal memuat rekap total dari server. Pastikan koneksi internet stabil.";
+                });
         }
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank');
-    }
-    
-    function sendTotalSummaryWhatsApp() {
-        if (!globalSummaryText) {
-            alert("Silakan klik tombol 'Rekap Total 20 Toko' terlebih dahulu untuk memuat data!");
-            return;
-        }
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(globalSummaryText)}`, '_blank');
-    }
-</script>
 
-</body>
-</html>
+        function closeWaPreview() { document.getElementById('waModal').style.display = 'none'; }
+        
+        function sendToWhatsApp() {
+            if (!isSavedToCloud) {
+                alert("⚠️ PERINGATAN: Data laporan belum disimpan ke Cloud Server!\n\nSilakan klik tombol hijau '💾 Simpan Data Laporan ke Cloud Server' terlebih dahulu sebelum mengirim laporan ke WhatsApp.");
+                return;
+            }
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank');
+        }
+        
+        function sendTotalSummaryWhatsApp() {
+            if (!globalSummaryText) {
+                alert("Silakan klik tombol 'Rekap Total 20 Toko' terlebih dahulu untuk memuat data!");
+                return;
+            }
+            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(globalSummaryText)}`, '_blank');
+        }
+    </script>
+
+    </body>
+    </html>
