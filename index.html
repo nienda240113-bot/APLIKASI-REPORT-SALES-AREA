@@ -41,7 +41,7 @@
     <h3>Informasi Umum Toko</h3>
     <div class="form-group">
         <label>Periode Tanggal (Otomatis Sesuai Perangkat)</label>
-        <input type="date" id="datePicker" onchange="markAsUnsaved(); calculateAllCalculations();">
+        <input type="date" id="datePicker" onchange="calculateAllCalculations()">
     </div>
     
     <div class="form-group">
@@ -74,11 +74,11 @@
     <h3>Revenue / Net Sales</h3>
     <div class="form-group">
         <label>Target MTD (Rp)</label>
-        <input type="number" id="targetMTD" class="target-field" placeholder="Masukkan Target MTD..." oninput="markAsUnsaved(); calculateRevenue();">
+        <input type="number" id="targetMTD" class="target-field" placeholder="Masukkan Target MTD..." oninput="calculateRevenue()">
     </div>
     <div class="form-group">
         <label>Actual Sales (Rp)</label>
-        <input type="number" id="actualSales" class="actual-field" placeholder="Masukkan Penjualan Aktual..." oninput="markAsUnsaved(); calculateRevenue();">
+        <input type="number" id="actualSales" class="actual-field" placeholder="Masukkan Penjualan Aktual..." oninput="calculateRevenue()">
     </div>
     <div class="row-grid">
         <div class="form-group"><label>Time Factor (%)</label><input type="text" id="timeFactor" class="auto-calc" readonly></div>
@@ -106,26 +106,26 @@
         <tbody>
             <tr>
                 <td>1. Tebus Murah</td>
-                <td><input type="number" id="targ_fokus1" class="table-input" oninput="markAsUnsaved(); calculateAllCalculations();"></td>
-                <td><input type="number" id="act_fokus1" class="table-input" oninput="markAsUnsaved(); calculateAllCalculations();"></td>
+                <td><input type="number" id="targ_fokus1" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus1" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus1" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
                 <td>2. Serba Gratis</td>
-                <td><input type="number" id="targ_fokus2" class="table-input" oninput="markAsUnsaved(); calculateAllCalculations();"></td>
-                <td><input type="number" id="act_fokus2" class="table-input" oninput="markAsUnsaved(); calculateAllCalculations();"></td>
+                <td><input type="number" id="targ_fokus2" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus2" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus2" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
                 <td>3. Sueugeer</td>
                 <td><input type="number" id="targ_fokus3" class="table-input auto-calc" readonly></td>
-                <td><input type="number" id="act_fokus3" class="table-input" oninput="markAsUnsaved(); calculateAllCalculations();"></td>
+                <td><input type="number" id="act_fokus3" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus3" class="auto-calc table-input" readonly></td>
             </tr>
             <tr>
                 <td>4. Promo Ceban</td>
-                <td><input type="number" id="targ_fokus4" class="table-input" oninput="markAsUnsaved(); calculateAllCalculations();"></td>
-                <td><input type="number" id="act_fokus4" class="table-input" oninput="markAsUnsaved(); calculateAllCalculations();"></td>
+                <td><input type="number" id="targ_fokus4" class="table-input" oninput="calculateAllCalculations()"></td>
+                <td><input type="number" id="act_fokus4" class="table-input" oninput="calculateAllCalculations()"></td>
                 <td><input type="text" id="persen_fokus4" class="auto-calc table-input" readonly></td>
             </tr>
         </tbody>
@@ -134,11 +134,11 @@
     <h3>Member</h3>
     <div class="form-group">
         <label>Actual New Member</label>
-        <input type="number" id="actualNewMember" class="actual-field" placeholder="Jumlah member baru..." oninput="markAsUnsaved()">
+        <input type="number" id="actualNewMember" class="actual-field" placeholder="Jumlah member baru...">
     </div>
     <div class="row-grid">
-        <div class="form-group"><label>Total Struk</label><input type="number" id="totalStruk" class="actual-field" oninput="markAsUnsaved(); calculateMemberPercent(); calculateSueugeerTarget();"></div>
-        <div class="form-group"><label>Struk Member</label><input type="number" id="strukMember" class="actual-field" oninput="markAsUnsaved(); calculateMemberPercent();"></div>
+        <div class="form-group"><label>Total Struk</label><input type="number" id="totalStruk" class="actual-field" oninput="calculateMemberPercent(); calculateSueugeerTarget();"></div>
+        <div class="form-group"><label>Struk Member</label><input type="number" id="strukMember" class="actual-field" oninput="calculateMemberPercent()"></div>
         <div class="form-group"><label>Kontribusi (%)</label><input type="text" id="persenMember" class="auto-calc" readonly></div>
     </div>
 
@@ -160,9 +160,9 @@
                     document.write(`
                         <tr>
                             <td>${i}</td>
-                            <td><input type="text" id="name_psm${i}" class="table-input" value="${defaultPsmNames[i-1]}" oninput="markAsUnsaved()"></td>
-                            <td><input type="number" id="targ_psm${i}" class="table-input" oninput="markAsUnsaved(); calculateAllCalculations();"></td>
-                            <td><input type="number" id="act_psm${i}" class="table-input" oninput="markAsUnsaved(); calculateAllCalculations();"></td>
+                            <td><input type="text" id="name_psm${i}" class="table-input" value="${defaultPsmNames[i-1]}"></td>
+                            <td><input type="number" id="targ_psm${i}" class="table-input" oninput="calculateAllCalculations()"></td>
+                            <td><input type="number" id="act_psm${i}" class="table-input" oninput="calculateAllCalculations()"></td>
                             <td><input type="text" id="persen_psm${i}" class="auto-calc table-input" readonly></td>
                         </tr>
                     `);
@@ -172,9 +172,9 @@
     </table>
 
     <h3>Category & E-Commerce</h3>
-    <div class="form-group"><label>1. TOYS (NS)</label><input type="number" id="catToys" class="actual-field" placeholder="Nilai Toys..." oninput="markAsUnsaved()"></div>
-    <div class="form-group"><label>2. TELUR</label><input type="number" id="catTelur" class="actual-field" placeholder="Nilai Telur..." oninput="markAsUnsaved()"></div>
-    <div class="form-group"><label>Fee Base (Rp)</label><input type="number" id="feeBase" class="actual-field" placeholder="Nilai Fee Base..." oninput="markAsUnsaved()"></div>
+    <div class="form-group"><label>1. TOYS (NS)</label><input type="number" id="catToys" class="actual-field" placeholder="Nilai Toys..."></div>
+    <div class="form-group"><label>2. TELUR</label><input type="number" id="catTelur" class="actual-field" placeholder="Nilai Telur..."></div>
+    <div class="form-group"><label>Fee Base (Rp)</label><input type="number" id="feeBase" class="actual-field" placeholder="Nilai Fee Base..."></div>
 
     <button type="button" class="btn btn-target" onclick="saveReportToCloud()">💾 Simpan Data Laporan ke Cloud Server</button>
     <button type="button" class="btn btn-preview" onclick="showWaPreview()">👁️ Preview Format WhatsApp</button>
@@ -195,12 +195,10 @@
 <script>
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyyn3GkfAKo5sC2So5a8pcrC9fCh3AsTUPZaLiRMP2IZkbHzpURsxA59np5cYYo11HHxA/exec";
     let globalSummaryText = "";
-    let isSavedToCloud = false; // Status pengecekan simpan cloud
 
     window.onload = function() {
         setDeviceLocalDate();
         calculateAllCalculations();
-        isSavedToCloud = false;
     };
 
     function setDeviceLocalDate() {
@@ -209,13 +207,10 @@
         document.getElementById('datePicker').value = localDate;
     }
 
-    function markAsUnsaved() {
-        isSavedToCloud = false;
-    }
-
     function calculateSueugeerTarget() {
         const totalStruk = parseFloat(document.getElementById('totalStruk').value) || 0;
         if (totalStruk > 0) {
+            // Rumus: Total Struk * 80% * 40% / 2
             let step1 = totalStruk * 0.80;
             let step2 = step1 * 0.40;
             let finalTarget = Math.round(step2 / 2);
@@ -268,12 +263,11 @@
             document.getElementById(`act_fokus${i}`).value = data[`act_fokus${i}`] || '';
         }
         for(let i=1; i<=10; i++) {
-            if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`].value = data[`name_psm${i}`];
+            if(data[`name_psm${i}`]) document.getElementById(`name_psm${i}`).value = data[`name_psm${i}`];
             document.getElementById(`targ_psm${i}`).value = data[`targ_psm${i}`] || '';
             document.getElementById(`act_psm${i}`).value = data[`act_psm${i}`] || '';
         }
         calculateAllCalculations();
-        isSavedToCloud = true; // Ditandai sudah tersimpan saat data dari server dimuat
     }
 
     function onStoreChange() {
@@ -305,12 +299,10 @@
         .then(res => res.json())
         .then(() => {
             document.getElementById('loadingStatus').innerText = "";
-            isSavedToCloud = true; // Berhasil disimpan, status aktif
             alert("Berhasil disimpan & diperbarui di Cloud Server!");
         })
         .catch(err => {
             document.getElementById('loadingStatus').innerText = "";
-            isSavedToCloud = true; // Dianggap tersimpan walau ada jeda jaringan
             alert("Data tersimpan di Cloud.");
         });
     }
@@ -546,21 +538,14 @@
     }
 
     function closeWaPreview() { document.getElementById('waModal').style.display = 'none'; }
-    
-    function sendToWhatsApp() {
-        if (!isSavedToCloud) {
-            alert("⚠️ PERINGATAN: Data laporan belum disimpan ke Cloud Server!\n\nSilakan klik tombol hijau '💾 Simpan Data Laporan ke Cloud Server' terlebih dahulu sebelum mengirim laporan ke WhatsApp.");
-            return;
-        }
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank');
-    }
+    function sendToWhatsApp() { window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(generateWaText())}`, '_blank'); }
     
     function sendTotalSummaryWhatsApp() {
         if (!globalSummaryText) {
             alert("Silakan klik tombol 'Rekap Total 20 Toko' terlebih dahulu untuk memuat data!");
             return;
         }
-        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(globalSummaryText)}`, '_blank');
+        window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(globalSummaryTest)}`, '_blank');
     }
 </script>
 
