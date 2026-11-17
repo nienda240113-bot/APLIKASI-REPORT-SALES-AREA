@@ -226,14 +226,89 @@ isSavedToCloud=true;updateButtonLockState();setStatus(shift==="Shift 1"?"Laporan
 }
 function formatPeriodeDate(s){if(!s)return "-";const p=s.split("-");return p.length===3?`${p[2]}-${p[1]}-${p[0]}`:s}
 function generateWaText(){
-const code=$("storeSelect").value||"-",name=$("storeSelect").selectedOptions[0]?.textContent.split(" / ").slice(1).join(" / ")||"-";
-let t=`*REPORT SALES*\\nPERIODE : ${formatPeriodeDate($("datePicker").value)}\\nSHIFT : ${$("shiftSelect").value}\\nWH : Bekasi\\nAM : SRD\\nAC : TRIYANTO\\nKD Toko : ${code}\\nNama Toko : ${name}\\n======================\\n*REVENUE*\\n1. NET SALES\\n`;
-t+=`- TIME FAKTOR : ${$("timeFactor").value}\\n- TARGET MTD : ${fmt(num("targetMTD"))}\\n- TARGET TIME FACTOR : ${$("targetTimeFactor").value}\\n- ACTUAL : ${fmt(num("actualSales"))}\\n- ACHIVE MTD : ${$("achieveMTD").value}\\n- ACHIEVER TIME FACTOR: ${$("achieveTF").value}\\n- GAP TO TARGET : ${$("gapTarget").value}\\n- GAP TO TIME FACTOR : ${$("gapTF").value}\\n======================\\n*FOKUS CABANG*\\nTARGET | SALES | ACV%\\n`;
-for(let i=1;i<=4;i++)t+=`${i}. ${FOCUS_NAMES[i-1].toUpperCase()} : ${$(`targ_fokus${i}`).value||0} | ${$(`act_fokus${i}`).value||0} | ${$(`persen_fokus${i}`).value||"0%"}\\n`;
-t+="5. PSM (TARGET PER SHIFT) :\\n";
-for(let i=1;i<=10;i++)t+=`   - ${i}. ${$(`name_psm${i}`).value} (${(Number($(`targ_psm${i}`).value)||0)/2} | ${$(`act_psm${i}`).value||0} | ${$(`persen_psm${i}`).value||"0%"})\\n`;
-t+=`\\n*MEMBER*\\n1. ACTUAL NEW MEMBER : ${$("actualNewMember").value||0}\\n2. KONTRIBUSI STRUK MEMBER : ${$("strukMember").value||0} | ${$("totalStruk").value||0} | ${$("persenMember").value}\\n\\n*CATEGORY* (Rupiah)\\n(Sales)\\n1. TOYS (NS) : ${fmt(num("catToys"))}\\n2. TELUR : ${fmt(num("catTelur"))}\\n======================\\n*E-COMMERCE*\\n1. FEE BASE (RP) : ${fmt(num("feeBase"))}\\nTerimakasih`;
-return t;
+ const code=$("storeSelect").value||"-";
+ const name=$("storeSelect").selectedOptions[0]?.textContent.split(" / ").slice(1).join(" / ")||"-";
+ const date=formatPeriodeDate($("datePicker").value).replace(/-/g," ");
+ const shift=$("shiftSelect").value||"-";
+ const line="━━━━━━━━━━━━━━━━━━━━";
+ const focusNames=["TEBUS MURAH","SERBA GRATIS","SUEUGEER","PROMO CEBAN"];
+ let t=`📊 *REPORT SALES*
+`;
+ t+=`📅 PERIODE : *${date}*
+`;
+ t+=`🕒 SHIFT : *${shift}*
+`;
+ t+=`WH : Bekasi
+AM : SRD
+AC : TRIYANTO
+`;
+ t+=`🏬 KD TOKO : *${code}*
+NAMA TOKO : *${name}*
+`;
+ t+=`${line}
+`;
+ t+=`💰 *REVENUE / NET SALES*
+`;
+ t+=`Time Factor : ${$("timeFactor").value||"0%"}
+`;
+ t+=`Target MTD : Rp ${fmt(num("targetMTD"))}
+`;
+ t+=`Target Time Factor : Rp ${$("targetTimeFactor").value||"0"}
+`;
+ t+=`Actual Sales : Rp ${fmt(num("actualSales"))}
+`;
+ t+=`Achieve MTD : ${$("achieveMTD").value||"0%"}
+`;
+ t+=`Achieve Time Factor : ${$("achieveTF").value||"0%"}
+`;
+ t+=`Gap to Target : Rp ${$("gapTarget").value||"0"}
+`;
+ t+=`Gap to Time Factor : Rp ${$("gapTF").value||"0"}
+`;
+ t+=`${line}
+`;
+ t+=`🎯 *FOKUS CABANG*
+`;
+ t+=`Target | Sales | ACV%
+`;
+ for(let i=1;i<=4;i++){
+   t+=`${i}. ${focusNames[i-1]} : ${$(`targ_fokus${i}`).value||0} | ${$(`act_fokus${i}`).value||0} | ${$(`persen_fokus${i}`).value||"0%"}
+`;
+ }
+ t+=`
+🏷️ *PSM (TARGET PER SHIFT)*
+`;
+ for(let i=1;i<=10;i++){
+   const target=(Number($(`targ_psm${i}`).value)||0)/2;
+   const actual=$(`act_psm${i}`).value||0;
+   const achieve=$(`persen_psm${i}`).value||"0%";
+   const itemName=$(`name_psm${i}`).value||`PSM Item ${i}`;
+   t+=`${i}. ${itemName} : (${fmt(target)} | ${actual} | ${achieve})
+`;
+ }
+ t+=`
+👥 *MEMBER*
+`;
+ t+=`Actual New Member : ${$("actualNewMember").value||0}
+`;
+ t+=`Kontribusi Struk Member : ${$("strukMember").value||0} | ${$("totalStruk").value||0} | ${$("persenMember").value||"0%"}
+`;
+ t+=`
+🛍️ *CATEGORY (RUPIAH / SALES)*
+`;
+ t+=`1. TOYS (NS) : Rp ${fmt(num("catToys"))}
+`;
+ t+=`2. TELUR : Rp ${fmt(num("catTelur"))}
+`;
+ t+=`${line}
+`;
+ t+=`🛒 *E-COMMERCE*
+`;
+ t+=`Fee Base (Rp) : ${fmt(num("feeBase"))}
+`;
+ t+=`
+Terima kasih 🙏`;
+ return t;
 }
 function openPreview(title,text){$("modalTitle").textContent=title;$("previewText").textContent=text;$("waModal").style.display="block"}
 function showWaPreview(){if(isSavedToCloud)openPreview("Pratinjau Format WhatsApp",generateWaText())}
