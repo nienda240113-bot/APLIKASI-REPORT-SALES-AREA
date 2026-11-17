@@ -2,7 +2,9 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#315fe8">
+<meta name="description" content="Daily Sales Report Portal - Sales performance dashboard">
 <title>Daily Sales Report Portal</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -104,6 +106,103 @@ button:focus-visible{outline:3px solid #80a8ff;outline-offset:3px}
 @media(max-width:370px){.row-grid{grid-template-columns:1fr}.container{padding:11px}h2{font-size:21px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 
+
+/* ===== Premium Modern visual layer ===== */
+:root{
+ --ink:#14213d;--muted:#71809a;--line:#e7edf7;--blue:#315fe8;--blue2:#668cff;
+ --teal:#11bfa9;--mint:#e9fbf7;--surface:#fff;--shadow:0 22px 60px rgba(32,62,125,.12);
+}
+body{
+ background-color:#f4f7ff;
+ background-image:radial-gradient(circle at 5% 4%,rgba(74,126,255,.19),transparent 27%),
+ radial-gradient(circle at 96% 16%,rgba(20,197,174,.15),transparent 25%),
+ linear-gradient(135deg,#f5f7ff 0%,#f9fbff 48%,#eefaf8 100%);
+}
+.container{
+ position:relative;isolation:isolate;overflow:hidden;
+ border:1px solid rgba(255,255,255,.95);
+ box-shadow:0 24px 70px rgba(34,61,118,.12),0 3px 12px rgba(34,61,118,.04);
+}
+.container:before{content:"";position:absolute;z-index:-1;top:-145px;right:-115px;width:290px;height:290px;border-radius:50%;background:linear-gradient(135deg,rgba(83,137,255,.10),rgba(24,202,179,.08));pointer-events:none}
+h2{
+ min-height:112px;display:flex;align-items:center;
+ background:linear-gradient(112deg,#204bc8 0%,#3677ed 48%,#12b9a7 100%);
+ box-shadow:0 15px 32px rgba(48,102,220,.24),inset 0 1px 0 rgba(255,255,255,.22);
+}
+h2:before{content:"SALES PERFORMANCE • CLOUD PORTAL";position:absolute;left:25px;top:14px;font-size:9px;font-weight:800;letter-spacing:1.7px;color:rgba(255,255,255,.78)}
+h2{padding-top:34px}
+h2:after{right:-42px;top:-88px;width:205px;height:205px;border-color:rgba(255,255,255,.25);box-shadow:0 0 0 24px rgba(255,255,255,.07),0 0 0 50px rgba(255,255,255,.045)}
+#loadingStatus{box-shadow:0 5px 16px rgba(16,185,160,.06);font-weight:750}
+h3{margin-top:30px;padding:0 0 11px;color:#213f83;font-size:17px}
+h3:before{width:6px;height:24px;background:linear-gradient(180deg,#5688ff,#12bca8);box-shadow:0 3px 9px rgba(49,95,232,.18)}
+.form-group{padding:0 1px}
+label{color:#435574}
+input,select{border-color:#dce5f3;background:linear-gradient(180deg,#fff,#fbfcff);box-shadow:0 2px 5px rgba(27,53,101,.025)}
+input:hover,select:hover{border-color:#aebfe0}
+input:focus,select:focus{border-color:#5484f0;box-shadow:0 0 0 4px rgba(72,123,237,.13),0 5px 15px rgba(53,100,201,.06)}
+input[readonly],input.auto-calc{background:linear-gradient(135deg,#edf4ff,#f0fbfa);border-color:#dce9f5;color:#2854a4}
+table{box-shadow:0 8px 22px rgba(32,58,105,.045)}
+th{background:linear-gradient(110deg,#eaf1ff,#eafaf7);color:#284b91}
+td:first-child{color:#405577}
+input.table-input{background:#fbfcff}
+.btn{min-height:52px;border-radius:14px;letter-spacing:.15px;box-shadow:0 8px 18px rgba(37,71,133,.13),inset 0 1px 0 rgba(255,255,255,.18)}
+.btn-target{background:linear-gradient(110deg,#2458d7,#4388f5)}
+.btn-preview{background:linear-gradient(110deg,#087eaa,#13b9c0)}
+.btn-wa{background:linear-gradient(110deg,#079c68,#22c98b)}
+.btn-rekap{background:linear-gradient(110deg,#5d4ac0,#8c70ed)}
+.btn:hover:not(:disabled){filter:saturate(1.08) brightness(1.04);transform:translateY(-2px);box-shadow:0 13px 25px rgba(37,71,133,.19),inset 0 1px 0 rgba(255,255,255,.2)}
+.btn:active:not(:disabled){transform:translateY(0) scale(.985)}
+.modal{z-index:1000}
+.modal-content{border:1px solid rgba(255,255,255,.9);box-shadow:0 26px 80px rgba(11,28,67,.28)}
+#previewText{border:1px solid #e6edf8;background:linear-gradient(145deg,#f6f8ff,#f1fbf8)}
+.note{padding:9px 12px;border-left:3px solid #27b9a7;border-radius:0 9px 9px 0;background:#f0fbf8;color:#52657f}
+@keyframes softGlow{0%,100%{box-shadow:0 12px 25px rgba(50,103,232,.20)}50%{box-shadow:0 16px 32px rgba(24,185,167,.22)}}
+h2{animation:softGlow 7s ease-in-out infinite}
+@media(min-width:900px){
+ .container{padding:36px 44px}
+ .form-group{margin-bottom:17px}
+ h3{font-size:18px}
+}
+@media(max-width:600px){
+ body{padding:8px}
+ .container{padding:13px;border-radius:20px}
+ h2{min-height:105px;padding:34px 16px 19px;font-size:22px}
+ h2:before{left:17px;top:13px;font-size:8px;letter-spacing:1.35px}
+ h3{margin-top:25px}
+ .btn{min-height:53px;border-radius:13px}
+}
+@media(prefers-reduced-motion:reduce){h2{animation:none}}
+
+
+/* ===== Premium dashboard add-ons ===== */
+.premium-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 16px;flex-wrap:wrap}
+.theme-toggle{border:1px solid #dce6f5;border-radius:999px;padding:9px 14px;background:#fff;color:#294b85;font-weight:800;cursor:pointer;box-shadow:0 5px 14px #294b8510}
+.premium-dashboard{margin:8px 0 25px;padding:17px;border:1px solid #e4ebf6;border-radius:20px;background:linear-gradient(145deg,#fbfdff,#f0f8ff);box-shadow:0 12px 28px rgba(37,69,128,.07)}
+.dash-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:13px;color:#243f78;font-weight:850}
+.dash-live{font-size:10px;letter-spacing:1px;color:#0c9b83;background:#e6faf5;border-radius:99px;padding:5px 9px}
+.kpi-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.kpi-card{padding:13px;border:1px solid #e8eef8;border-radius:15px;background:#fff;min-width:0;box-shadow:0 5px 14px rgba(30,55,100,.04)}
+.kpi-label{font-size:10px;font-weight:800;letter-spacing:.65px;color:#71809a;text-transform:uppercase}
+.kpi-value{margin-top:5px;color:#203d78;font-size:clamp(17px,2.4vw,24px);font-weight:900;letter-spacing:-.7px;overflow-wrap:anywhere}
+.kpi-sub{margin-top:3px;color:#8390a5;font-size:10px}
+.dash-progress{margin-top:14px}.progress-top{display:flex;justify-content:space-between;gap:10px;font-size:12px;font-weight:800;color:#50617e;margin-bottom:7px}
+.progress-track{height:10px;border-radius:99px;background:#e5edf8;overflow:hidden}.progress-fill{height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#376fe8,#16bea7);transition:width .55s cubic-bezier(.2,.75,.25,1)}
+.smart-alert{margin-top:13px;padding:10px 12px;border-radius:12px;background:#fff8e9;border:1px solid #f7e5b8;color:#8a5b0b;font-size:12px;font-weight:700}
+.smart-alert.good{background:#eafaf4;border-color:#c9eee0;color:#087d61}.smart-alert.neutral{background:#eef4ff;border-color:#d9e5ff;color:#365b9e}
+body.dark-mode{--ink:#e8eefc;--muted:#aab7ce;--line:#293852;background:#101827;background-image:radial-gradient(circle at 5% 4%,#243d70 0,transparent 28%),radial-gradient(circle at 96% 16%,#124b48 0,transparent 25%),linear-gradient(135deg,#101827,#142235)}
+.dark-mode .container{background:rgba(25,38,58,.97);border-color:#30425f;color:#e8eefc}
+.dark-mode h3,.dark-mode label,.dark-mode td:first-child{color:#c7d7f5}
+.dark-mode input,.dark-mode select,.dark-mode input.table-input{background:#17263b;color:#e8eefc;border-color:#3a4d6c}
+.dark-mode input[readonly],.dark-mode input.auto-calc{background:#203653;color:#b9d3ff;border-color:#3b587c}
+.dark-mode table,.dark-mode table tr,.dark-mode .kpi-card{background:#1b2a40;color:#e8eefc;border-color:#344762}
+.dark-mode th{background:#263b59;color:#d6e4ff;border-color:#344762}.dark-mode td,.dark-mode th{border-color:#344762}
+.dark-mode .premium-dashboard{background:linear-gradient(145deg,#1a2a41,#1a3442);border-color:#344762}
+.dark-mode .dash-heading,.dark-mode .kpi-value{color:#e2edff}.dark-mode .kpi-label,.dark-mode .kpi-sub,.dark-mode .progress-top{color:#aabbd5}
+.dark-mode .theme-toggle{background:#203653;color:#e2edff;border-color:#405879}
+.dark-mode .note{background:#193c3a;color:#b8e9dc}.dark-mode #previewText{background:#17263b;color:#e8eefc;border-color:#344762}
+@media(max-width:680px){.kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.premium-dashboard{padding:13px}.kpi-card{padding:11px}.kpi-value{font-size:19px}}
+@media(prefers-reduced-motion:reduce){.progress-fill{transition:none}}
+
 </style>
 </head>
 <body>
@@ -111,6 +210,18 @@ button:focus-visible{outline:3px solid #80a8ff;outline-offset:3px}
 <h2>Daily Sales Report Portal</h2>
 <p style="color:#666;font-size:13px">Mode: Supabase Cloud Server Connected</p>
 <div id="loadingStatus">Menghubungkan ke database...</div>
+<div class="premium-toolbar"><span class="note" style="margin:0">Ringkasan performa langsung • diperbarui saat data diubah</span><button type="button" class="theme-toggle" id="themeToggle" aria-label="Ganti tema">🌙 Dark Mode</button></div>
+<section class="premium-dashboard" aria-label="Dashboard KPI">
+ <div class="dash-heading"><span>✨ SALES SNAPSHOT</span><span class="dash-live">● LIVE</span></div>
+ <div class="kpi-grid">
+  <div class="kpi-card"><div class="kpi-label">Actual Sales</div><div class="kpi-value" id="dashActual">Rp 0</div><div class="kpi-sub">Penjualan saat ini</div></div>
+  <div class="kpi-card"><div class="kpi-label">Achievement</div><div class="kpi-value" id="dashAchieve">0%</div><div class="kpi-sub">Terhadap Target MTD</div></div>
+  <div class="kpi-card"><div class="kpi-label">Gap Target</div><div class="kpi-value" id="dashGap">Rp 0</div><div class="kpi-sub">Actual dikurangi target</div></div>
+  <div class="kpi-card"><div class="kpi-label">Member</div><div class="kpi-value" id="dashMember">0%</div><div class="kpi-sub">Kontribusi struk member</div></div>
+ </div>
+ <div class="dash-progress"><div class="progress-top"><span>Progress pencapaian Revenue</span><strong id="dashProgressText">0%</strong></div><div class="progress-track"><div class="progress-fill" id="dashProgress"></div></div></div>
+ <div class="smart-alert neutral" id="smartAlert" role="status">Pilih toko dan shift, lalu mulai isi laporan untuk melihat analisis otomatis.</div>
+</section>
 
 <h3>Informasi Umum Toko</h3>
 <div class="form-group"><label>Periode Tanggal</label><input type="date" id="datePicker"></div>
@@ -208,7 +319,27 @@ calculateRevenue();calculateSueugeerTarget();calculatePromoCebanTarget();
 for(let i=1;i<=4;i++){const t=Number($(`targ_fokus${i}`).value)||0,a=Number($(`act_fokus${i}`).value)||0;$(`persen_fokus${i}`).value=(t>0?Math.round(a/t*100):0)+"%"}
 for(let i=1;i<=10;i++){const t=(Number($(`targ_psm${i}`).value)||0)/2,a=Number($(`act_psm${i}`).value)||0;$(`persen_psm${i}`).value=(t>0?Math.round(a/t*100):0)+"%"}
 const total=num("totalStruk"),member=num("strukMember");$("persenMember").value=(total>0?Math.round(member/total*100):0)+"%";
+updatePremiumDashboard();
 }
+
+function updatePremiumDashboard(){
+ const target=num("targetMTD"),actual=num("actualSales"),ach=target>0?actual/target*100:0,gap=actual-target;
+ $("dashActual").textContent="Rp "+fmt(actual);$("dashAchieve").textContent=pct(ach);$("dashGap").textContent=(gap<0?"−":"+")+"Rp "+fmt(Math.abs(gap));
+ $("dashMember").textContent=$("persenMember").value||"0%";
+ const width=Math.max(0,Math.min(100,ach));$("dashProgress").style.width=width+"%";$("dashProgressText").textContent=pct(ach);
+ const alert=$("smartAlert");
+ if(!$("storeSelect").value||!$("shiftSelect").value){alert.className="smart-alert neutral";alert.textContent="Pilih toko dan shift untuk memulai laporan."}
+ else if(target<=0){alert.className="smart-alert neutral";alert.textContent="Target MTD belum diisi. Masukkan target agar analisis pencapaian aktif."}
+ else if(ach>=100){alert.className="smart-alert good";alert.textContent="🎉 Target MTD tercapai! Pertahankan performa dan lanjutkan monitoring."}
+ else if(ach>=Number($("timeFactor").value.replace(/[^0-9,.-]/g,"").replace(",","."))){alert.className="smart-alert good";alert.textContent="👍 Pencapaian berada di atas atau sesuai time factor. Terus jaga momentum."}
+ else{alert.className="smart-alert";alert.textContent="⚠️ Pencapaian masih di bawah time factor. Perhatikan gap dan dorong penjualan."}
+}
+function initPremiumTheme(){
+ const saved=localStorage.getItem("dsrp-theme");if(saved==="dark")document.body.classList.add("dark-mode");
+ const btn=$("themeToggle");const refresh=()=>{const dark=document.body.classList.contains("dark-mode");btn.textContent=dark?"☀️ Light Mode":"🌙 Dark Mode";document.querySelector('meta[name="theme-color"]').setAttribute("content",dark?"#101827":"#315fe8")};
+ refresh();btn.addEventListener("click",()=>{document.body.classList.toggle("dark-mode");localStorage.setItem("dsrp-theme",document.body.classList.contains("dark-mode")?"dark":"light");refresh()});
+}
+
 function collectFormData(){
 const data={datePicker:$("datePicker").value,targetMTD:$("targetMTD").value,actualSales:$("actualSales").value,actualNewMember:$("actualNewMember").value,totalStruk:$("totalStruk").value,strukMember:$("strukMember").value,catToys:$("catToys").value,catTelur:$("catTelur").value,feeBase:$("feeBase").value};
 for(let i=1;i<=4;i++){data[`targ_fokus${i}`]=$(`targ_fokus${i}`).value;data[`act_fokus${i}`]=$(`act_fokus${i}`).value}
@@ -415,7 +546,7 @@ $("btnSummaryWa").addEventListener("click",sendTotalSummaryWhatsApp);$("btnClose
 window.addEventListener("click",e=>{if(e.target===$("waModal"))closeWaPreview()});
 }
 async function init(){
-buildPsmRows();attachEvents();$("datePicker").value=localDateString();calculateAllCalculations();updateButtonLockState();
+buildPsmRows();attachEvents();initPremiumTheme();$("datePicker").value=localDateString();calculateAllCalculations();updateButtonLockState();
 if(!window.supabase){setStatus("Library Supabase gagal dimuat. Periksa koneksi internet.");return}
 await loadStores();
 }
