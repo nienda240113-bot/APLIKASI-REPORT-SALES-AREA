@@ -96,6 +96,8 @@ const DEFAULT_PSM_NAMES = ["Aqua","Buavita","FF","Tango","H&S","French","Mamy po
 const FOCUS_NAMES = ["Tebus Murah","Serba Gratis","Sueugeer","Promo Ceban"];
 let isSavedToCloud = false;
 let globalSummaryText = "";
+let sharedPsmNames = [...DEFAULT_PSM_NAMES];
+let savingPsmNames = false;
 
 function $(id){return document.getElementById(id)}
 function setStatus(message){$("loadingStatus").textContent=message}
@@ -138,16 +140,31 @@ data=data||{};$("targetMTD").value=data.targetMTD??"";$("actualSales").value=dat
 $("actualNewMember").value=data.actualNewMember??"";$("totalStruk").value=data.totalStruk??"";$("strukMember").value=data.strukMember??"";
 $("catToys").value=data.catToys??"";$("catTelur").value=data.catTelur??"";$("feeBase").value=data.feeBase??"";
 for(let i=1;i<=4;i++){$(`targ_fokus${i}`).value=data[`targ_fokus${i}`]??"";$(`act_fokus${i}`).value=data[`act_fokus${i}`]??""}
-for(let i=1;i<=10;i++){$(`name_psm${i}`).value=data[`name_psm${i}`]||DEFAULT_PSM_NAMES[i-1];$(`targ_psm${i}`).value=data[`targ_psm${i}`]??"";$(`act_psm${i}`).value=data[`act_psm${i}`]??""}
+for(let i=1;i<=10;i++){$(`name_psm${i}`).value=sharedPsmNames[i-1]||DEFAULT_PSM_NAMES[i-1];$(`targ_psm${i}`).value=data[`targ_psm${i}`]??"";$(`act_psm${i}`).value=data[`act_psm${i}`]??""}
 calculateAllCalculations();
 }
 function clearReportForm(){populateForm({});markAsUnsaved()}
 async function loadStores(){
-const {data,error}=await db.from("stores").select("store_code,store_name").order("store_code");
+const {data,error}=await db.from("stores").select("store_code,store_name,psm_names").order("store_code");
 if(error){setStatus("Gagal memuat toko: "+error.message);return}
 $("storeSelect").innerHTML='<option value="">-- Pilih Toko --</option>';
+const savedNames=(data||[]).find(s=>Array.isArray(s.psm_names)&&s.psm_names.length===10)?.psm_names;
+sharedPsmNames=savedNames?savedNames.map((n,i)=>String(n||DEFAULT_PSM_NAMES[i])):[...DEFAULT_PSM_NAMES];
+for(let i=1;i<=10;i++){const field=$("name_psm"+i);if(field)field.value=sharedPsmNames[i-1]}
 (data||[]).forEach(s=>{const o=document.createElement("option");o.value=s.store_code;o.textContent=`${s.store_code} / ${s.store_name}`;$("storeSelect").appendChild(o)});
-setStatus(`${(data||[]).length} toko berhasil dimuat dari Supabase.`);
+setStatus(`${(data||[]).length} toko berhasil dimuat dari Supabase. Nama PSM berlaku untuk semua toko.`);
+}
+async function saveSharedPsmNames(){
+if(savingPsmNames)return;
+const names=Array.from({length:10},(_,i)=>String($("name_psm"+(i+1)).value||DEFAULT_PSM_NAMES[i]).trim()||DEFAULT_PSM_NAMES[i]);
+if(names.every((n,i)=>n===sharedPsmNames[i]))return;
+savingPsmNames=true;setStatus("Menyimpan perubahan nama PSM untuk seluruh 20 toko...");
+const {error}=await db.from("stores").update({psm_names:names}).neq("store_code","");
+savingPsmNames=false;
+if(error){setStatus("Nama PSM belum tersimpan bersama: "+error.message);alert("Gagal menyimpan nama PSM bersama. Pastikan SQL pengaturan PSM sudah dijalankan di Supabase.");return}
+sharedPsmNames=names;
+for(let i=1;i<=10;i++)$("name_psm"+i).value=names[i-1];
+setStatus("Nama PSM berhasil diperbarui untuk seluruh toko.");
 }
 async function loadReport(){
 markAsUnsaved();const code=$("storeSelect").value,shift=$("shiftSelect").value,date=$("datePicker").value;
@@ -202,7 +219,7 @@ const records=data||[];let totals={target:0,actual:0,newMember:0,struk:0,strukMe
 const ft=Array.from({length:4},()=>({t:0,a:0}));const ps=Array.from({length:10},(_,i)=>({name:DEFAULT_PSM_NAMES[i],t:0,a:0}));
 records.forEach(r=>{const d=r.raw_payload||{};totals.target+=Number(d.targetMTD)||0;totals.actual+=Number(d.actualSales)||0;totals.newMember+=Number(d.actualNewMember)||0;totals.struk+=Number(d.totalStruk)||0;totals.strukMember+=Number(d.strukMember)||0;totals.toys+=Number(d.catToys)||0;totals.telur+=Number(d.catTelur)||0;totals.fee+=Number(d.feeBase)||0;
 for(let i=1;i<=4;i++){ft[i-1].t+=Number(d[`targ_fokus${i}`])||0;ft[i-1].a+=Number(d[`act_fokus${i}`])||0}
-for(let i=1;i<=10;i++){ps[i-1].name=d[`name_psm${i}`]||ps[i-1].name;ps[i-1].t+=(Number(d[`targ_psm${i}`])||0)/2;ps[i-1].a+=Number(d[`act_psm${i}`])||0}
+for(let i=1;i<=10;i++){ps[i-1].name=sharedPsmNames[i-1]||ps[i-1].name;ps[i-1].t+=(Number(d[`targ_psm${i}`])||0)/2;ps[i-1].a+=Number(d[`act_psm${i}`])||0}
 });
 const [y,m,day]=date.split("-").map(Number),days=new Date(y,m,0).getDate(),tf=day/days*100,targetTF=totals.target*day/days;
 let s=`*REKAP TOTAL KESELURUHAN (${records.length} TOKO MELAPOR)*\\nPERIODE : ${formatPeriodeDate(date)}\\nSHIFT : ${shift}\\nWH : Bekasi | AM : SRD | AC : TRIYANTO\\n======================\\n*REVENUE TOTAL*\\n`;
@@ -216,7 +233,7 @@ function sendTotalSummaryWhatsApp(){if(!globalSummaryText){alert("Silakan klik '
 function attachEvents(){
 const watched=["targetMTD","actualSales","actualNewMember","totalStruk","strukMember","catToys","catTelur","feeBase"];
 for(let i=1;i<=4;i++)watched.push(`targ_fokus${i}`,`act_fokus${i}`);
-for(let i=1;i<=10;i++)watched.push(`name_psm${i}`,`targ_psm${i}`,`act_psm${i}`);
+for(let i=1;i<=10;i++){watched.push(`targ_psm${i}`,`act_psm${i}`);$("name_psm"+i).addEventListener("change",saveSharedPsmNames);}
 watched.forEach(id=>$(id).addEventListener("input",()=>{markAsUnsaved();calculateAllCalculations()}));
 $("datePicker").addEventListener("change",()=>{markAsUnsaved();calculateAllCalculations();if($("storeSelect").value&&$("shiftSelect").value)loadReport()});
 $("storeSelect").addEventListener("change",loadReport);$("shiftSelect").addEventListener("change",loadReport);
