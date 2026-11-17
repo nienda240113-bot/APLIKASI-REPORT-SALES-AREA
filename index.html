@@ -166,14 +166,30 @@ sharedPsmNames=names;
 for(let i=1;i<=10;i++)$("name_psm"+i).value=names[i-1];
 setStatus("Nama PSM berhasil diperbarui untuk seluruh toko.");
 }
+async function loadStoreTargets(code){
+const {data,error}=await db.from("stores").select("target_mtd_setting,focus_targets,psm_targets").eq("store_code",code).maybeSingle();
+if(error)throw error;
+if(!data)return;
+if(data.target_mtd_setting!==null&&data.target_mtd_setting!==undefined)$("targetMTD").value=data.target_mtd_setting;
+const ft=data.focus_targets||{};
+if(ft.tebus!==undefined)$ ("targ_fokus1").value=ft.tebus;
+if(ft.serba!==undefined)$ ("targ_fokus2").value=ft.serba;
+const pt=Array.isArray(data.psm_targets)?data.psm_targets:[];
+for(let i=1;i<=10;i++)if(pt[i-1]!==undefined)$(`targ_psm${i}`).value=pt[i-1];
+calculateAllCalculations();
+}
 async function loadReport(){
 markAsUnsaved();const code=$("storeSelect").value,shift=$("shiftSelect").value,date=$("datePicker").value;
 if(!code||!shift||!date){setStatus("Pilih tanggal, toko, dan shift.");return}
-setStatus("Memuat laporan dari Supabase...");
+setStatus("Memuat laporan dan target tetap toko...");
+try{
 const {data,error}=await db.from("sales_reports").select("*").eq("period",date).eq("store_code",code).eq("shift",shift).maybeSingle();
-if(error){setStatus("Gagal memuat laporan: "+error.message);return}
-if(data){populateForm(data.raw_payload||{});isSavedToCloud=true;updateButtonLockState();setStatus(`Laporan ${code} ${shift} berhasil dimuat.`)}
-else{clearReportForm();setStatus("Belum ada laporan untuk toko dan shift ini. Silakan isi laporan baru.")}
+if(error)throw error;
+if(data)populateForm(data.raw_payload||{});else clearReportForm();
+await loadStoreTargets(code);
+if(data){isSavedToCloud=true;updateButtonLockState();setStatus(`Laporan ${code} ${shift} dan target tetap toko berhasil dimuat.`)}
+else setStatus(`Belum ada laporan ${shift}. Target tetap untuk ${code} berhasil dimuat.`);
+}catch(error){setStatus("Gagal memuat data toko/laporan: "+error.message);console.error(error)}
 }
 function numericValue(text){if(text===null||text===undefined||text==="")return 0;return Number(String(text).replace(/%/g,"").replace(/\./g,"").replace(",", "."))||0}
 async function saveReportToCloud(){
@@ -181,6 +197,12 @@ const code=$("storeSelect").value,shift=$("shiftSelect").value,date=$("datePicke
 if(!code||!shift||!date){alert("Pilih tanggal, toko, dan shift terlebih dahulu.");return}
 const storeName=$("storeSelect").selectedOptions[0].textContent.split(" / ").slice(1).join(" / ");
 const raw=collectFormData();const psm=[],focus=[];
+// Target tetap disimpan sekali per kode toko saat menyimpan Shift 1.
+if(shift==="Shift 1"){
+ const storeTargets={target_mtd_setting:num("targetMTD"),focus_targets:{tebus:num("targ_fokus1"),serba:num("targ_fokus2")},psm_targets:Array.from({length:10},(_,i)=>Number($("targ_psm"+(i+1)).value)||0)};
+ const {error:targetError}=await db.from("stores").update(storeTargets).eq("store_code",code);
+ if(targetError){setStatus("Target tetap toko gagal disimpan: "+targetError.message);alert("Target belum tersimpan. Pastikan SQL kolom target tetap sudah dijalankan. "+targetError.message);return}
+}
 for(let i=1;i<=10;i++)psm.push({name:$(`name_psm${i}`).value,target:(Number($(`targ_psm${i}`).value)||0)/2,actual:Number($(`act_psm${i}`).value)||0,percent:numericValue($(`persen_psm${i}`).value)});
 for(let i=1;i<=4;i++)focus.push({name:FOCUS_NAMES[i-1],target:Number($(`targ_fokus${i}`).value)||0,actual:Number($(`act_fokus${i}`).value)||0,percent:numericValue($(`persen_fokus${i}`).value)});
 const report={period:date,store_code:code,store_name:storeName,shift,wh:"Bekasi",am:"SRD",ac:"TRIYANTO",
@@ -192,7 +214,7 @@ toys:num("catToys"),hbpl:num("catTelur"),fee_base:num("feeBase"),psm,focus,raw_p
 setStatus("Menyimpan laporan ke Supabase...");
 const {error}=await db.from("sales_reports").upsert(report,{onConflict:"period,store_code,shift"});
 if(error){console.error(error);markAsUnsaved();setStatus("Gagal menyimpan: "+error.message);alert("Gagal menyimpan laporan: "+error.message);return}
-isSavedToCloud=true;updateButtonLockState();setStatus("Laporan berhasil tersimpan di Supabase.");alert(`Berhasil! ${code} - ${shift} tersimpan.`);
+isSavedToCloud=true;updateButtonLockState();setStatus(shift==="Shift 1"?"Laporan dan target tetap toko berhasil tersimpan di Supabase.":"Laporan berhasil tersimpan. Target tetap toko tidak diubah.");alert(`Berhasil! ${code} - ${shift} tersimpan.`);
 }
 function formatPeriodeDate(s){if(!s)return "-";const p=s.split("-");return p.length===3?`${p[2]}-${p[1]}-${p[0]}`:s}
 function generateWaText(){
