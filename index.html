@@ -115,6 +115,7 @@ function buildPsmRows(){
 $("psmRows").innerHTML=DEFAULT_PSM_NAMES.map((name,i)=>{let n=i+1;return `<tr><td>${n}</td><td><input type="text" id="name_psm${n}" class="table-input" value="${name}"></td><td><input type="number" id="targ_psm${n}" class="table-input" min="0"></td><td><input type="number" id="act_psm${n}" class="table-input" min="0"></td><td><input type="text" id="persen_psm${n}" class="auto-calc table-input" readonly></td></tr>`}).join("");
 }
 function calculateSueugeerTarget(){const s=num("totalStruk");$("targ_fokus3").value=s>0?Math.round(s*.8*.4/2):""}
+function calculatePromoCebanTarget(){const s=num("totalStruk");$("targ_fokus4").value=s>0?s:""}
 function calculateRevenue(){
 const target=num("targetMTD"),actual=num("actualSales"),date=$("datePicker").value;
 if(!date)return;
@@ -124,7 +125,7 @@ $("achieveMTD").value=pct(target>0?actual/target*100:0);$("achieveTF").value=pct
 $("gapTarget").value=fmt(Math.round(actual-target));$("gapTF").value=fmt(Math.round(actual-targetTf));
 }
 function calculateAllCalculations(){
-calculateRevenue();calculateSueugeerTarget();
+calculateRevenue();calculateSueugeerTarget();calculatePromoCebanTarget();
 for(let i=1;i<=4;i++){const t=Number($(`targ_fokus${i}`).value)||0,a=Number($(`act_fokus${i}`).value)||0;$(`persen_fokus${i}`).value=(t>0?Math.round(a/t*100):0)+"%"}
 for(let i=1;i<=10;i++){const t=(Number($(`targ_psm${i}`).value)||0)/2,a=Number($(`act_psm${i}`).value)||0;$(`persen_psm${i}`).value=(t>0?Math.round(a/t*100):0)+"%"}
 const total=num("totalStruk"),member=num("strukMember");$("persenMember").value=(total>0?Math.round(member/total*100):0)+"%";
