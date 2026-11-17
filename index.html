@@ -166,21 +166,28 @@ sharedPsmNames=names;
 for(let i=1;i<=10;i++)$("name_psm"+i).value=names[i-1];
 setStatus("Nama PSM berhasil diperbarui untuk seluruh toko.");
 }
-async function loadStoreTargets(code,date){
-const {data,error}=await db.from("stores").select("focus_targets,psm_targets").eq("store_code",code).maybeSingle();
-if(error)throw error;
-if(data){
- const ft=data.focus_targets||{};
- if(ft.tebus!==undefined)$("targ_fokus1").value=ft.tebus;
- if(ft.serba!==undefined)$("targ_fokus2").value=ft.serba;
- const pt=Array.isArray(data.psm_targets)?data.psm_targets:[];
- for(let i=1;i<=10;i++)if(pt[i-1]!==undefined)$(`targ_psm${i}`).value=pt[i-1];
+function getTargetPeriod(date){
+ const day=Number(String(date||"").slice(8,10));
+ return day>=16?2:1;
 }
-const monthStart=String(date||"").slice(0,7)+"-01";
-const {data:monthly,error:monthlyError}=await db.from("store_monthly_targets").select("target_mtd").eq("store_code",code).eq("month_start",monthStart).maybeSingle();
-if(monthlyError)throw monthlyError;
-$("targetMTD").value=monthly&&monthly.target_mtd!==null?monthly.target_mtd:"";
-calculateAllCalculations();
+function getTargetPeriodLabel(date){return getTargetPeriod(date)===1?"Periode 1–15":"Periode 16–akhir bulan"}
+async function loadStoreTargets(code,date){
+ const {data,error}=await db.from("stores").select("focus_targets,psm_targets").eq("store_code",code).maybeSingle();
+ if(error)throw error;
+ if(data){
+  const pt=Array.isArray(data.psm_targets)?data.psm_targets:[];
+  for(let i=1;i<=10;i++)if(pt[i-1]!==undefined)$(`targ_psm${i}`).value=pt[i-1];
+ }
+ const monthStart=String(date||"").slice(0,7)+"-01";
+ const {data:monthly,error:monthlyError}=await db.from("store_monthly_targets").select("target_mtd").eq("store_code",code).eq("month_start",monthStart).maybeSingle();
+ if(monthlyError)throw monthlyError;
+ $("targetMTD").value=monthly&&monthly.target_mtd!==null?monthly.target_mtd:"";
+ const periodNo=getTargetPeriod(date);
+ const {data:periodTarget,error:periodError}=await db.from("store_period_targets").select("target_tebus,target_serba").eq("store_code",code).eq("month_start",monthStart).eq("period_no",periodNo).maybeSingle();
+ if(periodError)throw periodError;
+ $("targ_fokus1").value=periodTarget?.target_tebus??"";
+ $("targ_fokus2").value=periodTarget?.target_serba??"";
+ calculateAllCalculations();
 }
 async function loadReport(){
 markAsUnsaved();const code=$("storeSelect").value,shift=$("shiftSelect").value,date=$("datePicker").value;
@@ -207,9 +214,12 @@ if(shift==="Shift 1"){
  const monthlyTarget={store_code:code,month_start:monthStart,target_mtd:num("targetMTD"),updated_at:new Date().toISOString()};
  const {error:monthlyTargetError}=await db.from("store_monthly_targets").upsert(monthlyTarget,{onConflict:"store_code,month_start"});
  if(monthlyTargetError){setStatus("Target MTD bulanan gagal disimpan: "+monthlyTargetError.message);alert("Target MTD belum tersimpan. Pastikan tabel store_monthly_targets sudah dibuat di Supabase. "+monthlyTargetError.message);return}
- const storeTargets={focus_targets:{tebus:num("targ_fokus1"),serba:num("targ_fokus2")},psm_targets:Array.from({length:10},(_,i)=>Number($("targ_psm"+(i+1)).value)||0)};
+ const periodTarget={store_code:code,month_start:monthStart,period_no:getTargetPeriod(date),target_tebus:num("targ_fokus1"),target_serba:num("targ_fokus2"),updated_at:new Date().toISOString()};
+ const {error:periodTargetError}=await db.from("store_period_targets").upsert(periodTarget,{onConflict:"store_code,month_start,period_no"});
+ if(periodTargetError){setStatus("Target Tebus/Serba gagal disimpan: "+periodTargetError.message);alert("Target MTD tersimpan, tetapi target Tebus Murah/Serba Gratis gagal disimpan. Pastikan SQL target periode sudah dijalankan di Supabase. "+periodTargetError.message);return}
+ const storeTargets={psm_targets:Array.from({length:10},(_,i)=>Number($("targ_psm"+(i+1)).value)||0)};
  const {error:targetError}=await db.from("stores").update(storeTargets).eq("store_code",code);
- if(targetError){setStatus("Target Tebus/Serba/PSM gagal disimpan: "+targetError.message);alert("Target MTD bulanan tersimpan, tetapi target Tebus/Serba/PSM gagal disimpan: "+targetError.message);return}
+ if(targetError){setStatus("Target PSM gagal disimpan: "+targetError.message);alert("Target Tebus/Serba tersimpan, tetapi target PSM gagal disimpan: "+targetError.message);return}
 }
 for(let i=1;i<=10;i++)psm.push({name:$(`name_psm${i}`).value,target:(Number($(`targ_psm${i}`).value)||0)/2,actual:Number($(`act_psm${i}`).value)||0,percent:numericValue($(`persen_psm${i}`).value)});
 for(let i=1;i<=4;i++)focus.push({name:FOCUS_NAMES[i-1],target:Number($(`targ_fokus${i}`).value)||0,actual:Number($(`act_fokus${i}`).value)||0,percent:numericValue($(`persen_fokus${i}`).value)});
@@ -222,7 +232,7 @@ toys:num("catToys"),hbpl:num("catTelur"),fee_base:num("feeBase"),psm,focus,raw_p
 setStatus("Menyimpan laporan ke Supabase...");
 const {error}=await db.from("sales_reports").upsert(report,{onConflict:"period,store_code,shift"});
 if(error){console.error(error);markAsUnsaved();setStatus("Gagal menyimpan: "+error.message);alert("Gagal menyimpan laporan: "+error.message);return}
-isSavedToCloud=true;updateButtonLockState();setStatus(shift==="Shift 1"?"Laporan dan target tetap toko berhasil tersimpan di Supabase.":"Laporan berhasil tersimpan. Target tetap toko tidak diubah.");alert(`Berhasil! ${code} - ${shift} tersimpan.`);
+isSavedToCloud=true;updateButtonLockState();setStatus(shift==="Shift 1"?`Laporan, Target MTD, Target Tebus/Serba (${getTargetPeriodLabel(date)}), dan Target PSM berhasil tersimpan.`:"Laporan berhasil tersimpan. Semua target tetap tidak diubah.");alert(`Berhasil! ${code} - ${shift} tersimpan.`);
 }
 function formatPeriodeDate(s){if(!s)return "-";const p=s.split("-");return p.length===3?`${p[2]}-${p[1]}-${p[0]}`:s}
 function generateWaText(){
