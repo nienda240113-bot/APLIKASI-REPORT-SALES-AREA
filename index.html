@@ -306,12 +306,13 @@ body.dark-mode{--ink:#e8eefc;--muted:#aab7ce;--line:#293852;background:#101827;b
 </div>
 
 <h3>Fokus Cabang</h3>
-<table><thead><tr><th>Program / Fokus</th><th>Target</th><th>Actual</th><th>Persen (%)</th></tr></thead><tbody>
-<tr><td>1. Tebus Murah</td><td><input type="number" id="targ_fokus1" class="table-input"></td><td><input type="number" id="act_fokus1" class="table-input"></td><td><input id="persen_fokus1" class="auto-calc table-input" readonly></td></tr>
-<tr><td>2. Serba Gratis</td><td><input type="number" id="targ_fokus2" class="table-input"></td><td><input type="number" id="act_fokus2" class="table-input"></td><td><input id="persen_fokus2" class="auto-calc table-input" readonly></td></tr>
-<tr><td>3. Sueugeer</td><td><input type="number" id="targ_fokus3" class="table-input auto-calc" readonly></td><td><input type="number" id="act_fokus3" class="table-input"></td><td><input id="persen_fokus3" class="auto-calc table-input" readonly></td></tr>
-<tr><td>4. Promo Ceban</td><td><input type="number" id="targ_fokus4" class="table-input"></td><td><input type="number" id="act_fokus4" class="table-input"></td><td><input id="persen_fokus4" class="auto-calc table-input" readonly></td></tr>
+<table><thead><tr><th>Program / Fokus</th><th>Target Periode</th><th>Target/Shift</th><th>Actual</th><th>Persen (%)</th></tr></thead><tbody>
+<tr><td>1. Tebus Murah</td><td><input type="number" id="targ_fokus1" class="table-input" min="0"></td><td><input type="text" id="target_shift_fokus1" class="auto-calc table-input" readonly></td><td><input type="number" id="act_fokus1" class="table-input"></td><td><input id="persen_fokus1" class="auto-calc table-input" readonly></td></tr>
+<tr><td>2. Serba Gratis</td><td><input type="number" id="targ_fokus2" class="table-input" min="0"></td><td><input type="text" id="target_shift_fokus2" class="auto-calc table-input" readonly></td><td><input type="number" id="act_fokus2" class="table-input"></td><td><input id="persen_fokus2" class="auto-calc table-input" readonly></td></tr>
+<tr><td>3. Sueugeer</td><td><input type="number" id="targ_fokus3" class="table-input auto-calc" readonly></td><td>—</td><td><input type="number" id="act_fokus3" class="table-input"></td><td><input id="persen_fokus3" class="auto-calc table-input" readonly></td></tr>
+<tr><td>4. Promo Ceban</td><td><input type="number" id="targ_fokus4" class="table-input"></td><td>—</td><td><input type="number" id="act_fokus4" class="table-input"></td><td><input id="persen_fokus4" class="auto-calc table-input" readonly></td></tr>
 </tbody></table>
+<p id="focusTargetNote" class="small-note">Target Tebus Murah dan Serba Gratis disimpan per toko dan per periode. Target/Shift dihitung otomatis dan dibulatkan normal.</p>
 
 <h3>Member</h3>
 <div class="form-group"><label>Actual New Member</label><input type="number" id="actualNewMember" placeholder="Jumlah member baru..."></div>
@@ -377,7 +378,15 @@ $("gapTarget").value=fmt(Math.round(actual-target));$("gapTF").value=fmt(Math.ro
 }
 function calculateAllCalculations(){
 calculateRevenue();calculateSueugeerTarget();calculatePromoCebanTarget();
-for(let i=1;i<=4;i++){const t=Number($(`targ_fokus${i}`).value)||0,a=Number($(`act_fokus${i}`).value)||0;$(`persen_fokus${i}`).value=(t>0?Math.round(a/t*100):0)+"%"}
+for(let i=1;i<=4;i++){
+ const periodTarget=Number($(`targ_fokus${i}`).value)||0;
+ const t=i<=2?calculateFocusTargetPerShift(periodTarget,$("datePicker").value):periodTarget;
+ const a=Number($(`act_fokus${i}`).value)||0;
+ if(i<=2)$(`target_shift_fokus${i}`).value=t;
+ $(`persen_fokus${i}`).value=(t>0?Math.round(a/t*100):0)+"%";
+}
+const focusNote=$("focusTargetNote");
+if(focusNote&&$("datePicker").value)focusNote.textContent=`Target Tebus Murah dan Serba Gratis: ${getTargetPeriodLabel($("datePicker").value)} (${getTargetPeriodDays($("datePicker").value)} hari). Target/Shift = target periode ÷ jumlah hari ÷ 2, dibulatkan normal.`;
 for(let i=1;i<=10;i++){const t=calculatePsmTargetPerShift($(`targ_psm${i}`).value,$("datePicker").value),a=Number($(`act_psm${i}`).value)||0;$(`target_shift_psm${i}`).value=t;$(`persen_psm${i}`).value=(t>0?Math.round(a/t*100):0)+"%"}
 const psmNote=$("psmTargetNote");if(psmNote&&$("datePicker").value)psmNote.textContent=`Target PSM periode ${getPsmPeriodLabel($("datePicker").value)} (${getPsmPeriodDays($("datePicker").value)} hari). Target harian dibulatkan ke atas, kemudian dibagi 2 shift dan dibulatkan ke atas.`;
 const total=num("totalStruk"),member=num("strukMember");$("persenMember").value=(total>0?Math.round(member/total*100):0)+"%";
@@ -443,7 +452,28 @@ function getTargetPeriod(date){
  const day=Number(String(date||"").slice(8,10));
  return day>=16?2:1;
 }
-function getTargetPeriodLabel(date){return getTargetPeriod(date)===1?"Periode 1–15":"Periode 16–akhir bulan"}
+function getTargetPeriodLabel(date){
+ const period=getTargetPeriod(date);
+ if(!date)return period===1?"Periode 1–15":"Periode 16–akhir bulan";
+ const parts=String(date).split("-").map(Number),daysInMonth=new Date(parts[0],parts[1],0).getDate();
+ return period===1?"Periode 1–15":`Periode 16–${daysInMonth}`;
+}
+function getTargetPeriodDays(date){
+ if(!date)return 15;
+ if(getTargetPeriod(date)===1)return 15;
+ const parts=String(date).split("-").map(Number);
+ return new Date(parts[0],parts[1],0).getDate()-15;
+}
+function calculateFocusTargetPerShift(periodTarget,date){
+ const target=Number(periodTarget)||0;
+ if(target<=0)return 0;
+ return Math.round(target/(getTargetPeriodDays(date)*2));
+}
+function updateFocusTargetEditability(){
+ const canEdit=$("shiftSelect")?.value==="Shift 1";
+ $("targ_fokus1").readOnly=!canEdit;
+ $("targ_fokus2").readOnly=!canEdit;
+}
 function getPsmPeriod(date){
  const day=Number(String(date||"").slice(8,10));
  return day<=7?1:day<=15?2:day<=23?3:4;
@@ -496,6 +526,7 @@ if(error)throw error;
 if(data)populateForm(data.raw_payload||{});else clearReportForm();
 await loadStoreTargets(code,date);
 updatePsmTargetEditability();
+updateFocusTargetEditability();
 if(data){isSavedToCloud=true;updateButtonLockState();setStatus(`Laporan ${code} ${shift} dan target tetap toko berhasil dimuat.`)}
 else setStatus(`Belum ada laporan ${shift}. Target tetap untuk ${code} berhasil dimuat.`);
 }catch(error){setStatus("Gagal memuat data toko/laporan: "+error.message);console.error(error)}
@@ -520,7 +551,11 @@ if(shift==="Shift 1"){
  if(targetError){setStatus("Target PSM periode gagal disimpan: "+targetError.message);alert("Target MTD dan Tebus/Serba tersimpan, tetapi Target PSM periode gagal disimpan. Jalankan SQL tabel store_psm_period_targets terlebih dahulu. "+targetError.message);return}
 }
 for(let i=1;i<=10;i++)psm.push({name:$(`name_psm${i}`).value,target:calculatePsmTargetPerShift($(`targ_psm${i}`).value,date),actual:Number($(`act_psm${i}`).value)||0,percent:numericValue($(`persen_psm${i}`).value)});
-for(let i=1;i<=4;i++)focus.push({name:FOCUS_NAMES[i-1],target:Number($(`targ_fokus${i}`).value)||0,actual:Number($(`act_fokus${i}`).value)||0,percent:numericValue($(`persen_fokus${i}`).value)});
+for(let i=1;i<=4;i++){
+ const periodTarget=Number($(`targ_fokus${i}`).value)||0;
+ const shiftTarget=i<=2?calculateFocusTargetPerShift(periodTarget,date):periodTarget;
+ focus.push({name:FOCUS_NAMES[i-1],target:shiftTarget,period_target:i<=2?periodTarget:null,actual:Number($(`act_fokus${i}`).value)||0,percent:numericValue($(`persen_fokus${i}`).value)});
+}
 const report={period:date,store_code:code,store_name:storeName,shift,wh:"Bekasi",am:"SRD",ac:"TRIYANTO",
 time_factor:numericValue($("timeFactor").value),target_mtd:num("targetMTD"),target_tf:numericValue($("targetTimeFactor").value),
 actual:num("actualSales"),achieve_mtd:numericValue($("achieveMTD").value),achieve_tf:numericValue($("achieveTF").value),
@@ -565,7 +600,8 @@ function generateWaText(){
  for(let i=1;i<=4;i++){
    const label=FOCUS_NAMES[i-1]||`Fokus ${i}`;
    t+=`${i}. *${label.toUpperCase()}*\n`;
-   t+=`   ${fmt(num(`targ_fokus${i}`))} | ${fmt(num(`act_fokus${i}`))} | ${val(`persen_fokus${i}`)}\n`;
+   const focusTarget=i<=2?calculateFocusTargetPerShift(num(`targ_fokus${i}`),$("datePicker").value):num(`targ_fokus${i}`);
+   t+=`   ${fmt(focusTarget)} | ${fmt(num(`act_fokus${i}`))} | ${val(`persen_fokus${i}`)}\n`;
  }
  t+=`${line}\n`;
  t+=`🛍️ *PSM - TARGET PER SHIFT*\n`;
@@ -608,7 +644,11 @@ if(error){$("previewText").textContent="Gagal memuat rekap: "+error.message;retu
 const records=data||[];let totals={target:0,actual:0,newMember:0,struk:0,strukMember:0,toys:0,telur:0,fee:0};
 const ft=Array.from({length:4},()=>({t:0,a:0}));const ps=Array.from({length:10},(_,i)=>({name:DEFAULT_PSM_NAMES[i],t:0,a:0}));
 records.forEach(r=>{const d=r.raw_payload||{};totals.target+=Number(d.targetMTD)||0;totals.actual+=Number(d.actualSales)||0;totals.newMember+=Number(d.actualNewMember)||0;totals.struk+=Number(d.totalStruk)||0;totals.strukMember+=Number(d.strukMember)||0;totals.toys+=Number(d.catToys)||0;totals.telur+=Number(d.catTelur)||0;totals.fee+=Number(d.feeBase)||0;
-for(let i=1;i<=4;i++){ft[i-1].t+=Number(d[`targ_fokus${i}`])||0;ft[i-1].a+=Number(d[`act_fokus${i}`])||0}
+for(let i=1;i<=4;i++){
+ const periodTarget=Number(d[`targ_fokus${i}`])||0;
+ const shiftTarget=i<=2?calculateFocusTargetPerShift(periodTarget,date):periodTarget;
+ ft[i-1].t+=shiftTarget;ft[i-1].a+=Number(d[`act_fokus${i}`])||0;
+}
 for(let i=1;i<=10;i++){ps[i-1].name=sharedPsmNames[i-1]||ps[i-1].name;ps[i-1].t+=calculatePsmTargetPerShift(d[`targ_psm${i}`],date);ps[i-1].a+=Number(d[`act_psm${i}`])||0}
 });
 const [y,m,day]=date.split("-").map(Number),days=new Date(y,m,0).getDate(),tf=day/days*100,targetTF=totals.target*day/days;
