@@ -251,6 +251,29 @@ body.dark-mode{--ink:#e8eefc;--muted:#aab7ce;--line:#293852;background:#101827;b
  .brand-hero,.brand-logo,.brand-orbit,.brand-light-sweep,.brand-aura,.brand-spark{animation:none!important}
 }
 
+
+/* Monitoring 20 toko */
+.monitor-panel{margin:18px 0;padding:16px;border:1px solid var(--border,#ddd);border-radius:16px;background:var(--card,#fff);box-shadow:0 5px 18px rgba(0,0,0,.05)}
+.monitor-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.monitor-head h3{margin:0}
+.monitor-filter{display:flex;align-items:end;gap:9px;flex-wrap:wrap;margin:13px 0}
+.monitor-filter .form-group{margin:0;min-width:180px;flex:1}
+.monitor-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:12px 0}
+.monitor-stat{padding:12px;border-radius:12px;background:var(--soft,#f4f5f7);border:1px solid var(--border,#ddd)}
+.monitor-stat strong{display:block;font-size:22px;margin-top:4px}
+.monitor-stat small{font-size:11px;color:var(--muted,#666)}
+.monitor-table-wrap{overflow-x:auto;margin-top:12px}
+.monitor-table{width:100%;border-collapse:collapse;font-size:13px;min-width:430px}
+.monitor-table th,.monitor-table td{padding:9px 7px;border-bottom:1px solid var(--border,#ddd);text-align:left}
+.monitor-table th{font-size:11px;color:var(--muted,#666)}
+.monitor-pill{display:inline-block;padding:4px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.monitor-yes{background:#dcfce7;color:#166534}.monitor-no{background:#fee2e2;color:#991b1b}.monitor-partial{background:#fef3c7;color:#92400e}
+.monitor-lists{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+.monitor-list{padding:12px;border:1px solid var(--border,#ddd);border-radius:12px;background:var(--soft,#f8f8f8)}
+.monitor-list h4{margin:0 0 8px;font-size:13px}.monitor-list p{margin:0;font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.monitor-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:13px}.monitor-actions button{flex:1;min-width:150px}
+@media(max-width:520px){.monitor-stats{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.monitor-stat{padding:9px 6px}.monitor-stat strong{font-size:19px}.monitor-stat small{font-size:10px}.monitor-lists{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -282,6 +305,30 @@ body.dark-mode{--ink:#e8eefc;--muted:#aab7ce;--line:#293852;background:#101827;b
  </div>
  <div class="dash-progress"><div class="progress-top"><span>Progress pencapaian Revenue</span><strong id="dashProgressText">0%</strong></div><div class="progress-track"><div class="progress-fill" id="dashProgress"></div></div></div>
  <div class="smart-alert neutral" id="smartAlert" role="status">Pilih toko dan shift, lalu mulai isi laporan untuk melihat analisis otomatis.</div>
+</section>
+
+<section class="monitor-panel" id="monitorPanel">
+ <div class="monitor-head"><h3>📊 Monitoring 20 Toko</h3><span id="monitorUpdated" class="note">Menyiapkan monitoring...</span></div>
+ <div class="monitor-filter">
+  <div class="form-group"><label for="monitorDate">Tanggal Laporan</label><input type="date" id="monitorDate"></div>
+  <button type="button" class="btn btn-preview" id="btnRefreshMonitor">🔄 Refresh Status</button>
+ </div>
+ <div class="monitor-stats">
+  <div class="monitor-stat"><small>TOKO TERDAFTAR</small><strong id="monitorTotal">0 / 20</strong></div>
+  <div class="monitor-stat"><small>SHIFT 1 SUDAH ISI</small><strong id="monitorShift1">0 / 20</strong></div>
+  <div class="monitor-stat"><small>SHIFT 2 SUDAH ISI</small><strong id="monitorShift2">0 / 20</strong></div>
+ </div>
+ <div class="monitor-stats">
+  <div class="monitor-stat"><small>SHIFT 1 BELUM ISI</small><strong id="monitorMissing1">0</strong></div>
+  <div class="monitor-stat"><small>SHIFT 2 BELUM ISI</small><strong id="monitorMissing2">0</strong></div>
+  <div class="monitor-stat"><small>LAPORAN LENGKAP</small><strong id="monitorComplete">0 / 20</strong></div>
+ </div>
+ <div class="monitor-table-wrap"><table class="monitor-table"><thead><tr><th>KODE TOKO</th><th>SHIFT 1</th><th>SHIFT 2</th><th>STATUS</th></tr></thead><tbody id="monitorRows"><tr><td colspan="4">Memuat data...</td></tr></tbody></table></div>
+ <div class="monitor-lists">
+  <div class="monitor-list"><h4>❌ Belum Mengisi Shift 1</h4><p id="monitorList1">-</p></div>
+  <div class="monitor-list"><h4>❌ Belum Mengisi Shift 2</h4><p id="monitorList2">-</p></div>
+ </div>
+ <div class="monitor-actions"><button type="button" class="btn btn-wa" id="btnMonitorWhatsApp">📲 Kirim Monitoring ke WhatsApp</button></div>
 </section>
 
 <h3>Informasi Umum Toko</h3>
@@ -566,7 +613,49 @@ setStatus("Menyimpan laporan ke Supabase...");
 const {error}=await db.from("sales_reports").upsert(report,{onConflict:"period,store_code,shift"});
 if(error){console.error(error);markAsUnsaved();setStatus("Gagal menyimpan: "+error.message);alert("Gagal menyimpan laporan: "+error.message);return}
 isSavedToCloud=true;updateButtonLockState();setStatus(shift==="Shift 1"?`Laporan, Target MTD, Target Tebus/Serba (${getTargetPeriodLabel(date)}), dan Target PSM berhasil tersimpan.`:"Laporan berhasil tersimpan. Semua target tetap tidak diubah.");alert(`Berhasil! ${code} - ${shift} tersimpan.`);
+if($("monitorDate"))$("monitorDate").value=date;await refreshMonitoring(date);
 }
+
+let monitoringStores=[];
+let monitoringMessage="";
+function escapeMonitorText(value){return String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));}
+function monitorPill(done){return done?'<span class="monitor-pill monitor-yes">Sudah</span>':'<span class="monitor-pill monitor-no">Belum</span>'}
+async function refreshMonitoring(dateOverride){
+ const date=dateOverride||$("monitorDate")?.value;
+ if(!date)return;
+ const updated=$("monitorUpdated");
+ if(updated)updated.textContent="Memuat data Supabase...";
+ try{
+  const [{data:stores,error:storeError},{data:reports,error:reportError}]=await Promise.all([
+   db.from("stores").select("store_code,store_name").order("store_code"),
+   db.from("sales_reports").select("store_code,shift").eq("period",date)
+  ]);
+  if(storeError)throw storeError;if(reportError)throw reportError;
+  const submitted=new Set((reports||[]).map(r=>`${r.store_code}|${r.shift}`));
+  const rows=(stores||[]).map(store=>({
+   code:store.store_code,name:store.store_name,
+   s1:submitted.has(`${store.store_code}|Shift 1`),
+   s2:submitted.has(`${store.store_code}|Shift 2`)
+  }));
+  monitoringStores=rows;
+  const total=rows.length,done1=rows.filter(x=>x.s1).length,done2=rows.filter(x=>x.s2).length;
+  const missing1=rows.filter(x=>!x.s1),missing2=rows.filter(x=>!x.s2),complete=rows.filter(x=>x.s1&&x.s2).length;
+  $("monitorTotal").textContent=`${total} / 20`;
+  $("monitorShift1").textContent=`${done1} / ${total}`;
+  $("monitorShift2").textContent=`${done2} / ${total}`;
+  $("monitorMissing1").textContent=String(total-done1);
+  $("monitorMissing2").textContent=String(total-done2);
+  $("monitorComplete").textContent=`${complete} / ${total}`;
+  $("monitorRows").innerHTML=rows.map(r=>`<tr><td><strong>${escapeMonitorText(r.code)}</strong><br><small>${escapeMonitorText(r.name)}</small></td><td>${monitorPill(r.s1)}</td><td>${monitorPill(r.s2)}</td><td>${r.s1&&r.s2?'<span class="monitor-pill monitor-yes">Lengkap</span>':'<span class="monitor-pill monitor-partial">Belum lengkap</span>'}</td></tr>`).join("")||'<tr><td colspan="4">Belum ada data toko.</td></tr>';
+  $("monitorList1").textContent=missing1.map(x=>x.code).join(", ")||"Semua toko sudah mengisi Shift 1.";
+  $("monitorList2").textContent=missing2.map(x=>x.code).join(", ")||"Semua toko sudah mengisi Shift 2.";
+  const dateLabel=formatPeriodeDate(date);
+  monitoringMessage=`📊 *MONITORING DAILY SALES REPORT*\n📅 Tanggal: *${dateLabel}*\n━━━━━━━━━━━━━━━━━━━━\n🏬 Total toko: *${total}*\n\n✅ *SHIFT 1 SUDAH MENGISI: ${done1}/${total}*\n❌ *SHIFT 1 BELUM MENGISI: ${total-done1}*\n${missing1.map(x=>"• "+x.code+" - "+x.name).join("\n")||"• Semua toko sudah mengisi"}\n\n✅ *SHIFT 2 SUDAH MENGISI: ${done2}/${total}*\n❌ *SHIFT 2 BELUM MENGISI: ${total-done2}*\n${missing2.map(x=>"• "+x.code+" - "+x.name).join("\n")||"• Semua toko sudah mengisi"}\n\n📌 *LAPORAN LENGKAP: ${complete}/${total} TOKO*\n━━━━━━━━━━━━━━━━━━━━\n_Status dihitung dari laporan yang sudah tersimpan di Supabase._`;
+  if(updated)updated.textContent=`Diperbarui ${new Date().toLocaleTimeString("id-ID",{hour:"2-digit",minute:"2-digit"})} • ${reports?.length||0} laporan tersimpan`;
+ }catch(error){console.error("Monitoring error:",error);if(updated)updated.textContent="Gagal memuat monitoring: "+error.message;$("monitorRows").innerHTML=`<tr><td colspan="4">Gagal memuat data: ${escapeMonitorText(error.message)}</td></tr>`;}
+}
+function sendMonitoringWhatsApp(){if(!monitoringMessage){alert("Muat monitoring terlebih dahulu.");return}window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(monitoringMessage),"_blank")}
+
 function formatPeriodeDate(s){if(!s)return "-";const p=s.split("-");return p.length===3?`${p[2]}-${p[1]}-${p[0]}`:s}
 function generateWaText(){
  const code=$("storeSelect").value||"-";
@@ -670,12 +759,15 @@ $("storeSelect").addEventListener("change",loadReport);$("shiftSelect").addEvent
 $("btnSave").addEventListener("click",saveReportToCloud);$("btnPreview").addEventListener("click",showWaPreview);
 $("btnSendWa").addEventListener("click",sendToWhatsApp);$("btnSummary").addEventListener("click",showTotalSummaryPreview);
 $("btnSummaryWa").addEventListener("click",sendTotalSummaryWhatsApp);$("btnClose").addEventListener("click",closeWaPreview);
+$("monitorDate").value=localDateString();$("monitorDate").addEventListener("change",()=>refreshMonitoring());$("btnRefreshMonitor").addEventListener("click",()=>refreshMonitoring());$("btnMonitorWhatsApp").addEventListener("click",sendMonitoringWhatsApp);
 window.addEventListener("click",e=>{if(e.target===$("waModal"))closeWaPreview()});
 }
 async function init(){
 buildPsmRows();attachEvents();initPremiumTheme();$("datePicker").value=localDateString();updatePsmTargetEditability();calculateAllCalculations();updateButtonLockState();
 if(!window.supabase){setStatus("Library Supabase gagal dimuat. Periksa koneksi internet.");return}
 await loadStores();
+if($("monitorDate"))$("monitorDate").value=localDateString();
+await refreshMonitoring();
 }
 document.addEventListener("DOMContentLoaded",init);
 </script>
