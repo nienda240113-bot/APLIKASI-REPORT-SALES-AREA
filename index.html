@@ -612,8 +612,27 @@ toys:num("catToys"),hbpl:num("catTelur"),fee_base:num("feeBase"),psm,focus,raw_p
 setStatus("Menyimpan laporan ke Supabase...");
 const {error}=await db.from("sales_reports").upsert(report,{onConflict:"period,store_code,shift"});
 if(error){console.error(error);markAsUnsaved();setStatus("Gagal menyimpan: "+error.message);alert("Gagal menyimpan laporan: "+error.message);return}
-isSavedToCloud=true;updateButtonLockState();setStatus(shift==="Shift 1"?`Laporan, Target MTD, Target Tebus/Serba (${getTargetPeriodLabel(date)}), dan Target PSM berhasil tersimpan.`:"Laporan berhasil tersimpan. Semua target tetap tidak diubah.");alert(`Berhasil! ${code} - ${shift} tersimpan.`);
-if($("monitorDate"))$("monitorDate").value=date;await refreshMonitoring(date);
+isSavedToCloud=true;
+updateButtonLockState();
+setStatus("Laporan tersimpan di Supabase. Mengirim data ke Google Sheets...");
+let syncMessage="";
+try{
+ const {data:syncData,error:syncError}=await db.functions.invoke("sync-revenue",{
+  body:{period:date,store_code:code,shift:shift}
+ });
+ if(syncError)throw syncError;
+ console.log("Google Sheets sync berhasil:",syncData);
+ syncMessage=" Sinkronisasi Google Sheets berhasil.";
+}catch(syncError){
+ console.error("Google Sheets sync gagal:",syncError);
+ syncMessage=" Namun sinkronisasi Google Sheets gagal: "+(syncError.message||String(syncError));
+}
+setStatus(shift==="Shift 1"
+ ?`Laporan, Target MTD, Target Tebus/Serba (${getTargetPeriodLabel(date)}), dan Target PSM berhasil tersimpan.${syncMessage}`
+ :`Laporan berhasil tersimpan. Semua target tetap tidak diubah.${syncMessage}`);
+alert(`Berhasil! ${code} - ${shift} tersimpan.${syncMessage}`);
+if($("monitorDate"))$("monitorDate").value=date;
+await refreshMonitoring(date);
 }
 
 let monitoringStores=[];
