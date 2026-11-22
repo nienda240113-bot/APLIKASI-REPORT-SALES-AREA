@@ -338,7 +338,10 @@ body.dark-mode{--ink:#e8eefc;--muted:#aab7ce;--line:#293852;background:#101827;b
 
 <h3>Revenue / Net Sales</h3>
 <div class="form-group"><label>Target MTD (Rp)</label><input type="number" id="targetMTD" placeholder="Masukkan Target MTD..."></div>
+<div class="row-grid">
 <div class="form-group"><label>Actual Sales (Rp)</label><input type="number" id="actualSales" placeholder="Masukkan Penjualan Aktual..."></div>
+<div class="form-group"><label>Actual GM (%)</label><input type="text" id="actualGM" inputmode="decimal" placeholder="Contoh: 18,5%"></div>
+</div>
 <div class="row-grid">
 <div class="form-group"><label>Time Factor (%)</label><input type="text" id="timeFactor" class="auto-calc" readonly></div>
 <div class="form-group"><label>Target Time Factor (Rp)</label><input type="text" id="targetTimeFactor" class="auto-calc" readonly></div>
@@ -458,14 +461,26 @@ function initPremiumTheme(){
  refresh();btn.addEventListener("click",()=>{document.body.classList.toggle("dark-mode");localStorage.setItem("dsrp-theme",document.body.classList.contains("dark-mode")?"dark":"light");refresh()});
 }
 
+function parseGmValue(value){
+ if(value===null||value===undefined||String(value).trim()==="")return null;
+ let text=String(value).trim().replace(/%/g,"").replace(/\s/g,"");
+ if(text.includes(","))text=text.replace(/\./g,"").replace(",",".");
+ const parsed=Number(text);
+ return Number.isFinite(parsed)?parsed:null;
+}
+function formatGmInput(value){
+ if(value===null||value===undefined||value==="")return "";
+ const parsed=Number(value);
+ return Number.isFinite(parsed)?parsed.toLocaleString("id-ID",{maximumFractionDigits:2})+"%":String(value);
+}
 function collectFormData(){
-const data={datePicker:$("datePicker").value,targetMTD:$("targetMTD").value,actualSales:$("actualSales").value,actualNewMember:$("actualNewMember").value,totalStruk:$("totalStruk").value,strukMember:$("strukMember").value,catToys:$("catToys").value,catTelur:$("catTelur").value,feeBase:$("feeBase").value};
+const data={datePicker:$("datePicker").value,targetMTD:$("targetMTD").value,actualSales:$("actualSales").value,actualGM:parseGmValue($("actualGM").value),actualNewMember:$("actualNewMember").value,totalStruk:$("totalStruk").value,strukMember:$("strukMember").value,catToys:$("catToys").value,catTelur:$("catTelur").value,feeBase:$("feeBase").value};
 for(let i=1;i<=4;i++){data[`targ_fokus${i}`]=$(`targ_fokus${i}`).value;data[`act_fokus${i}`]=$(`act_fokus${i}`).value}
 for(let i=1;i<=10;i++){data[`name_psm${i}`]=$(`name_psm${i}`).value;data[`targ_psm${i}`]=$(`targ_psm${i}`).value;data[`act_psm${i}`]=$(`act_psm${i}`).value}
 return data;
 }
 function populateForm(data){
-data=data||{};$("targetMTD").value=data.targetMTD??"";$("actualSales").value=data.actualSales??"";
+data=data||{};$("targetMTD").value=data.targetMTD??"";$("actualSales").value=data.actualSales??"";$("actualGM").value=formatGmInput(data.actualGM??data.actual_gm??data.gm??"");
 $("actualNewMember").value=data.actualNewMember??"";$("totalStruk").value=data.totalStruk??"";$("strukMember").value=data.strukMember??"";
 $("catToys").value=data.catToys??"";$("catTelur").value=data.catTelur??"";$("feeBase").value=data.feeBase??"";
 for(let i=1;i<=4;i++){$(`targ_fokus${i}`).value=data[`targ_fokus${i}`]??"";$(`act_fokus${i}`).value=data[`act_fokus${i}`]??""}
@@ -582,6 +597,8 @@ function numericValue(text){if(text===null||text===undefined||text==="")return 0
 async function saveReportToCloud(){
 const code=$("storeSelect").value,shift=$("shiftSelect").value,date=$("datePicker").value;
 if(!code||!shift||!date){alert("Pilih tanggal, toko, dan shift terlebih dahulu.");return}
+const gmValue=parseGmValue($("actualGM").value);
+if(gmValue===null){alert("GM% wajib diisi dengan angka yang valid, contoh 18,5%.");$("actualGM").focus();return}
 const storeName=$("storeSelect").selectedOptions[0].textContent.split(" / ").slice(1).join(" / ");
 const raw=collectFormData();const psm=[],focus=[];
 // Target tetap disimpan sekali per kode toko saat menyimpan Shift 1.
@@ -698,6 +715,7 @@ function generateWaText(){
  t+=`• Target MTD : ${money("targetMTD")}\n`;
  t+=`• Target Time Factor : ${money("targetTimeFactor")}\n`;
  t+=`• Actual Sales : ${money("actualSales")}\n`;
+ t+=`• GM% : ${$("actualGM").value||"0%"}\n`;
  t+=`• Achieve MTD : ${val("achieveMTD")}\n`;
  t+=`• Achieve Time Factor : ${val("achieveTF")}\n`;
  t+=`• Gap to Target : ${val("gapTarget")}\n`;
@@ -769,7 +787,7 @@ globalSummaryText=s;$("previewText").textContent=s;
 }
 function sendTotalSummaryWhatsApp(){if(!globalSummaryText){alert("Silakan klik 'Rekap Total 20 Toko' terlebih dahulu.");return}window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(globalSummaryText),"_blank")}
 function attachEvents(){
-const watched=["targetMTD","actualSales","actualNewMember","totalStruk","strukMember","catToys","catTelur","feeBase"];
+const watched=["targetMTD","actualSales","actualGM","actualNewMember","totalStruk","strukMember","catToys","catTelur","feeBase"];
 for(let i=1;i<=4;i++)watched.push(`targ_fokus${i}`,`act_fokus${i}`);
 for(let i=1;i<=10;i++){watched.push(`targ_psm${i}`,`act_psm${i}`);$("name_psm"+i).addEventListener("change",saveSharedPsmNames);}
 watched.forEach(id=>$(id).addEventListener("input",()=>{markAsUnsaved();calculateAllCalculations()}));
