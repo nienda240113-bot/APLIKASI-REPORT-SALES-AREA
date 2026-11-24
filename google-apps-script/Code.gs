@@ -24,14 +24,14 @@ function doPost(e) {
   lock.waitLock(20000);
   try {
     const payload = JSON.parse((e && e.postData && e.postData.contents) || "{}");
-    const date = String(payload.date || "");
+    const date = normalizeReportDate_(payload.date || payload.period);
     const storeCode = String(payload.store_code || "").trim().toUpperCase();
     const shift = String(payload.shift || "").trim();
     const sales = Number(payload.actualSales);
     const receipts = Number(payload.totalStruk);
     const gm = parsePercent_(payload.gmPercent);
 
-    if (!/^2026-11-\d{2}$/.test(date)) throw new Error("Tanggal harus November 2026.");
+    if (!/^2026-11-(0[1-9]|[12][0-9]|30)$/.test(date)) throw new Error("Tanggal harus November 2026. Format tanggal diterima: " + String(payload.date || payload.period || "(kosong)"));
     const day = Number(date.slice(8, 10));
     if (day < 1 || day > 30) throw new Error("Tanggal tidak valid.");
     if (!storeCode) throw new Error("Kode toko kosong.");
@@ -99,6 +99,19 @@ function doPost(e) {
   } finally {
     lock.releaseLock();
   }
+}
+
+function normalizeReportDate_(value) {
+  if (value === null || value === undefined || value === "") return "";
+  if (Object.prototype.toString.call(value) === "[object Date]" && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, "Asia/Jakarta", "yyyy-MM-dd");
+  }
+  const s = String(value).trim();
+  let m = s.match(/^([0-9]{4})-([0-9]{1,2})-([0-9]{1,2})(?:$|T| )/);
+  if (m) return m[1] + "-" + ("0" + m[2]).slice(-2) + "-" + ("0" + m[3]).slice(-2);
+  m = s.match(/^([0-9]{1,2})[\\/.-]([0-9]{1,2})[\\/.-]([0-9]{4})$/);
+  if (m) return m[3] + "-" + ("0" + m[2]).slice(-2) + "-" + ("0" + m[1]).slice(-2);
+  return "";
 }
 
 function getLogSheet_(ss) {
