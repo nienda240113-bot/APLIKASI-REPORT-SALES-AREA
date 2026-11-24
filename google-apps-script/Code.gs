@@ -31,7 +31,7 @@ function doPost(e) {
     const receipts = Number(payload.totalStruk);
     const gm = parsePercent_(payload.gmPercent);
 
-    if (!/^2026-11-\\d{2}$/.test(date)) throw new Error("Tanggal harus November 2026.");
+    if (!/^2026-11-\d{2}$/.test(date)) throw new Error("Tanggal harus November 2026.");
     const day = Number(date.slice(8, 10));
     if (day < 1 || day > 30) throw new Error("Tanggal tidak valid.");
     if (!storeCode) throw new Error("Kode toko kosong.");
