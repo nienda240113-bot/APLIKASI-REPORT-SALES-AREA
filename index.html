@@ -557,13 +557,13 @@ async function syncDailyReportToGoogleSheets(report){
  try{
   // Form-urlencoded dibaca langsung oleh Apps Script melalui e.parameter.
   // no-cors membuat browser tidak dapat membaca isi respons; hasil tetap dicek di Sheets.
-  const formBody=new URLSearchParams(payload).toString();
-  await fetch(GOOGLE_SHEETS_SYNC_URL,{
-   method:"POST",mode:"no-cors",
-   headers:{"Content-Type":"application/x-www-form-urlencoded;charset=UTF-8"},
-   body:formBody
+  const query=new URLSearchParams({...payload,action:"sync",_ts:String(Date.now())}).toString();
+  // GET query parameters are read directly from e.parameter by Apps Script.
+  // This avoids POST body parsing differences across browsers and deployments.
+  await fetch(GOOGLE_SHEETS_SYNC_URL+"?"+query,{
+   method:"GET",mode:"no-cors",cache:"no-store"
   });
-  return {configured:true};
+  return {configured:true,submitted:true};
  }catch(error){
   console.error("Pengiriman ke Google Sheets gagal:",error);
   return {configured:true,error};
