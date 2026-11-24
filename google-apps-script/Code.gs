@@ -17,7 +17,11 @@ const CFG = {
 
 function doGet(e) {
   const params = (e && e.parameter) || {};
-  if (String(params.action || "") !== "sync") {
+  const action = String(params.action || "");
+  if (action === "health") {
+    return json_({ ok: true, version: "2026-11-25-get-sync", message: "Apps Script deployment aktif." });
+  }
+  if (action !== "sync") {
     return ContentService.createTextOutput("Daily Report sync is ready.");
   }
   return processDailyReport_(e);
