@@ -12,10 +12,6 @@ const CFG = {
   STORE_CODE_COL: 1,
   FIRST_DAY_TARGET_COL: 12, // L
   DAY_BLOCK_WIDTH: 13,
-  ACTUAL_SPD_OFFSET: 4, // P on day 1
-  ACTUAL_STD_OFFSET: 6, // R
-  ACTUAL_APC_OFFSET: 7, // S
-  ACTUAL_GM_OFFSET: 8,  // T
   ALLOWED_MONTH: "2026-11"
 };
 
@@ -80,12 +76,17 @@ function doPost(e) {
       : "";
 
     const targetCol = CFG.FIRST_DAY_TARGET_COL + (day - 1) * CFG.DAY_BLOCK_WIDTH;
-    sheet.getRange(destinationRow, targetCol + CFG.ACTUAL_SPD_OFFSET).setValue(totalSales);
-    sheet.getRange(destinationRow, targetCol + CFG.ACTUAL_STD_OFFSET).setValue(totalReceipts);
-    sheet.getRange(destinationRow, targetCol + CFG.ACTUAL_APC_OFFSET)
+    // Hari pertama memiliki satu kolom pemisah setelah SPD (P, R, S, T).
+    // Hari ke-2 dan seterusnya memakai empat kolom ACTUAL berurutan.
+    const offsets = day === 1
+      ? { spd: 4, std: 6, apc: 7, gm: 8 }
+      : { spd: 4, std: 5, apc: 6, gm: 7 };
+    sheet.getRange(destinationRow, targetCol + offsets.spd).setValue(totalSales);
+    sheet.getRange(destinationRow, targetCol + offsets.std).setValue(totalReceipts);
+    sheet.getRange(destinationRow, targetCol + offsets.apc)
       .setValue(totalReceipts > 0 ? totalSales / totalReceipts : 0);
     if (weightedGm !== "") {
-      sheet.getRange(destinationRow, targetCol + CFG.ACTUAL_GM_OFFSET).setValue(weightedGm);
+      sheet.getRange(destinationRow, targetCol + offsets.gm).setValue(weightedGm);
     }
     SpreadsheetApp.flush();
     return json_({ ok: true, date, store_code: storeCode, row: destinationRow,
