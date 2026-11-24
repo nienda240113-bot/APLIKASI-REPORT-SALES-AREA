@@ -291,7 +291,10 @@ body.dark-mode{--ink:#e8eefc;--muted:#aab7ce;--line:#293852;background:#101827;b
 
 <h3>Revenue / Net Sales</h3>
 <div class="form-group"><label>Target MTD (Rp)</label><input type="number" id="targetMTD" placeholder="Masukkan Target MTD..."></div>
-<div class="form-group"><label>Actual Sales (Rp)</label><input type="number" id="actualSales" placeholder="Masukkan Penjualan Aktual..."></div>
+<div class="row-grid">
+<div class="form-group"><label>Actual Sales (Rp)</label><input type="number" id="actualSales" placeholder="Masukkan Penjualan Aktual..." min="0"></div>
+<div class="form-group"><label>GM (%)</label><input type="text" id="gmPercent" inputmode="decimal" placeholder="Contoh: 18,85%"></div>
+</div>
 <div class="row-grid">
 <div class="form-group"><label>Time Factor (%)</label><input type="text" id="timeFactor" class="auto-calc" readonly></div>
 <div class="form-group"><label>Target Time Factor (Rp)</label><input type="text" id="targetTimeFactor" class="auto-calc" readonly></div>
@@ -412,13 +415,13 @@ function initPremiumTheme(){
 }
 
 function collectFormData(){
-const data={datePicker:$("datePicker").value,targetMTD:$("targetMTD").value,actualSales:$("actualSales").value,actualNewMember:$("actualNewMember").value,totalStruk:$("totalStruk").value,strukMember:$("strukMember").value,catToys:$("catToys").value,catTelur:$("catTelur").value,feeBase:$("feeBase").value};
+const data={datePicker:$("datePicker").value,targetMTD:$("targetMTD").value,actualSales:$("actualSales").value,gmPercent:$("gmPercent").value,actualNewMember:$("actualNewMember").value,totalStruk:$("totalStruk").value,strukMember:$("strukMember").value,catToys:$("catToys").value,catTelur:$("catTelur").value,feeBase:$("feeBase").value};
 for(let i=1;i<=4;i++){data[`targ_fokus${i}`]=$(`targ_fokus${i}`).value;data[`act_fokus${i}`]=$(`act_fokus${i}`).value}
 for(let i=1;i<=10;i++){data[`name_psm${i}`]=$(`name_psm${i}`).value;data[`targ_psm${i}`]=$(`targ_psm${i}`).value;data[`act_psm${i}`]=$(`act_psm${i}`).value}
 return data;
 }
 function populateForm(data){
-data=data||{};$("targetMTD").value=data.targetMTD??"";$("actualSales").value=data.actualSales??"";
+data=data||{};$("targetMTD").value=data.targetMTD??"";$("actualSales").value=data.actualSales??"";$("gmPercent").value=data.gmPercent??"";
 $("actualNewMember").value=data.actualNewMember??"";$("totalStruk").value=data.totalStruk??"";$("strukMember").value=data.strukMember??"";
 $("catToys").value=data.catToys??"";$("catTelur").value=data.catTelur??"";$("feeBase").value=data.feeBase??"";
 for(let i=1;i<=4;i++){$(`targ_fokus${i}`).value=data[`targ_fokus${i}`]??"";$(`act_fokus${i}`).value=data[`act_fokus${i}`]??""}
@@ -532,6 +535,8 @@ else setStatus(`Belum ada laporan ${shift}. Target tetap untuk ${code} berhasil 
 }catch(error){setStatus("Gagal memuat data toko/laporan: "+error.message);console.error(error)}
 }
 function numericValue(text){if(text===null||text===undefined||text==="")return 0;return Number(String(text).replace(/%/g,"").replace(/\./g,"").replace(",", "."))||0}
+function parsePercentValue(value){if(value===null||value===undefined||String(value).trim()==="")return 0;let v=String(value).trim().replace(/%/g,"").replace(/\s/g,"");if(v.includes(",")&&v.includes("."))v=v.replace(/\./g,"").replace(",",".");else v=v.replace(",",".");const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.min(100,n)):0}
+function calculateDailySalesKpis(report){const actual=Number(report?.actualSales??report?.actual??0)||0;const receipts=Number(report?.totalStruk??report?.total_receipt??0)||0;return{spd:actual,std:receipts,apc:receipts>0?actual/receipts:0,gmPercent:parsePercentValue(report?.gmPercent??report?.gm_percent??0)}}
 async function saveReportToCloud(){
 const code=$("storeSelect").value,shift=$("shiftSelect").value,date=$("datePicker").value;
 if(!code||!shift||!date){alert("Pilih tanggal, toko, dan shift terlebih dahulu.");return}
@@ -590,6 +595,10 @@ function generateWaText(){
  t+=`• Target MTD : ${money("targetMTD")}\n`;
  t+=`• Target Time Factor : ${money("targetTimeFactor")}\n`;
  t+=`• Actual Sales : ${money("actualSales")}\n`;
+ t+=`• SPD : ${money("actualSales")}\n`;
+ t+=`• STD : ${fmt(num("totalStruk"))} struk\n`;
+ t+=`• APC : Rp ${fmt(num("totalStruk")?num("actualSales")/num("totalStruk"):0)}\n`;
+ t+=`• GM% : ${$("gmPercent").value||"0"}\n`;
  t+=`• Achieve MTD : ${val("achieveMTD")}\n`;
  t+=`• Achieve Time Factor : ${val("achieveTF")}\n`;
  t+=`• Gap to Target : ${val("gapTarget")}\n`;
@@ -641,9 +650,9 @@ if(!date||!shift){alert("Pilih tanggal dan shift terlebih dahulu.");return}
 openPreview("Rekap Total 20 Toko", "Mengambil data laporan...");
 const {data,error}=await db.from("sales_reports").select("store_code,store_name,raw_payload").eq("period",date).eq("shift",shift);
 if(error){$("previewText").textContent="Gagal memuat rekap: "+error.message;return}
-const records=data||[];let totals={target:0,actual:0,newMember:0,struk:0,strukMember:0,toys:0,telur:0,fee:0};
+const records=data||[];let totals={target:0,actual:0,newMember:0,struk:0,strukMember:0,toys:0,telur:0,fee:0,gmSales:0,gmAmount:0};
 const ft=Array.from({length:4},()=>({t:0,a:0}));const ps=Array.from({length:10},(_,i)=>({name:DEFAULT_PSM_NAMES[i],t:0,a:0}));
-records.forEach(r=>{const d=r.raw_payload||{};totals.target+=Number(d.targetMTD)||0;totals.actual+=Number(d.actualSales)||0;totals.newMember+=Number(d.actualNewMember)||0;totals.struk+=Number(d.totalStruk)||0;totals.strukMember+=Number(d.strukMember)||0;totals.toys+=Number(d.catToys)||0;totals.telur+=Number(d.catTelur)||0;totals.fee+=Number(d.feeBase)||0;
+records.forEach(r=>{const d=r.raw_payload||{};const sales=Number(d.actualSales)||0;const gm=parsePercentValue(d.gmPercent);totals.gmSales+=sales;totals.gmAmount+=sales*gm/100;totals.target+=Number(d.targetMTD)||0;totals.actual+=Number(d.actualSales)||0;totals.newMember+=Number(d.actualNewMember)||0;totals.struk+=Number(d.totalStruk)||0;totals.strukMember+=Number(d.strukMember)||0;totals.toys+=Number(d.catToys)||0;totals.telur+=Number(d.catTelur)||0;totals.fee+=Number(d.feeBase)||0;
 for(let i=1;i<=4;i++){
  const periodTarget=Number(d[`targ_fokus${i}`])||0;
  const shiftTarget=i<=2?calculateFocusTargetPerShift(periodTarget,date):periodTarget;
@@ -653,7 +662,7 @@ for(let i=1;i<=10;i++){ps[i-1].name=sharedPsmNames[i-1]||ps[i-1].name;ps[i-1].t+
 });
 const [y,m,day]=date.split("-").map(Number),days=new Date(y,m,0).getDate(),tf=day/days*100,targetTF=totals.target*day/days;
 let s=`*REKAP TOTAL KESELURUHAN (${records.length} TOKO MELAPOR)*\nPERIODE : ${formatPeriodeDate(date)}\nSHIFT : ${shift}\nWH : Bekasi | AM : SRD | AC : TRIYANTO\n======================\n*REVENUE TOTAL*\n`;
-s+=`• Time Factor : ${tf.toFixed(2).replace(".",",")}%\n• Target MTD : Rp ${fmt(totals.target)}\n• Target Time Factor : Rp ${fmt(Math.round(targetTF))}\n• Actual Sales : Rp ${fmt(totals.actual)}\n• Achieve MTD : ${pct(totals.target?totals.actual/totals.target*100:0)}\n• Achieve Time Factor : ${pct(targetTF?totals.actual/targetTF*100:0)}\n• Gap to Target : Rp ${fmt(totals.actual-totals.target)}\n• Gap to Time Factor : Rp ${fmt(totals.actual-targetTF)}\n======================\n*FOKUS CABANG (TOTAL)*\n`;
+s+=`• Time Factor : ${tf.toFixed(2).replace(".",",")}%\n• Target MTD : Rp ${fmt(totals.target)}\n• Target Time Factor : Rp ${fmt(Math.round(targetTF))}\n• Actual Sales : Rp ${fmt(totals.actual)}\n• SPD : Rp ${fmt(totals.actual)}\n• STD : ${fmt(totals.struk)} struk\n• APC : Rp ${fmt(totals.struk?totals.actual/totals.struk:0)}\n• GM% (weighted) : ${totals.gmSales?((totals.gmAmount/totals.gmSales)*100).toFixed(2).replace(".",",")+"%":"-"}\n• Achieve MTD : ${pct(totals.target?totals.actual/totals.target*100:0)}\n• Achieve Time Factor : ${pct(targetTF?totals.actual/targetTF*100:0)}\n• Gap to Target : Rp ${fmt(totals.actual-totals.target)}\n• Gap to Time Factor : Rp ${fmt(totals.actual-targetTF)}\n======================\n*FOKUS CABANG (TOTAL)*\n`;
 ft.forEach((x,i)=>s+=`${i+1}. ${FOCUS_NAMES[i].toUpperCase()} : ${x.t} | ${x.a} | ${x.t?Math.round(x.a/x.t*100):0}%\n`);
 s+="\n*PSM TOTAL (TARGET PER SHIFT)*\n";ps.forEach((x,i)=>s+=`- ${i+1}. ${x.name} (${x.t} | ${x.a} | ${x.t?Math.round(x.a/x.t*100):0}%)\n`);
 s+=`\n*MEMBER TOTAL*\n• Actual New Member : ${totals.newMember}\n• Kontribusi Struk Member : ${totals.strukMember} | ${totals.struk} | ${totals.struk?Math.round(totals.strukMember/totals.struk*100):0}%\n\n*CATEGORY & E-COMMERCE TOTAL*\n1. TOYS (NS) : Rp ${fmt(totals.toys)}\n2. TELUR : Rp ${fmt(totals.telur)}\n3. FEE BASE : Rp ${fmt(totals.fee)}\n======================\n*Direkap otomatis dari ${records.length} laporan toko untuk tanggal dan shift terpilih.*`;
@@ -661,7 +670,7 @@ globalSummaryText=s;$("previewText").textContent=s;
 }
 function sendTotalSummaryWhatsApp(){if(!globalSummaryText){alert("Silakan klik 'Rekap Total 20 Toko' terlebih dahulu.");return}window.open("https://api.whatsapp.com/send?text="+encodeURIComponent(globalSummaryText),"_blank")}
 function attachEvents(){
-const watched=["targetMTD","actualSales","actualNewMember","totalStruk","strukMember","catToys","catTelur","feeBase"];
+const watched=["targetMTD","actualSales","gmPercent","actualNewMember","totalStruk","strukMember","catToys","catTelur","feeBase"];
 for(let i=1;i<=4;i++)watched.push(`targ_fokus${i}`,`act_fokus${i}`);
 for(let i=1;i<=10;i++){watched.push(`targ_psm${i}`,`act_psm${i}`);$("name_psm"+i).addEventListener("change",saveSharedPsmNames);}
 watched.forEach(id=>$(id).addEventListener("input",()=>{markAsUnsaved();calculateAllCalculations()}));
