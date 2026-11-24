@@ -23,7 +23,20 @@ function doPost(e) {
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
-    const payload = JSON.parse((e && e.postData && e.postData.contents) || "{}");
+    // Apps Script dapat menerima form-urlencoded (e.parameter) atau JSON (postData.contents).
+    const payload = Object.assign({}, (e && e.parameter) || {});
+    const body = e && e.postData && e.postData.contents ? String(e.postData.contents).trim() : "";
+    if (body) {
+      try {
+        const bodyPayload = JSON.parse(body);
+        if (bodyPayload && typeof bodyPayload === "object") Object.assign(payload, bodyPayload);
+      } catch (parseError) {
+        // Abaikan kegagalan JSON bila parameter formulir sudah tersedia.
+        if (!Object.keys(payload).length) throw new Error("Data request tidak terbaca sebagai formulir atau JSON.");
+      }
+    }
+    console.log("Daily Report request fields: " + Object.keys(payload).join(", "));
+    console.log("Daily Report received date: " + String(payload.date || payload.period || "(kosong)"));
     const date = normalizeReportDate_(payload.date || payload.period);
     const storeCode = String(payload.store_code || "").trim().toUpperCase();
     const shift = String(payload.shift || "").trim();
