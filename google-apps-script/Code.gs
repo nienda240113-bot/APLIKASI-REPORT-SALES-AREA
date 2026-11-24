@@ -15,11 +15,19 @@ const CFG = {
   ALLOWED_MONTH: "2026-11"
 };
 
-function doGet() {
-  return ContentService.createTextOutput("Daily Report sync is ready.");
+function doGet(e) {
+  const params = (e && e.parameter) || {};
+  if (String(params.action || "") !== "sync") {
+    return ContentService.createTextOutput("Daily Report sync is ready.");
+  }
+  return processDailyReport_(e);
 }
 
 function doPost(e) {
+  return processDailyReport_(e);
+}
+
+function processDailyReport_(e) {
   const lock = LockService.getScriptLock();
   lock.waitLock(20000);
   try {
@@ -31,10 +39,10 @@ function doPost(e) {
         const bodyPayload = JSON.parse(body);
         if (bodyPayload && typeof bodyPayload === "object") Object.assign(payload, bodyPayload);
       } catch (parseError) {
-        // Abaikan kegagalan JSON bila parameter formulir sudah tersedia.
-        if (!Object.keys(payload).length) throw new Error("Data request tidak terbaca sebagai formulir atau JSON.");
+        if (!Object.keys(payload).length) throw new Error("Data request tidak terbaca sebagai parameter atau JSON.");
       }
     }
+    console.log("Daily Report request method: " + (e && e.postData ? "POST" : "GET"));
     console.log("Daily Report request fields: " + Object.keys(payload).join(", "));
     console.log("Daily Report received date: " + String(payload.date || payload.period || "(kosong)"));
     const date = normalizeReportDate_(payload.date || payload.period);
