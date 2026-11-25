@@ -120,35 +120,22 @@ function processDailyReport_(e) {
     if (foundRow > 0) log.getRange(foundRow, 1, 1, entry.length).setValues([entry]);
     else log.appendRow(entry);
 
-    const all = log.getDataRange().getValues().slice(1).filter(r =>
-      dateKey_(r[0]) === date && String(r[1]).trim().toUpperCase() === storeCode);
-    const totalSales = all.reduce((sum, r) => sum + (Number(r[3]) || 0), 0);
-    const totalReceipts = all.reduce((sum, r) => sum + (Number(r[4]) || 0), 0);
-    const gmRows = all.filter(r => r[5] !== "" && r[5] !== null && Number.isFinite(Number(r[5])));
-    const gmWeight = gmRows.reduce((sum, r) => sum + (Number(r[3]) || 0), 0);
-    const weightedGm = gmWeight > 0
-      ? gmRows.reduce((sum, r) => sum + (Number(r[3]) || 0) * Number(r[5]), 0) / gmWeight
-      : "";
-
+    // TULIS NILAI SHIFT YANG SEDANG DISIMPAN, TANPA MENJUMLAHKAN SHIFT 1 + SHIFT 2.
+    // SPD = Actual Sales shift ini; STD = Total Struk shift ini;
+    // APC = Actual Sales / Total Struk; GM% = GM% yang diisi pada aplikasi.
     const targetCol = CFG.FIRST_DAY_TARGET_COL + (day - 1) * CFG.DAY_BLOCK_WIDTH;
-    // Blok harian dimulai dari kolom I dan berulang setiap 12 kolom.
-    // Tanggal 1: SPD P, STD R, APC S, GM% T (Q adalah kolom pemisah).
-    // Tanggal 2-30: ACTUAL berada pada 4 kolom terakhir blok (SPD/STD/APC/GM%).
     const offsets = day === 1
       ? { spd: 7, std: 9, apc: 10, gm: 11 }
       : { spd: 8, std: 9, apc: 10, gm: 11 };
-    sheet.getRange(destinationRow, targetCol + offsets.spd).setValue(totalSales);
-    sheet.getRange(destinationRow, targetCol + offsets.std).setValue(totalReceipts);
-    sheet.getRange(destinationRow, targetCol + offsets.apc)
-      .setValue(totalReceipts > 0 ? totalSales / totalReceipts : 0);
-    if (weightedGm !== "") {
-      sheet.getRange(destinationRow, targetCol + offsets.gm).setValue(weightedGm);
-    }
+
+    const apc = receipts > 0 ? sales / receipts : 0;
+    sheet.getRange(destinationRow, targetCol + offsets.spd).setValue(sales);
+    sheet.getRange(destinationRow, targetCol + offsets.std).setValue(receipts);
+    sheet.getRange(destinationRow, targetCol + offsets.apc).setValue(apc);
+    sheet.getRange(destinationRow, targetCol + offsets.gm).setValue(gm);
     SpreadsheetApp.flush();
-    return json_({ ok: true, date, store_code: storeCode, row: destinationRow,
-      actual_spd: totalSales, actual_std: totalReceipts,
-      actual_apc: totalReceipts > 0 ? totalSales / totalReceipts : 0,
-      actual_gm: weightedGm });
+    return json_({ ok: true, date, store_code: storeCode, shift, row: destinationRow,
+      actual_spd: sales, actual_std: receipts, actual_apc: apc, actual_gm: gm });
   } catch (err) {
     console.error(err);
     return json_({ ok: false, error: String(err.message || err) });
