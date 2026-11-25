@@ -10,7 +10,7 @@ const CFG = {
   FIRST_STORE_ROW: 9,
   LAST_STORE_ROW: 28,
   STORE_CODE_COL: 1,
-  FIRST_DAY_TARGET_COL: 12, // L
+  FIRST_DAY_TARGET_COL: 9, // I: awal blok harian pada sheet REVENUE
   DAY_BLOCK_WIDTH: 12,
   ALLOWED_MONTH: "2026-11"
 };
@@ -19,7 +19,7 @@ function doGet(e) {
   const params = (e && e.parameter) || {};
   const action = String(params.action || "");
   if (action === "health") {
-    return json_({ ok: true, version: "2026-11-25-post-form-v5-width12", message: "Apps Script deployment aktif." });
+    return json_({ ok: true, version: "2026-11-25-column-map-v6", message: "Apps Script deployment aktif." });
   }
   if (action !== "sync") {
     return ContentService.createTextOutput("Daily Report sync is ready.");
@@ -131,11 +131,12 @@ function processDailyReport_(e) {
       : "";
 
     const targetCol = CFG.FIRST_DAY_TARGET_COL + (day - 1) * CFG.DAY_BLOCK_WIDTH;
-    // Hari pertama memiliki satu kolom pemisah setelah SPD (P, R, S, T).
-    // Hari ke-2 dan seterusnya memakai empat kolom ACTUAL berurutan.
+    // Blok harian dimulai dari kolom I dan berulang setiap 12 kolom.
+    // Tanggal 1: SPD P, STD R, APC S, GM% T (Q adalah kolom pemisah).
+    // Tanggal 2-30: ACTUAL berada pada 4 kolom terakhir blok (SPD/STD/APC/GM%).
     const offsets = day === 1
-      ? { spd: 4, std: 6, apc: 7, gm: 8 }
-      : { spd: 4, std: 5, apc: 6, gm: 7 };
+      ? { spd: 7, std: 9, apc: 10, gm: 11 }
+      : { spd: 8, std: 9, apc: 10, gm: 11 };
     sheet.getRange(destinationRow, targetCol + offsets.spd).setValue(totalSales);
     sheet.getRange(destinationRow, targetCol + offsets.std).setValue(totalReceipts);
     sheet.getRange(destinationRow, targetCol + offsets.apc)
