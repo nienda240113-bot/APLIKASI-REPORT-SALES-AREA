@@ -19,7 +19,7 @@ function doGet(e) {
   const params = (e && e.parameter) || {};
   const action = String(params.action || "");
   if (action === "health") {
-    return json_({ ok: true, version: "2026-11-25-column-map-v6", message: "Apps Script deployment aktif." });
+    return json_({ ok: true, version: "2026-11-25-shift-column-map-v7", message: "Apps Script deployment aktif." });
   }
   if (action !== "sync") {
     return ContentService.createTextOutput("Daily Report sync is ready.");
@@ -129,10 +129,24 @@ function processDailyReport_(e) {
       : { spd: 8, std: 9, apc: 10, gm: 11 };
 
     const apc = receipts > 0 ? sales / receipts : 0;
-    sheet.getRange(destinationRow, targetCol + offsets.spd).setValue(sales);
-    sheet.getRange(destinationRow, targetCol + offsets.std).setValue(receipts);
-    sheet.getRange(destinationRow, targetCol + offsets.apc).setValue(apc);
-    sheet.getRange(destinationRow, targetCol + offsets.gm).setValue(gm);
+    // Kolom ACTUAL: hari 1 = P/R/S/T; hari 2+ = AC/AD/AE/AF,
+    // lalu berulang setiap 12 kolom. TARGET dan ACV tidak disentuh.
+    const destination = {
+      spd: targetCol + offsets.spd,
+      std: targetCol + offsets.std,
+      apc: targetCol + offsets.apc,
+      gm: targetCol + offsets.gm
+    };
+    console.log("REVENUE write map: row=" + destinationRow +
+      ", day=" + day +
+      ", SPD=" + sheet.getRange(1, destination.spd).getA1Notation().replace("1", "") +
+      ", STD=" + sheet.getRange(1, destination.std).getA1Notation().replace("1", "") +
+      ", APC=" + sheet.getRange(1, destination.apc).getA1Notation().replace("1", "") +
+      ", GM=" + sheet.getRange(1, destination.gm).getA1Notation().replace("1", ""));
+    sheet.getRange(destinationRow, destination.spd).setValue(sales);
+    sheet.getRange(destinationRow, destination.std).setValue(receipts);
+    sheet.getRange(destinationRow, destination.apc).setValue(apc);
+    sheet.getRange(destinationRow, destination.gm).setValue(gm);
     SpreadsheetApp.flush();
     return json_({ ok: true, date, store_code: storeCode, shift, row: destinationRow,
       actual_spd: sales, actual_std: receipts, actual_apc: apc, actual_gm: gm });
