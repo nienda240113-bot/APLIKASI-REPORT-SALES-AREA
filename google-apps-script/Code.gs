@@ -11,7 +11,7 @@ const CFG = {
   LAST_STORE_ROW: 28,
   STORE_CODE_COL: 1,
   FIRST_DAY_TARGET_COL: 12, // L
-  DAY_BLOCK_WIDTH: 13,
+  DAY_BLOCK_WIDTH: 12,
   ALLOWED_MONTH: "2026-11"
 };
 
@@ -19,7 +19,7 @@ function doGet(e) {
   const params = (e && e.parameter) || {};
   const action = String(params.action || "");
   if (action === "health") {
-    return json_({ ok: true, version: "2026-11-25-post-form-v4", message: "Apps Script deployment aktif." });
+    return json_({ ok: true, version: "2026-11-25-post-form-v5-width12", message: "Apps Script deployment aktif." });
   }
   if (action !== "sync") {
     return ContentService.createTextOutput("Daily Report sync is ready.");
