@@ -79,9 +79,9 @@ function processDailyReport_(e) {
     const records = log.getDataRange().getValues();
     let foundRow = -1;
     for (let i = 1; i < records.length; i++) {
-      if (String(records[i][0]) === date &&
-          String(records[i][1]).toUpperCase() === storeCode &&
-          String(records[i][2]) === shift) {
+      if (dateKey_(records[i][0]) === date &&
+          String(records[i][1]).trim().toUpperCase() === storeCode &&
+          String(records[i][2]).trim() === shift) {
         foundRow = i + 1;
         break;
       }
@@ -91,7 +91,7 @@ function processDailyReport_(e) {
     else log.appendRow(entry);
 
     const all = log.getDataRange().getValues().slice(1).filter(r =>
-      String(r[0]) === date && String(r[1]).toUpperCase() === storeCode);
+      dateKey_(r[0]) === date && String(r[1]).trim().toUpperCase() === storeCode);
     const totalSales = all.reduce((sum, r) => sum + (Number(r[3]) || 0), 0);
     const totalReceipts = all.reduce((sum, r) => sum + (Number(r[4]) || 0), 0);
     const gmRows = all.filter(r => r[5] !== "" && r[5] !== null && Number.isFinite(Number(r[5])));
@@ -137,6 +137,14 @@ function normalizeReportDate_(value) {
   m = s.match(/^([0-9]{1,2})[\\/.-]([0-9]{1,2})[\\/.-]([0-9]{4})$/);
   if (m) return m[3] + "-" + ("0" + m[2]).slice(-2) + "-" + ("0" + m[1]).slice(-2);
   return "";
+}
+
+function dateKey_(value) {
+  if (value === null || value === undefined || value === "") return "";
+  if (Object.prototype.toString.call(value) === "[object Date]" && !isNaN(value.getTime())) {
+    return Utilities.formatDate(value, "Asia/Jakarta", "yyyy-MM-dd");
+  }
+  return normalizeReportDate_(value) || String(value).trim();
 }
 
 function getLogSheet_(ss) {
