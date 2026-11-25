@@ -19,7 +19,7 @@ function doGet(e) {
   const params = (e && e.parameter) || {};
   const action = String(params.action || "");
   if (action === "health") {
-    return json_({ ok: true, version: "2026-11-25-get-sync-v2-datekey", message: "Apps Script deployment aktif." });
+    return json_({ ok: true, version: "2026-11-25-get-sync-v3-querystring", message: "Apps Script deployment aktif." });
   }
   if (action !== "sync") {
     return ContentService.createTextOutput("Daily Report sync is ready.");
@@ -36,7 +36,24 @@ function processDailyReport_(e) {
   lock.waitLock(20000);
   try {
     // Apps Script dapat menerima form-urlencoded (e.parameter) atau JSON (postData.contents).
-    const payload = Object.assign({}, (e && e.parameter) || {});
+    const payload = {};
+    // Merge Apps Script parameter maps and parse queryString as a fallback.
+    if (e && e.parameter) Object.assign(payload, e.parameter);
+    if (e && e.parameters) {
+      Object.keys(e.parameters).forEach(key => {
+        const values = e.parameters[key];
+        if (payload[key] === undefined && Array.isArray(values)) payload[key] = values[0];
+      });
+    }
+    if (e && e.queryString) {
+      String(e.queryString).split("&").forEach(pair => {
+        if (!pair) return;
+        const parts = pair.split("=");
+        const key = decodeURIComponent((parts.shift() || "").replace(/\\+/g, " "));
+        const value = decodeURIComponent(parts.join("=").replace(/\\+/g, " "));
+        if (key && payload[key] === undefined) payload[key] = value;
+      });
+    }
     const body = e && e.postData && e.postData.contents ? String(e.postData.contents).trim() : "";
     if (body) {
       try {
@@ -47,6 +64,7 @@ function processDailyReport_(e) {
       }
     }
     console.log("Daily Report request method: " + (e && e.postData ? "POST" : "GET"));
+    console.log("Daily Report raw queryString: " + String((e && e.queryString) || "(kosong)"));
     console.log("Daily Report request fields: " + Object.keys(payload).join(", "));
     console.log("Daily Report received date: " + String(payload.date || payload.period || "(kosong)"));
     const date = normalizeReportDate_(payload.date || payload.period);
