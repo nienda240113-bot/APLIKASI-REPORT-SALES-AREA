@@ -19,7 +19,7 @@ function doGet(e) {
   const params = (e && e.parameter) || {};
   const action = String(params.action || "");
   if (action === "health") {
-    return json_({ ok: true, version: "2026-11-25-get-sync-v3-querystring", message: "Apps Script deployment aktif." });
+    return json_({ ok: true, version: "2026-11-25-post-form-v4", message: "Apps Script deployment aktif." });
   }
   if (action !== "sync") {
     return ContentService.createTextOutput("Daily Report sync is ready.");
@@ -60,7 +60,19 @@ function processDailyReport_(e) {
         const bodyPayload = JSON.parse(body);
         if (bodyPayload && typeof bodyPayload === "object") Object.assign(payload, bodyPayload);
       } catch (parseError) {
-        if (!Object.keys(payload).length) throw new Error("Data request tidak terbaca sebagai parameter atau JSON.");
+        // Fallback body application/x-www-form-urlencoded dari browser.
+        String(body).split("&").forEach(pair => {
+          if (!pair) return;
+          const index = pair.indexOf("=");
+          const rawKey = index >= 0 ? pair.slice(0, index) : pair;
+          const rawValue = index >= 0 ? pair.slice(index + 1) : "";
+          const key = decodeURIComponent(rawKey.replace(/\\+/g, " "));
+          const value = decodeURIComponent(rawValue.replace(/\\+/g, " "));
+          if (key && payload[key] === undefined) payload[key] = value;
+        });
+        if (!Object.keys(payload).length) {
+          throw new Error("Data request tidak terbaca. Periksa body POST dari aplikasi.");
+        }
       }
     }
     console.log("Daily Report request method: " + (e && e.postData ? "POST" : "GET"));
