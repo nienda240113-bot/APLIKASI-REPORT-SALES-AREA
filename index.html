@@ -552,7 +552,16 @@ async function syncDailyReportToGoogleSheets(report){
   shift:String(report.shift||""),
   actualSales:String(report.actual??0),
   totalStruk:String(report.total_receipt??0),
-  gmPercent:String(report.raw_payload?.gmPercent??"")
+  gmPercent:String(report.raw_payload?.gmPercent??""),
+  reportData:JSON.stringify({
+   psm:Array.isArray(report.psm)?report.psm.map(x=>({actual:Number(x.actual)||0})):[],
+   focus:Array.isArray(report.focus)?report.focus.map(x=>({actual:Number(x.actual)||0})):[],
+   newMember:Number(report.new_member)||0,
+   totalReceipts:Number(report.total_receipt)||0,
+   memberReceipts:Number(report.member_receipt)||0,
+   toys:Number(report.toys)||0,
+   eggs:Number(report.hbpl)||0
+  })
  };
  try{
   // Kirim form-urlencoded melalui POST agar Apps Script menerima field dari e.parameter.
