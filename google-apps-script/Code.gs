@@ -4,6 +4,7 @@
  * Deploy sebagai Web app: Execute as Me, Who has access Anyone.
  */
 const CFG = {
+  MARKETING_SPREADSHEET_ID: "1JHeYvqSJYNw13-nHem5FQpfbSaimM1Ge9d7OgQtt1OE",
   SPREADSHEET_ID: "1kHcuWpHAulQCFtYaRGvT0MrnfKRSGnmEwvJu6fY9jBs",
   DEST_SHEET: "REVENUE",
   LOG_SHEET: "_DAILY_REPORT_SYNC",
@@ -19,7 +20,7 @@ function doGet(e) {
   const params = (e && e.parameter) || {};
   const action = String(params.action || "");
   if (action === "health") {
-    return json_({ ok: true, version: "2026-11-25-shift-column-map-v7", message: "Apps Script deployment aktif." });
+    return json_({ ok: true, version: "2026-11-26-marketing-sync-v1", message: "Apps Script deployment aktif." });
   }
   if (action !== "sync") {
     return ContentService.createTextOutput("Daily Report sync is ready.");
@@ -147,9 +148,11 @@ function processDailyReport_(e) {
     sheet.getRange(destinationRow, destination.std).setValue(receipts);
     sheet.getRange(destinationRow, destination.apc).setValue(apc);
     sheet.getRange(destinationRow, destination.gm).setValue(gm);
+    const marketingResult = writeMarketingMonitoring_(payload, date, day, storeCode, shift);
     SpreadsheetApp.flush();
     return json_({ ok: true, date, store_code: storeCode, shift, row: destinationRow,
-      actual_spd: sales, actual_std: receipts, actual_apc: apc, actual_gm: gm });
+      actual_spd: sales, actual_std: receipts, actual_apc: apc, actual_gm: gm,
+      marketing: marketingResult });
   } catch (err) {
     console.error(err);
     return json_({ ok: false, error: String(err.message || err) });
@@ -198,4 +201,90 @@ function parsePercent_(value) {
 function json_(obj) {
   return ContentService.createTextOutput(JSON.stringify(obj))
     .setMimeType(ContentService.MimeType.JSON);
+}
+
+
+/** Menulis hanya kolom Shift/Actual; tidak mengubah target, total, atau formula. */
+function writeMarketingMonitoring_(payload, date, day, storeCode, shift) {
+  const raw = payload.reportData ? JSON.parse(String(payload.reportData)) : {};
+  const ss = SpreadsheetApp.openById(CFG.MARKETING_SPREADSHEET_ID);
+  const s1 = shift === "Shift 1";
+  const shiftCol = s1 ? 1 : 2;
+  const result = {};
+  const weekStart = day <= 7 ? 1 : day <= 15 ? 8 : day <= 23 ? 16 : 24;
+  const periodStart = day <= 15 ? 1 : 16;
+  const offset = day - periodStart;
+  const focus = Array.isArray(raw.focus) ? raw.focus : [];
+  const focusActual = i => Number(focus[i] && focus[i].actual) || 0;
+
+  // PSM: jumlah Actual dari 10 item, masuk ke kolom shift yang dipilih.
+  const psmTotal = (Array.isArray(raw.psm) ? raw.psm : [])
+    .reduce((n, x) => n + (Number(x && x.actual) || 0), 0);
+  const psmHeader = weekStart === 1 ? 5 : weekStart === 8 ? 30 : weekStart === 16 ? 55 : 80;
+  const psmData = psmHeader + 1;
+  result.PSM = putValue_(ss, "PSM", storeCode, psmData, 20,
+    5 + (day - weekStart) * 5 + shiftCol, psmTotal);
+
+  // PWP (Tebus Murah) dan SERBA GRATIS, 5 kolom per hari.
+  const periodHeader = periodStart === 1 ? 5 : 30;
+  const periodData = periodHeader + 1;
+  const dayBase = 5 + offset * 5;
+  result.PWP = putValue_(ss, "PWP", storeCode, periodData, 20,
+    dayBase + shiftCol, focusActual(0));
+  result.SERBA = putValue_(ss, "SERBA ", storeCode, periodData, 20,
+    dayBase + shiftCol, focusActual(1));
+
+  // Sueger dan Cemilan Ceban: 9 kolom per tanggal; redeem ada di +1 / +4.
+  const specialData = periodStart === 1 ? 7 : 33;
+  const specialBase = 3 + offset * 9;
+  result.SUEGER = putValue_(ss, "SUEGER", storeCode, specialData, 20,
+    specialBase + (s1 ? 1 : 4), focusActual(2));
+  // Ceban: syarat = Total Struk shift itu; redeem = Actual Promo Ceban.
+  result.CEMILAN_CEBAN = putPair_(ss, "CEMILAN CEBAN", storeCode, specialData, 20,
+    specialBase + (s1 ? 0 : 3), specialBase + (s1 ? 1 : 4),
+    Number(raw.totalReceipts) || 0, focusActual(3));
+
+  // New Member, TOYS, TELUR: shift columns in 5-column daily groups.
+  const base = 5 + (day - 1) * 5;
+  result.NEW_MEMBER = putValue_(ss, "NEW MEMBER", storeCode, 6, 20,
+    base + shiftCol, Number(raw.newMember) || 0);
+  result.TOYS = putValue_(ss, "TOYS", storeCode, 6, 20,
+    base + shiftCol, Number(raw.toys) || 0);
+  result.TELUR = putValue_(ss, "TELUR", storeCode, 6, 20,
+    base + shiftCol, Number(raw.eggs) || 0);
+
+  // Kontribusi Member: Shift 1 = D/E; Shift 2 = G/H, lalu setiap 9 kolom.
+  const memberBase = 4 + (day - 1) * 9;
+  result.CONTRIBUSI_MEMBER = putPair_(ss, "CONTRIBUSI MEMBER", storeCode, 7, 20,
+    memberBase + (s1 ? 0 : 3), memberBase + (s1 ? 1 : 4),
+    Number(raw.totalReceipts) || 0, Number(raw.memberReceipts) || 0);
+  return result;
+}
+
+function putValue_(ss, name, code, firstRow, count, col, value) {
+  const sh = ss.getSheetByName(name) || (name === "SERBA " ? ss.getSheetByName("SERBA") : null);
+  if (!sh) throw new Error("Tab monitoring tidak ditemukan: " + name);
+  const row = findMonitoringStoreRow_(sh, code, firstRow, count);
+  sh.getRange(row, col).setValue(value);
+  const cell = sh.getRange(row, col).getA1Notation();
+  console.log(name + " " + cell + " <- " + value);
+  return cell;
+}
+
+function putPair_(ss, name, code, firstRow, count, col1, col2, value1, value2) {
+  const sh = ss.getSheetByName(name);
+  if (!sh) throw new Error("Tab monitoring tidak ditemukan: " + name);
+  const row = findMonitoringStoreRow_(sh, code, firstRow, count);
+  sh.getRange(row, col1).setValue(value1);
+  sh.getRange(row, col2).setValue(value2);
+  const cells = [sh.getRange(row, col1).getA1Notation(), sh.getRange(row, col2).getA1Notation()];
+  console.log(name + " " + cells.join("/") + " <- " + value1 + "/" + value2);
+  return cells;
+}
+
+function findMonitoringStoreRow_(sh, code, firstRow, count) {
+  const codes = sh.getRange(firstRow, 1, count, 1).getDisplayValues().flat();
+  const i = codes.findIndex(v => String(v).trim().toUpperCase() === String(code).trim().toUpperCase());
+  if (i < 0) throw new Error("Kode toko " + code + " tidak ditemukan pada " + sh.getName());
+  return firstRow + i;
 }
