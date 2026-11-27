@@ -237,8 +237,11 @@ function writeMarketingMonitoring_(payload, date, day, storeCode, shift) {
   // Sueger dan Cemilan Ceban: 9 kolom per tanggal; redeem ada di +1 / +4.
   const specialData = periodStart === 1 ? 7 : 33;
   const specialBase = 3 + offset * 9;
-  result.SUEGER = putValue_(ss, "SUEGER", storeCode, specialData, 20,
-    specialBase + (s1 ? 1 : 4), focusActual(2));
+  // SUEGER: Target Sueugeer masuk ke SYARAT, Actual masuk ke REDEEMP.
+  // Kolom shift 1: SYARAT +0, REDEEMP +1; shift 2: SYARAT +3, REDEEMP +4.
+  result.SUEGER = putPair_(ss, "SUEGER", storeCode, specialData, 20,
+    specialBase + (s1 ? 0 : 3), specialBase + (s1 ? 1 : 4),
+    Number(focus[2] && focus[2].target) || 0, focusActual(2));
   // Ceban: syarat = Total Struk shift itu; redeem = Actual Promo Ceban.
   result.CEMILAN_CEBAN = putPair_(ss, "CEMILAN CEBAN", storeCode, specialData, 20,
     specialBase + (s1 ? 0 : 3), specialBase + (s1 ? 1 : 4),
