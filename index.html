@@ -555,7 +555,7 @@ async function syncDailyReportToGoogleSheets(report){
   gmPercent:String(report.raw_payload?.gmPercent??""),
   reportData:JSON.stringify({
    psm:Array.isArray(report.psm)?report.psm.map(x=>({actual:Number(x.actual)||0})):[],
-   focus:Array.isArray(report.focus)?report.focus.map(x=>({actual:Number(x.actual)||0})):[],
+   focus:Array.isArray(report.focus)?report.focus.map(x=>({actual:Number(x.actual)||0,target:Number(x.target)||0})):[],
    newMember:Number(report.new_member)||0,
    totalReceipts:Number(report.total_receipt)||0,
    memberReceipts:Number(report.member_receipt)||0,
