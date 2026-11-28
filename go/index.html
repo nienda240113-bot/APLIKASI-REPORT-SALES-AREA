@@ -15,13 +15,9 @@
 <style>
 *{box-sizing:border-box}body{margin:0;min-height:100vh;padding:22px;display:grid;place-items:center;font-family:Inter,Arial,sans-serif;color:#fff;background:radial-gradient(circle at 15% 10%,#2479e9 0,transparent 32%),radial-gradient(circle at 90% 85%,#08a78f 0,transparent 30%),linear-gradient(145deg,#071a49,#123f9c 58%,#071a49)}
 .wrap{width:min(100%,760px);text-align:center}.panel{padding:clamp(18px,4vw,34px);border:1px solid #ffffff45;border-radius:28px;background:#ffffff12;box-shadow:0 24px 70px #0005;backdrop-filter:blur(12px)}
-.logo-wrap{position:relative;width:min(100%,420px);margin:0 auto 25px;padding:20px 18px 17px;background:#fff;border:7px solid #d71935;border-right-width:10px;border-radius:76px 5px 76px 5px;box-shadow:0 0 0 3px #fff,0 0 22px #39baff,0 0 48px #1677ff99,0 14px 30px #00174688;overflow:hidden;animation:logoPulse 3.4s ease-in-out infinite}
-.logo-wrap:before{content:"";position:absolute;inset:0 auto 0 -45%;width:30%;transform:skewX(-22deg);background:linear-gradient(90deg,transparent,#fff9,transparent);animation:logoShine 3.6s ease-in-out infinite}
-.logo-word{position:relative;z-index:1;display:flex;justify-content:center;align-items:baseline;white-space:nowrap;line-height:.98;letter-spacing:-3px}
-.logo-word .alfa{font-family:Arial Rounded MT Bold,Arial,sans-serif;font-size:clamp(54px,13vw,88px);font-weight:1000;color:#1556ae;letter-spacing:-5px}
-.logo-word .mart{font-family:Georgia,serif;font-size:clamp(52px,12.5vw,85px);font-style:italic;font-weight:900;color:#d71935;letter-spacing:-5px}
-.logo-stripe{position:relative;z-index:1;height:clamp(13px,2.6vw,20px);margin:12px auto 0;width:91%;border-radius:0 0 38px 4px;background:linear-gradient(180deg,#d71935 0 70%,#f2d51c 71% 100%);box-shadow:0 3px 0 #e8c81a}
-.logo-caption{position:relative;z-index:1;margin-top:9px;color:#17458b;font-size:9px;font-weight:900;letter-spacing:3px}
+.logo-wrap{position:relative;width:min(100%,460px);margin:0 auto 25px;padding:0;background:#fff;border:5px solid #d71935;border-radius:35px 5px 35px 5px;box-shadow:0 0 0 3px #fff,0 0 22px #39baff,0 0 48px #1677ff99,0 14px 30px #00174688;overflow:hidden;animation:logoPulse 3.4s ease-in-out infinite}
+.logo-wrap:before{content:"";position:absolute;z-index:2;inset:0 auto 0 -45%;width:30%;transform:skewX(-22deg);background:linear-gradient(90deg,transparent,#ffffffc9,transparent);animation:logoShine 3.6s ease-in-out infinite;pointer-events:none}
+.logo-image{display:block;width:100%;height:auto;position:relative}
 @keyframes logoPulse{0%,100%{transform:translateY(0);box-shadow:0 0 0 3px #fff,0 0 20px #39baff99,0 0 42px #1677ff66,0 14px 30px #00174688}50%{transform:translateY(-5px);box-shadow:0 0 0 4px #fff,0 0 30px #ffe34dcc,0 0 58px #20baffaa,0 16px 36px #00174699}}
 @keyframes logoShine{0%,18%{left:-45%;opacity:0}38%{opacity:1}68%,100%{left:130%;opacity:0}}
 .brand{font-size:clamp(30px,7vw,54px);font-weight:950;line-height:1.02;margin:12px 0 8px;text-shadow:0 4px 18px #001b55aa}.sub{color:#dce9ff;margin:0 0 22px;font-size:15px}
@@ -31,8 +27,7 @@
 .cta:active{transform:translateY(6px);box-shadow:0 3px 0 #8e0015,0 8px 15px #0005}.hint{font-size:12px;color:#d7e4ff}.credit{margin-top:22px;font-weight:850;letter-spacing:2px;color:#ffe16a;font-size:13px}
 @media(prefers-reduced-motion:reduce){.logo-wrap,.logo-wrap:before{animation:none}}
 </style></head><body><main class="wrap"><section class="panel">
-<div class="logo-wrap" role="img" aria-label="Logo Alfamart dengan bingkai merah dan garis merah kuning, animasi cahaya futuristik">
-<div class="logo-word"><span class="alfa">Alfa</span><span class="mart">mart</span></div><div class="logo-stripe"></div><div class="logo-caption">DIGITAL WORKFLOW • ALFAMART</div></div>
+<div class="logo-wrap"><img class="logo-image" src="../alfamart-logo.svg" alt="Logo Alfamart asli sesuai gambar referensi"></div>
 <div class="brand">DAILY SALES<br>REPORT PORTAL</div><p class="sub">Kerja lebih cerdas • Laporan lebih praktis</p>
 <img class="poster" src="../og-poster.svg" alt="Daily Sales Report Portal — Otomatis Isi TDP Area Triyanto dan Monitoring Marketing">
 <div class="features"><span>✓ OTOMATIS ISI TDP AREA TRIYANTO</span><span>✓ DAN MONITORING MARKETING</span></div>
